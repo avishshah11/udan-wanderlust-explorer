@@ -2,19 +2,19 @@
 const partners = [
   {
     name: "Emirates",
-    logo: "https://logos-world.net/wp-content/uploads/2020/03/Emirates-Logo-700x394.png",
+    logo: "https://logowik.com/content/uploads/images/emirates-airline3523.jpg",
   },
   {
     name: "Marriott International",
-    logo: "https://logos-world.net/wp-content/uploads/2020/11/Marriott-Logo-700x394.png",
+    logo: "https://logowik.com/content/uploads/images/marriott-international8810.jpg",
   },
   {
     name: "Air India",
-    logo: "https://logos-world.net/wp-content/uploads/2020/03/Air-India-Logo-700x394.png",
+    logo: "https://logowik.com/content/uploads/images/air-india-new9852.jpg",
   },
   {
     name: "Hyatt",
-    logo: "https://logos-world.net/wp-content/uploads/2021/08/Hyatt-Logo-700x394.png",
+    logo: "https://logowik.com/content/uploads/images/hyatt3853.jpg",
   },
 ];
 

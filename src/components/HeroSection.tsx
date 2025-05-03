@@ -19,12 +19,6 @@ const HeroSection = () => {
               <Button asChild className="bg-udan-orange hover:bg-udan-orange/90 text-white px-6 py-2 rounded-full text-base md:text-lg">
                 <Link to="/contact">Plan your trip</Link>
               </Button>
-              
-              <div className="relative inline-flex items-center">
-                <span className="relative z-10 inline-flex items-center text-udan-charcoal group cursor-pointer">
-                  <span className="ml-2 font-medium group-hover:text-udan-orange transition-colors duration-300">See How it Works</span>
-                </span>
-              </div>
             </div>
           </div>
           

@@ -1,8 +1,15 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import DestinationCard from './DestinationCard';
 import { Button } from "@/components/ui/button";
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
+} from "@/components/ui/carousel";
 
 const destinations = [
   {
@@ -33,41 +40,6 @@ const destinations = [
     price: 40000,
     rating: 4.6,
   },
-  {
-    id: 5,
-    name: "Maldives",
-    image: "https://images.unsplash.com/photo-1573843981267-be1999ff37cd",
-    price: 55000,
-    rating: 5.0,
-  },
-  {
-    id: 6,
-    name: "Swiss Alps",
-    image: "https://images.unsplash.com/photo-1433086966358-54859d0ed716",
-    price: 38000,
-    rating: 4.7,
-  },
-  {
-    id: 7,
-    name: "Machu Picchu, Peru",
-    image: "https://images.unsplash.com/photo-1526392060635-9d6019884377",
-    price: 42000,
-    rating: 4.9,
-  },
-  {
-    id: 8,
-    name: "Dubai, UAE",
-    image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c",
-    price: 48000,
-    rating: 4.8,
-  },
-  {
-    id: 9,
-    name: "Serengeti, Tanzania",
-    image: "https://images.unsplash.com/photo-1516426122078-c23e76319801",
-    price: 52000,
-    rating: 4.7,
-  },
 ];
 
 const PopularDestinations = () => {
@@ -78,18 +50,22 @@ const PopularDestinations = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-udan-charcoal">Popular Destinations</h2>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {destinations.map((destination) => (
-            <div key={destination.id}>
-              <DestinationCard 
-                image={destination.image}
-                name={destination.name}
-                price={destination.price}
-                rating={destination.rating}
-              />
-            </div>
-          ))}
-        </div>
+        <Carousel className="w-full">
+          <CarouselContent className="-ml-4">
+            {destinations.map((destination) => (
+              <CarouselItem key={destination.id} className="pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                <DestinationCard 
+                  image={destination.image}
+                  name={destination.name}
+                  price={destination.price}
+                  rating={destination.rating}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-0 md:-left-12" />
+          <CarouselNext className="right-0 md:-right-12" />
+        </Carousel>
 
         <div className="mt-10 text-center">
           <Button asChild className="bg-udan-orange hover:bg-udan-orange/90 text-white px-6 py-2 rounded-full">

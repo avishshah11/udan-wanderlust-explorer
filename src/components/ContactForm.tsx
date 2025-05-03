@@ -43,7 +43,10 @@ const ContactForm = () => {
       const validatedData = contactSchema.parse(formData);
       setIsSubmitting(true);
       
-      // Simulating API call
+      // In a real implementation, send email using a service like EmailJS, Formspree, or a backend API
+      // Simulating an API call for now
+      console.log("Sending email to: udantravels.bdq@gmail.com", validatedData);
+      
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
       // Success
