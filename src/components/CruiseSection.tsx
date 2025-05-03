@@ -1,4 +1,5 @@
 
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 
 const CruiseSection = () => {
@@ -47,8 +48,8 @@ const CruiseSection = () => {
               </li>
             </ul>
             
-            <Button className="bg-udan-orange hover:bg-udan-orange/90 text-white px-6 py-2 rounded-full">
-              Discover Cruise Packages
+            <Button asChild className="bg-udan-orange hover:bg-udan-orange/90 text-white px-6 py-2 rounded-full">
+              <Link to="/contact">Discover Cruise Packages</Link>
             </Button>
           </div>
         </div>

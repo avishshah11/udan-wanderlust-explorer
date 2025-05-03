@@ -1,7 +1,8 @@
 
-import { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import DestinationCard from './DestinationCard';
+import { Button } from "@/components/ui/button";
 
 const destinations = [
   {
@@ -46,68 +47,54 @@ const destinations = [
     price: 38000,
     rating: 4.7,
   },
+  {
+    id: 7,
+    name: "Machu Picchu, Peru",
+    image: "https://images.unsplash.com/photo-1526392060635-9d6019884377",
+    price: 42000,
+    rating: 4.9,
+  },
+  {
+    id: 8,
+    name: "Dubai, UAE",
+    image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c",
+    price: 48000,
+    rating: 4.8,
+  },
+  {
+    id: 9,
+    name: "Serengeti, Tanzania",
+    image: "https://images.unsplash.com/photo-1516426122078-c23e76319801",
+    price: 52000,
+    rating: 4.7,
+  },
 ];
 
 const PopularDestinations = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollPosition, setScrollPosition] = useState(0);
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (containerRef.current) {
-      const { current } = containerRef;
-      const scrollAmount = 300;
-      
-      if (direction === 'left') {
-        current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-        setScrollPosition(Math.max(0, scrollPosition - scrollAmount));
-      } else {
-        current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        setScrollPosition(scrollPosition + scrollAmount);
-      }
-    }
-  };
-
   return (
     <section className="py-16 md:py-24">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-udan-charcoal">Popular Destinations</h2>
-          
-          <div className="flex gap-2">
-            <button 
-              onClick={() => scroll('left')}
-              className="w-10 h-10 rounded-full border border-udan-lightGray bg-white flex items-center justify-center hover:bg-udan-lightGray transition-colors"
-              aria-label="Scroll left"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button 
-              onClick={() => scroll('right')}
-              className="w-10 h-10 rounded-full border border-udan-lightGray bg-white flex items-center justify-center hover:bg-udan-lightGray transition-colors"
-              aria-label="Scroll right"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
         </div>
         
-        <div 
-          ref={containerRef}
-          className="overflow-x-auto hide-scrollbar"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          <div className="flex gap-6 min-w-max pb-4">
-            {destinations.map((destination) => (
-              <div key={destination.id} className="min-w-[280px] md:min-w-[320px]">
-                <DestinationCard 
-                  image={destination.image}
-                  name={destination.name}
-                  price={destination.price}
-                  rating={destination.rating}
-                />
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {destinations.map((destination) => (
+            <div key={destination.id}>
+              <DestinationCard 
+                image={destination.image}
+                name={destination.name}
+                price={destination.price}
+                rating={destination.rating}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 text-center">
+          <Button asChild className="bg-udan-orange hover:bg-udan-orange/90 text-white px-6 py-2 rounded-full">
+            <Link to="/contact">Plan your trip</Link>
+          </Button>
         </div>
       </div>
     </section>

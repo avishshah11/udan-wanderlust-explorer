@@ -1,5 +1,7 @@
 
+import { Link } from 'react-router-dom';
 import { Package, ShieldCheck, Plane, CreditCard, HeartPulse } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 const services = [
   {
@@ -51,6 +53,12 @@ const ServicesSection = () => {
               <p className="text-udan-gray">{service.description}</p>
             </div>
           ))}
+        </div>
+        
+        <div className="mt-12 text-center">
+          <Button asChild className="bg-udan-orange hover:bg-udan-orange/90 text-white px-6 py-2 rounded-full">
+            <Link to="/contact">Contact us for custom packages</Link>
+          </Button>
         </div>
       </div>
     </section>

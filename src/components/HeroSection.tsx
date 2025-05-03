@@ -1,5 +1,5 @@
 
-import { Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 
 const HeroSection = () => {
@@ -16,15 +16,12 @@ const HeroSection = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-udan-orange hover:bg-udan-orange/90 text-white px-6 py-2 rounded-full text-base md:text-lg">
-                Explore Destinations
+              <Button asChild className="bg-udan-orange hover:bg-udan-orange/90 text-white px-6 py-2 rounded-full text-base md:text-lg">
+                <Link to="/contact">Plan your trip</Link>
               </Button>
               
               <div className="relative inline-flex items-center">
                 <span className="relative z-10 inline-flex items-center text-udan-charcoal group cursor-pointer">
-                  <span className="border-2 border-udan-gray/30 rounded-full w-12 h-12 flex items-center justify-center group-hover:border-udan-orange transition-colors duration-300">
-                    <span className="mr-1">→</span>
-                  </span>
                   <span className="ml-2 font-medium group-hover:text-udan-orange transition-colors duration-300">See How it Works</span>
                 </span>
               </div>
@@ -50,13 +47,6 @@ const HeroSection = () => {
                 alt="Wildlife" 
                 className="w-full h-auto rounded-xl object-cover h-full"
               />
-            </div>
-            
-            {/* Search Button */}
-            <div className="absolute -bottom-6 -right-6 md:bottom-8 md:right-8">
-              <button className="bg-udan-blue text-white p-4 rounded-full shadow-lg hover:bg-udan-blue/90 transition-colors">
-                <Search className="w-6 h-6" />
-              </button>
             </div>
           </div>
         </div>

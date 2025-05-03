@@ -35,7 +35,7 @@ const DestinationCard = ({
             />
           ))}
         </div>
-        <p className="text-udan-gray">Starting at <span className="text-udan-blue font-medium">{currency}{price.toLocaleString()}</span></p>
+        <p className="text-udan-gray">Starting from <span className="text-udan-blue font-medium">{currency}{price.toLocaleString()}</span></p>
       </div>
     </div>
   );
