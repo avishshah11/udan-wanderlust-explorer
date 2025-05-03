@@ -1,0 +1,68 @@
+
+import { Search } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+
+const HeroSection = () => {
+  return (
+    <section className="pt-28 pb-16 md:pt-40 md:pb-24">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-udan-charcoal leading-tight">
+              Let's <span className="text-udan-orange">travel</span> the world
+            </h1>
+            <p className="text-udan-gray text-lg md:text-xl max-w-md">
+              Experience the world's most beautiful destinations with our premium travel services. Your journey begins here.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button className="bg-udan-orange hover:bg-udan-orange/90 text-white px-6 py-2 rounded-full text-base md:text-lg">
+                Explore Destinations
+              </Button>
+              
+              <div className="relative inline-flex items-center">
+                <span className="relative z-10 inline-flex items-center text-udan-charcoal group cursor-pointer">
+                  <span className="border-2 border-udan-gray/30 rounded-full w-12 h-12 flex items-center justify-center group-hover:border-udan-orange transition-colors duration-300">
+                    <span className="mr-1">→</span>
+                  </span>
+                  <span className="ml-2 font-medium group-hover:text-udan-orange transition-colors duration-300">See How it Works</span>
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4 relative">
+            <div className="flex flex-col gap-4">
+              <img 
+                src="https://images.unsplash.com/photo-1506744038136-46273834b3fb" 
+                alt="Mountain landscape" 
+                className="w-full h-auto rounded-xl object-cover max-h-60"
+              />
+              <img 
+                src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21" 
+                alt="Beach view" 
+                className="w-full h-auto rounded-xl object-cover max-h-60"
+              />
+            </div>
+            <div className="mt-8">
+              <img 
+                src="https://images.unsplash.com/photo-1472396961693-142e6e269027" 
+                alt="Wildlife" 
+                className="w-full h-auto rounded-xl object-cover h-full"
+              />
+            </div>
+            
+            {/* Search Button */}
+            <div className="absolute -bottom-6 -right-6 md:bottom-8 md:right-8">
+              <button className="bg-udan-blue text-white p-4 rounded-full shadow-lg hover:bg-udan-blue/90 transition-colors">
+                <Search className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default HeroSection;

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,15 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+        // Custom colors
+        udan: {
+          orange: '#FF8551',
+          blue: '#4475F2',
+          charcoal: '#2D2D2D',
+          gray: '#7A7A7A',
+          lightGray: '#F5F5F5'
+        }
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,12 +93,21 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+        'scroll': {
+          to: {
+            transform: 'translateX(calc(-50% - 0.5rem))'
+          }
+        }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+        'scroll': 'scroll 30s linear infinite'
+			},
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      }
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
