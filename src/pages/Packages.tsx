@@ -2,6 +2,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import DestinationCard from "@/components/DestinationCard";
+import { Link } from "react-router-dom";
 
 const indiaDestinations = [
   {
@@ -28,21 +29,21 @@ const indiaDestinations = [
   {
     id: 4,
     name: "Varanasi Ghats",
-    image: "https://images.unsplash.com/photo-1561361058-c12e04bd9c4d",
+    image: "https://images.unsplash.com/photo-1571536802807-30aa00c0ac4a",
     price: 14000,
     rating: 4.5,
   },
   {
     id: 5,
     name: "Ladakh",
-    image: "https://images.unsplash.com/photo-1593939531494-cf0a99fc98a0",
+    image: "https://images.unsplash.com/photo-1590496794008-383c8070b257",
     price: 25000,
     rating: 4.8,
   },
   {
     id: 6,
     name: "Rajasthan Palaces",
-    image: "https://images.unsplash.com/photo-1599661046289-e31897846e41",
+    image: "https://images.unsplash.com/photo-1575505586569-646b2ca898fc",
     price: 20000,
     rating: 4.7,
   },
@@ -156,9 +157,9 @@ const Packages = () => {
               <p className="text-udan-gray max-w-2xl mx-auto mb-8">
                 Our travel experts can create a personalized itinerary tailored to your preferences, budget, and travel style.
               </p>
-              <button className="bg-udan-orange text-white px-8 py-3 rounded-full font-medium hover:bg-udan-orange/90 transition-colors">
+              <Link to="/contact" className="bg-udan-orange text-white px-8 py-3 rounded-full font-medium hover:bg-udan-orange/90 transition-colors">
                 Contact Us for Custom Packages
-              </button>
+              </Link>
             </div>
           </div>
         </section>

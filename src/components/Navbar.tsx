@@ -28,7 +28,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           <Link to="/" className="text-udan-charcoal font-bold text-xl">
-            UDAN Tours and Travels
+            Udan Tours and Travels
           </Link>
 
           {/* Desktop Navigation */}
@@ -41,6 +41,9 @@ const Navbar = () => {
             </Link>
             <Link to="/packages" className="text-udan-charcoal hover:text-udan-orange transition-colors font-medium">
               Packages
+            </Link>
+            <Link to="/visa" className="text-udan-charcoal hover:text-udan-orange transition-colors font-medium">
+              Visa
             </Link>
             <Link to="/contact" className="text-udan-charcoal hover:text-udan-orange transition-colors font-medium">
               Contact
@@ -81,6 +84,13 @@ const Navbar = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               Packages
+            </Link>
+            <Link 
+              to="/visa" 
+              className="text-udan-charcoal hover:text-udan-orange transition-colors font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Visa
             </Link>
             <Link 
               to="/contact" 

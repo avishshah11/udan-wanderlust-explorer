@@ -10,7 +10,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Information */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">UDAN Tours and Travels</h3>
+            <h3 className="text-xl font-bold">Udan Tours and Travels</h3>
             <address className="not-italic text-gray-300 leading-relaxed">
               714, Yashkamal Building,<br />
               above Havmor Restaurant,<br />
@@ -30,6 +30,7 @@ const Footer = () => {
               <Link to="/" className="text-gray-300 hover:text-udan-orange transition-colors">Home</Link>
               <Link to="/about" className="text-gray-300 hover:text-udan-orange transition-colors">About Us</Link>
               <Link to="/packages" className="text-gray-300 hover:text-udan-orange transition-colors">Packages</Link>
+              <Link to="/visa" className="text-gray-300 hover:text-udan-orange transition-colors">Visa</Link>
               <Link to="/contact" className="text-gray-300 hover:text-udan-orange transition-colors">Contact</Link>
             </nav>
           </div>
@@ -71,7 +72,7 @@ const Footer = () => {
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
           <div className="mb-4 md:mb-0">
-            © {currentYear} Udan Tours And Travels. All rights reserved.
+            © {currentYear} Udan Tours and Travels. All rights reserved.
           </div>
           <div className="flex space-x-4">
             <Link to="/privacy" className="hover:text-udan-orange transition-colors">Privacy Policy</Link>
