@@ -2,6 +2,12 @@
 import { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { z } from "zod";
+import emailjs from '@emailjs/browser';
+
+// EmailJS configuration
+const SERVICE_ID = 'service_3ylh3cj';
+const TEMPLATE_ID = 'template_rrtcq91';
+const PUBLIC_KEY = '6nsckcXLBbvt4IALF';
 
 const contactSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required" }),
@@ -43,13 +49,26 @@ const ContactForm = () => {
       const validatedData = contactSchema.parse(formData);
       setIsSubmitting(true);
       
-      // In a real implementation, send email using a service like EmailJS, Formspree, or a backend API
-      // Simulating an API call for now
-      console.log("Sending email to: udantravels.bdq@gmail.com", validatedData);
+      // Prepare template parameters for EmailJS
+      const templateParams = {
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        email: validatedData.email,
+        phone: validatedData.phone,
+        query: validatedData.query,
+      };
+
+      // Send email using EmailJS
+      const response = await emailjs.send(
+        SERVICE_ID, 
+        TEMPLATE_ID, 
+        templateParams, 
+        PUBLIC_KEY
+      );
       
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log('Email sent successfully:', response);
       
-      // Success
+      // Show success toast
       toast({
         title: "Form submitted successfully!",
         description: "We'll get back to you as soon as possible.",
@@ -64,6 +83,8 @@ const ContactForm = () => {
         query: '',
       });
     } catch (error) {
+      console.error('Error submitting form:', error);
+      
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
         error.errors.forEach((err) => {
