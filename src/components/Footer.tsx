@@ -10,7 +10,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Information */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">Udan Tours and Travels</h3>
+            <div className="mb-2">
+              <img 
+                src="/lovable-uploads/63530745-0165-4ea9-b5fc-8a25f2a7ca50.png" 
+                alt="Udan Tours and Travels" 
+                className="h-16 w-auto"
+              />
+            </div>
             <address className="not-italic text-gray-300 leading-relaxed">
               714, Yashkamal Building,<br />
               above Havmor Restaurant,<br />

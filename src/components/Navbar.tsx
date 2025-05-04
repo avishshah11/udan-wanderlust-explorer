@@ -27,8 +27,12 @@ const Navbar = () => {
     <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'}`}>
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-udan-charcoal font-bold text-xl">
-            Udan Tours and Travels
+          <Link to="/" className="text-udan-charcoal">
+            <img 
+              src="/lovable-uploads/63530745-0165-4ea9-b5fc-8a25f2a7ca50.png" 
+              alt="Udan Tours and Travels" 
+              className="h-12 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}
