@@ -6,7 +6,7 @@ import emailjs from '@emailjs/browser';
 
 // EmailJS configuration
 const SERVICE_ID = 'service_3ylh3cj';
-const TEMPLATE_ID = 'template_rrtcq91';
+const TEMPLATE_ID = 'template_90d9edo';
 const PUBLIC_KEY = '6nsckcXLBbvt4IALF';
 
 const contactSchema = z.object({
