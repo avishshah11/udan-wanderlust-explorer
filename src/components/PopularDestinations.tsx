@@ -4,12 +4,11 @@ import { Link } from 'react-router-dom';
 import DestinationCard from './DestinationCard';
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { 
   Carousel, 
   CarouselContent, 
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious
 } from "@/components/ui/carousel";
 
 const destinations = [
@@ -47,7 +46,7 @@ const PopularDestinations = () => {
   const isMobile = useIsMobile();
   const [shouldShowControls, setShouldShowControls] = useState(true);
   const [api, setApi] = useState<any>(null);
-
+  
   useEffect(() => {
     if (!api) return;
     
@@ -69,6 +68,19 @@ const PopularDestinations = () => {
     };
   }, [api]);
 
+  // Functions to handle carousel navigation
+  const handlePrevious = () => {
+    if (api) {
+      api.scrollPrev();
+    }
+  };
+
+  const handleNext = () => {
+    if (api) {
+      api.scrollNext();
+    }
+  };
+
   return (
     <section className="py-16 md:py-24">
       <div className="container mx-auto px-4 md:px-6">
@@ -77,8 +89,24 @@ const PopularDestinations = () => {
           
           {shouldShowControls && (
             <div className="flex space-x-2">
-              <CarouselPrevious className="static transform-none h-8 w-8 rounded-full" />
-              <CarouselNext className="static transform-none h-8 w-8 rounded-full" />
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8 w-8 rounded-full"
+                onClick={handlePrevious}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="sr-only">Previous slide</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8 w-8 rounded-full"
+                onClick={handleNext}
+              >
+                <ArrowRight className="h-4 w-4" />
+                <span className="sr-only">Next slide</span>
+              </Button>
             </div>
           )}
         </div>
