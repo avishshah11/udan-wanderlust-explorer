@@ -17,7 +17,7 @@ const CruiseSection = () => {
               <img 
                 src="https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=870" 
                 alt="Cruise dining experience" 
-                className="rounded-xl shadow-lg w-2/3 absolute -bottom-10 -right-10 border-4 border-white"
+                className="rounded-xl shadow-lg w-2/3 absolute -bottom-10 -right-10 border-4 border-white hidden sm:block"
               />
             </div>
           </div>

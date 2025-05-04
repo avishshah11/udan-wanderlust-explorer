@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import DestinationCard from './DestinationCard';
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   Carousel, 
   CarouselContent, 
@@ -43,14 +44,46 @@ const destinations = [
 ];
 
 const PopularDestinations = () => {
+  const isMobile = useIsMobile();
+  const [shouldShowControls, setShouldShowControls] = useState(true);
+  const [api, setApi] = useState<any>(null);
+
+  useEffect(() => {
+    if (!api) return;
+    
+    // Check if we should show controls based on content size vs viewport
+    const checkShouldShowControls = () => {
+      if (api) {
+        const { slidesInView } = api;
+        // Only show controls if we have more slides than what's visible
+        setShouldShowControls(slidesInView() < destinations.length);
+      }
+    };
+    
+    // Run once and on window resize
+    checkShouldShowControls();
+    window.addEventListener('resize', checkShouldShowControls);
+    
+    return () => {
+      window.removeEventListener('resize', checkShouldShowControls);
+    };
+  }, [api]);
+
   return (
     <section className="py-16 md:py-24">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-udan-charcoal">Popular Destinations</h2>
+          
+          {shouldShowControls && (
+            <div className="flex space-x-2">
+              <CarouselPrevious className="static transform-none h-8 w-8 rounded-full" />
+              <CarouselNext className="static transform-none h-8 w-8 rounded-full" />
+            </div>
+          )}
         </div>
         
-        <Carousel className="w-full">
+        <Carousel className="w-full" setApi={setApi}>
           <CarouselContent className="-ml-4">
             {destinations.map((destination) => (
               <CarouselItem key={destination.id} className="pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
@@ -63,8 +96,6 @@ const PopularDestinations = () => {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-0 md:-left-12" />
-          <CarouselNext className="right-0 md:-right-12" />
         </Carousel>
 
         <div className="mt-10 text-center">
