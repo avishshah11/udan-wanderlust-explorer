@@ -29,7 +29,7 @@ const indiaDestinations = [
   {
     id: 4,
     name: "Varanasi Ghats",
-    image: "https://images.unsplash.com/photo-1433086966358-54859d0ed716",
+    image: "https://images.unsplash.com/photo-1627938823193-fd13c1c867dd",
     price: 14000,
     rating: 4.5,
   },
@@ -43,7 +43,7 @@ const indiaDestinations = [
   {
     id: 6,
     name: "Rajasthan Palaces",
-    image: "https://images.unsplash.com/photo-1426604966848-d7adac402bff",
+    image: "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33",
     price: 20000,
     rating: 4.7,
   },
