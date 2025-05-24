@@ -14,10 +14,10 @@ const indiaDestinations = [
   },
   {
     id: 2,
-    name: "Taj Mahal, Agra",
-    image: "https://images.unsplash.com/photo-1548013146-72479768bada",
-    price: 12000,
-    rating: 4.9,
+    name: "Darjeeling, West Bengal",
+    image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa",
+    price: 14000,
+    rating: 4.8,
   },
   {
     id: 3,
