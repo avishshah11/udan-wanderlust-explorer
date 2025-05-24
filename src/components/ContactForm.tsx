@@ -5,9 +5,9 @@ import { z } from "zod";
 import emailjs from '@emailjs/browser';
 
 // EmailJS configuration
-const SERVICE_ID = 'service_3ylh3cj';
-const TEMPLATE_ID = 'template_90d9edo';
-const PUBLIC_KEY = '6nsckcXLBbvt4IALF';
+const SERVICE_ID = process.env.VITE_EMAILJS_SERVICE_ID;
+const TEMPLATE_ID = process.env.VITE_EMAILJS_TEMPLATE_ID;
+const PUBLIC_KEY = process.env.VITE_PUBLIC_KEY;
 
 const contactSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required" }),
