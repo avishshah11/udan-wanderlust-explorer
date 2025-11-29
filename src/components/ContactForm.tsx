@@ -5,9 +5,9 @@ import { z } from "zod";
 import emailjs from '@emailjs/browser';
 
 // EmailJS configuration
-const SERVICE_ID = process.env.VITE_EMAILJS_SERVICE_ID;
-const TEMPLATE_ID = process.env.VITE_EMAILJS_TEMPLATE_ID;
-const PUBLIC_KEY = process.env.VITE_PUBLIC_KEY;
+const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+const PUBLIC_KEY = import.meta.env.VITE_PUBLIC_KEY;
 
 const contactSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required" }),
@@ -34,7 +34,7 @@ const ContactForm = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     // Clear error when user starts typing
     if (errors[name as keyof ContactFormData]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
@@ -43,12 +43,12 @@ const ContactForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       // Validate form data
       const validatedData = contactSchema.parse(formData);
       setIsSubmitting(true);
-      
+
       // Prepare template parameters for EmailJS
       const templateParams = {
         firstName: validatedData.firstName,
@@ -60,20 +60,20 @@ const ContactForm = () => {
 
       // Send email using EmailJS
       const response = await emailjs.send(
-        SERVICE_ID, 
-        TEMPLATE_ID, 
-        templateParams, 
+        SERVICE_ID,
+        TEMPLATE_ID,
+        templateParams,
         PUBLIC_KEY
       );
-      
+
       console.log('Email sent successfully:', response);
-      
+
       // Show success toast
       toast({
         title: "Form submitted successfully!",
         description: "We'll get back to you as soon as possible.",
       });
-      
+
       // Reset form
       setFormData({
         firstName: '',
@@ -84,7 +84,7 @@ const ContactForm = () => {
       });
     } catch (error) {
       console.error('Error submitting form:', error);
-      
+
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
         error.errors.forEach((err) => {
@@ -118,16 +118,15 @@ const ContactForm = () => {
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none ${
-              errors.firstName ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-udan-orange/20'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none ${errors.firstName ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-udan-orange/20'
+              }`}
             placeholder="John"
           />
           {errors.firstName && (
             <p className="text-red-500 text-sm">{errors.firstName}</p>
           )}
         </div>
-        
+
         <div className="space-y-2">
           <label htmlFor="lastName" className="block text-sm font-medium text-udan-charcoal">
             Last Name <span className="text-red-500">*</span>
@@ -138,9 +137,8 @@ const ContactForm = () => {
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none ${
-              errors.lastName ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-udan-orange/20'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none ${errors.lastName ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-udan-orange/20'
+              }`}
             placeholder="Doe"
           />
           {errors.lastName && (
@@ -148,7 +146,7 @@ const ContactForm = () => {
           )}
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm font-medium text-udan-charcoal">
@@ -160,16 +158,15 @@ const ContactForm = () => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none ${
-              errors.email ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-udan-orange/20'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none ${errors.email ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-udan-orange/20'
+              }`}
             placeholder="john.doe@example.com"
           />
           {errors.email && (
             <p className="text-red-500 text-sm">{errors.email}</p>
           )}
         </div>
-        
+
         <div className="space-y-2">
           <label htmlFor="phone" className="block text-sm font-medium text-udan-charcoal">
             Phone Number <span className="text-red-500">*</span>
@@ -180,9 +177,8 @@ const ContactForm = () => {
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none ${
-              errors.phone ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-udan-orange/20'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none ${errors.phone ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-udan-orange/20'
+              }`}
             placeholder="9876543210"
           />
           {errors.phone && (
@@ -190,7 +186,7 @@ const ContactForm = () => {
           )}
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <label htmlFor="query" className="block text-sm font-medium text-udan-charcoal">
           Your Query <span className="text-red-500">*</span>
@@ -201,16 +197,15 @@ const ContactForm = () => {
           value={formData.query}
           onChange={handleChange}
           rows={5}
-          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none ${
-            errors.query ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-udan-orange/20'
-          }`}
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:outline-none ${errors.query ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-udan-orange/20'
+            }`}
           placeholder="Please describe your travel requirements or questions..."
         />
         {errors.query && (
           <p className="text-red-500 text-sm">{errors.query}</p>
         )}
       </div>
-      
+
       <button
         type="submit"
         disabled={isSubmitting}

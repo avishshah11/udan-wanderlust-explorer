@@ -3,17 +3,17 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  
+
   return (
     <footer className="bg-udan-charcoal text-white pt-16 pb-8">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Company Information */}
           <div className="space-y-4">
             <div className="mb-2">
-              <img 
-                src="/lovable-uploads/63530745-0165-4ea9-b5fc-8a25f2a7ca50.png" 
-                alt="Udan Tours and Travels" 
+              <img
+                src="/lovable-uploads/63530745-0165-4ea9-b5fc-8a25f2a7ca50.png"
+                alt="Udan Tours and Travels"
                 className="h-16 w-auto"
               />
             </div>
@@ -51,24 +51,6 @@ const Footer = () => {
               <span className="text-gray-300">Domestic Tours</span>
               <span className="text-gray-300">Cruise Packages</span>
             </nav>
-          </div>
-
-          {/* Newsletter (can be converted to actual form later) */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold">Subscribe</h3>
-            <p className="text-gray-300">Subscribe to our newsletter for the latest travel deals and updates.</p>
-            <div className="flex">
-              <input 
-                type="email" 
-                placeholder="Your email" 
-                className="px-4 py-2 w-full outline-none text-udan-charcoal"
-              />
-              <button 
-                className="bg-udan-orange text-white px-4 py-2 font-medium hover:bg-opacity-90 transition-colors"
-              >
-                Send
-              </button>
-            </div>
           </div>
         </div>
 
