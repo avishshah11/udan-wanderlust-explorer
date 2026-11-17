@@ -9,42 +9,36 @@ const indiaDestinations = [
     id: 1,
     name: "Kerala Backwaters",
     image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944",
-    price: 15000,
     rating: 4.7,
   },
   {
     id: 2,
     name: "Darjeeling, West Bengal",
     image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa",
-    price: 14000,
     rating: 4.8,
   },
   {
     id: 3,
     name: "Goa Beaches",
     image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2",
-    price: 18000,
     rating: 4.6,
   },
   {
     id: 4,
     name: "Varanasi Ghats",
     image: "https://images.unsplash.com/photo-1627938823193-fd13c1c867dd",
-    price: 14000,
     rating: 4.5,
   },
   {
     id: 5,
     name: "Ladakh",
     image: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb",
-    price: 25000,
     rating: 4.8,
   },
   {
     id: 6,
     name: "Rajasthan Palaces",
     image: "https://images.unsplash.com/photo-1603262110263-fb0112e7cc33",
-    price: 20000,
     rating: 4.7,
   },
 ];
@@ -54,42 +48,36 @@ const worldDestinations = [
     id: 1,
     name: "Bali, Indonesia",
     image: "https://images.unsplash.com/photo-1555400038-63f5ba517a47",
-    price: 65000,
     rating: 4.8,
   },
   {
     id: 2,
     name: "Santorini, Greece",
     image: "https://images.unsplash.com/photo-1615015456178-ae6bb600b7ef",
-    price: 95000,
     rating: 4.9,
   },
   {
     id: 3,
     name: "Kyoto, Japan",
     image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e",
-    price: 85000,
     rating: 4.7,
   },
   {
     id: 4,
     name: "Machu Picchu, Peru",
     image: "https://images.unsplash.com/photo-1526392060635-9d6019884377",
-    price: 110000,
     rating: 4.9,
   },
   {
     id: 5,
     name: "Paris, France",
     image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34",
-    price: 80000,
     rating: 4.7,
   },
   {
     id: 6,
     name: "Maldives",
     image: "https://images.unsplash.com/photo-1573843981267-be1999ff37cd",
-    price: 120000,
     rating: 5.0,
   },
 ];
@@ -120,7 +108,6 @@ const Packages = () => {
                   key={destination.id}
                   image={destination.image}
                   name={destination.name}
-                  price={destination.price}
                   rating={destination.rating}
                 />
               ))}
@@ -139,7 +126,6 @@ const Packages = () => {
                   key={destination.id}
                   image={destination.image}
                   name={destination.name}
-                  price={destination.price}
                   rating={destination.rating}
                 />
               ))}

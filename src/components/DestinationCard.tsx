@@ -4,7 +4,7 @@ import { Star } from 'lucide-react';
 interface DestinationCardProps {
   image: string;
   name: string;
-  price: number;
+  price?: number;
   rating: number;
   currency?: string;
 }
@@ -35,7 +35,9 @@ const DestinationCard = ({
             />
           ))}
         </div>
-        <p className="text-udan-gray">Starting from <span className="text-udan-blue font-medium">{currency}{price.toLocaleString()}</span></p>
+        {price !== undefined && (
+          <p className="text-udan-gray">Starting from <span className="text-udan-blue font-medium">{currency}{price.toLocaleString()}</span></p>
+        )}
       </div>
     </div>
   );

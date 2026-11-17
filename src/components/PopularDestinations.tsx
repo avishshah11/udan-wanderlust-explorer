@@ -16,28 +16,24 @@ const destinations = [
     id: 1,
     name: "Bali, Indonesia",
     image: "https://images.unsplash.com/photo-1555400038-63f5ba517a47",
-    price: 25000,
     rating: 4.8,
   },
   {
     id: 2,
     name: "Santorini, Greece",
     image: "https://images.unsplash.com/photo-1615015456178-ae6bb600b7ef",
-    price: 45000,
     rating: 4.9,
   },
   {
     id: 3,
     name: "Kyoto, Japan",
     image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e",
-    price: 35000,
     rating: 4.7,
   },
   {
     id: 4,
     name: "Amalfi Coast, Italy",
     image: "https://images.unsplash.com/photo-1533656338503-b22f63e96cd8",
-    price: 40000,
     rating: 4.6,
   },
 ];
@@ -118,7 +114,6 @@ const PopularDestinations = () => {
                 <DestinationCard 
                   image={destination.image}
                   name={destination.name}
-                  price={destination.price}
                   rating={destination.rating}
                 />
               </CarouselItem>

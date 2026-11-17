@@ -15,7 +15,7 @@ const About = () => {
                 <h1 className="text-3xl md:text-4xl font-bold text-udan-charcoal mb-6">About Udan</h1>
                 <div className="space-y-4 text-udan-gray">
                   <p>
-                    Pioneering the travel industry since 1997, Udan is your go-to source for all things travel. From flights to accommodations, tours to transfers, we've got you covered.
+                    Established in 1997, Udan is your go-to source for all things travel. From flights to accommodations, tours to transfers, we've got you covered.
                   </p>
                   <p>
                     Our mission is simple: to make your travel dreams a reality, hassle-free. With our expert team of travel consultants and extensive network of partners worldwide, we craft unforgettable journeys tailored to your preferences and budget.
@@ -26,8 +26,8 @@ const About = () => {
                 </div>
                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
                   <div className="bg-udan-lightGray rounded-lg p-4 flex-1">
-                    <h3 className="text-udan-charcoal font-bold text-xl mb-2">25+</h3>
-                    <p className="text-udan-gray">Years of Experience</p>
+                    <h3 className="text-udan-charcoal font-bold text-xl mb-2">1997</h3>
+                    <p className="text-udan-gray">Established in Vadodara</p>
                   </div>
                   <div className="bg-udan-lightGray rounded-lg p-4 flex-1">
                     <h3 className="text-udan-charcoal font-bold text-xl mb-2">10,000+</h3>

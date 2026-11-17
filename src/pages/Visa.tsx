@@ -57,7 +57,7 @@ const Visa = () => {
           <div className="container mx-auto px-4 md:px-6 text-center">
             <h1 className="text-3xl md:text-4xl font-bold text-udan-charcoal mb-4">Expert Visa Services</h1>
             <p className="text-udan-gray max-w-2xl mx-auto">
-              With 25 years of experience, we provide expert visa assistance for all countries, making your travel dreams a reality.
+              Established in 1997, we provide expert visa assistance for all countries, making your travel dreams a reality.
             </p>
           </div>
         </section>
@@ -77,8 +77,8 @@ const Visa = () => {
                 <div className="bg-udan-orange/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Award className="w-8 h-8 text-udan-orange" />
                 </div>
-                <h3 className="text-xl font-semibold text-udan-charcoal mb-2">25+ Years Experience</h3>
-                <p className="text-udan-gray">Over two decades of expertise in visa processing and consultation.</p>
+                <h3 className="text-xl font-semibold text-udan-charcoal mb-2">Established 1997</h3>
+                <p className="text-udan-gray">Visa guidance from the same Vadodara office since 1997.</p>
               </div>
               
               <div className="bg-white p-6 rounded-lg shadow-md text-center">
