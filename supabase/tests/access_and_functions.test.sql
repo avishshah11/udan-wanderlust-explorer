@@ -2,7 +2,7 @@
 -- Run with: pnpm --filter @udan/supabase test:db  (local stack must be running)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(37);
+select plan(41);
 
 -- ---------------------------------------------------------------- anonymous
 set local role anon;
@@ -125,6 +125,30 @@ select throws_ok(
   $$ select public.send_quote((select id from public.quote_requests limit 1), now() + interval '1 day', null, null) $$,
   '42501', null, 'customer: cannot send quotes'
 );
+
+-- ---------------------------------------------------------------- storage: documents bucket
+reset role;
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"22222222-2222-4222-8222-222222222222","email":"pricer@udan.test","role":"authenticated"}';
+select lives_ok(
+  $$ insert into storage.objects (bucket_id, name)
+     select 'documents', id::text || '/voucher.pdf' from public.quote_requests where reference = 'UDN-0000-SENTQ' $$,
+  'storage: staff can upload to a request folder'
+);
+
+reset role;
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"33333333-3333-4333-8333-333333333333","email":"asha@example.com","role":"authenticated"}';
+select is((select count(*)::int from storage.objects where bucket_id = 'documents'), 1, 'storage: customer sees files for own request');
+select throws_ok(
+  $$ insert into storage.objects (bucket_id, name) values ('documents', gen_random_uuid()::text || '/x.pdf') $$,
+  '42501', null, 'storage: customers cannot upload'
+);
+
+reset role;
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"44444444-4444-4444-8444-444444444444","email":"rohan@example.com","role":"authenticated"}';
+select is((select count(*)::int from storage.objects where bucket_id = 'documents'), 0, 'storage: other customers see nothing');
 
 select * from finish();
 rollback;

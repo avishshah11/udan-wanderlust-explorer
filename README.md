@@ -16,10 +16,10 @@ accepts in their account; staff collect payment by hand and record it.
 | Path | What it is | Status |
 | --- | --- | --- |
 | `web/` | Public website. Currently the original Vite/React SPA, built into `docs/` for GitHub Pages; being migrated to Astro | live |
-| `app/` | Next.js app at app.udantravelsbdq.com: customer account and staff pricing desk | Phase 1-2 |
+| `app/` | Next.js app at app.udantravelsbdq.com: customer account, staff pricing desk, public quote-form endpoint | done (Phase 1-2) |
 | `mcp/` | Remote MCP server (Cloudflare Workers) at mcp.udantravelsbdq.com | Phase 4 |
 | `supabase/` | Migrations, row level security, database functions, dev seed, pgTAP tests | done (Phase 0) |
-| `packages/core` | Shared types, markup calculation, currency display, customer status copy, request schema | done (Phase 0) |
+| `packages/core` | Shared types, markup calculation, currency display, customer status copy, request schema, email templates and senders | done |
 | `docs/` | **Today: the live website build output** served by GitHub Pages (`main:/docs`). Becomes documentation only after the Astro cutover | live |
 | `planning/` | PRD and build prompt | reference |
 
@@ -89,6 +89,34 @@ What the schema enforces:
 pnpm --filter @udan/core test
 ```
 
+### App (`app/`): customer account and pricing desk
+
+```bash
+cp app/.env.example app/.env.local
+```
+
+Fill `app/.env.local` from `pnpm --filter @udan/supabase exec supabase status --workdir ..`
+(API URL, publishable key, secret key), then:
+
+```bash
+pnpm --filter @udan/app dev
+```
+
+Sign in at `/login` with a dev login from `supabase/seed.sql`; the magic
+link arrives in the local mail catcher (`http://127.0.0.1:54324`). Without
+`RESEND_API_KEY`, transactional emails are printed to the dev server log and
+recorded in `audit_log`.
+
+| Area | Routes | Who |
+| --- | --- | --- |
+| Sign-in | `/login` (magic link, Google), `/auth/confirm`, `/auth/callback` | everyone |
+| Customer account | `/account`, `/account/quotes/<ref>` (accept), `/account/quotes/<ref>/accepted`, `/account/new`, `/account/settings`, `/account/documents/<id>` | signed-in customers, own data only |
+| Pricing desk | `/desk` (queue by travel date then budget), `/desk/requests/<id>` (lines, send, payments, documents, activity), `/desk/new`, `/desk/metrics`, `/desk/markup` | active staff |
+| Website form | `POST /api/quote-requests` (form post or JSON), `/quote/received` | public; origin allow-list, honeypot, 5 requests per email per hour |
+
+Emails go out after the response (`after()`), so accepting a quote and
+sending one are instant for the person clicking.
+
 ### Website (`web/`, legacy SPA until the Astro migration)
 
 ```bash
@@ -104,6 +132,13 @@ Secrets are never committed. Each package documents its own variables in an
 | --- | --- | --- |
 | `VITE_PUBLIC_KEY`, `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID` | legacy `web/` contact form | root `.env`; removed with the SPA |
 | `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID`, `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` | local Supabase, only if you turn on Google sign-in in `supabase/config.toml` | production values live in the Supabase dashboard |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `app/` | public |
+| `SUPABASE_SECRET_KEY` | `app/` (server only) | bypasses RLS: website form intake, staff alert lookup, notification log |
+| `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL` | `app/` | https://app.udantravelsbdq.com and https://udantravelsbdq.com in production |
+| `QUOTE_FORM_ORIGINS` | `app/` | origins allowed to post the Get a quote form |
+| `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO` | `app/` | without a key, emails are logged, not sent |
+| `STAFF_ALERT_EMAIL` | `app/` | fallback when no staff member has alerts on |
+| `PAYMENT_DETAILS_BANK`, `PAYMENT_DETAILS_UPI` | `app/` | optional prefill for the desk's payment-details email; the owner supplies these |
 
 ## Deploying
 
@@ -144,6 +179,30 @@ select id, 'Owner name', email, 'owner' from auth.users where email = '<owner em
 ```
 
 (The owner signs in once first so the auth user exists.)
+
+### App (Vercel)
+
+1. Create a Vercel project from this repository with **Root Directory** `app`
+   (Vercel detects the pnpm workspace and installs from the root).
+2. Set the environment variables above for Production.
+3. Add the domain app.udantravelsbdq.com and create the DNS record Vercel
+   shows (a CNAME on the `app` subdomain; the apex stays on GitHub Pages).
+
+In the Supabase dashboard for the hosted project:
+
+- Authentication > URL configuration: site URL
+  `https://app.udantravelsbdq.com`, redirect URLs `https://app.udantravelsbdq.com/**`.
+- Authentication > Email templates: paste `supabase/templates/magic_link.html`
+  into both **Magic Link** and **Confirm signup** (the link uses a token hash,
+  so it works on any device).
+- Authentication > SMTP: use Resend (`smtp.resend.com`, user `resend`,
+  password = the Resend API key) so sign-in emails come from Udan's domain.
+- Authentication > Providers > Google: client ID and secret from a Google
+  Cloud OAuth client whose redirect URI is
+  `https://<project-ref>.supabase.co/auth/v1/callback`.
+
+Resend: verify the sending domain (DNS records shown in Resend) before setting
+`EMAIL_FROM` to an address on it.
 
 ## Rules every surface follows
 

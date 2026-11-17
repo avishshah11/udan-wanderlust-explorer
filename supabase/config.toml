@@ -165,7 +165,9 @@ site_url = "http://localhost:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://localhost:3000/auth/callback", "http://127.0.0.1:3000/auth/callback"]
+# Patterns, so /auth/confirm?next=... and /auth/callback?next=... are both
+# allowed. Production: https://app.udantravelsbdq.com/** in the dashboard.
+additional_redirect_urls = ["http://localhost:3000/**", "http://localhost:3100/**", "http://127.0.0.1:3000/**"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -251,6 +253,17 @@ otp_expiry = 3600
 # pass = "env(SENDGRID_API_KEY)"
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
+
+# Sign-in emails use a token_hash link to app /auth/confirm so they work on
+# any device. Copy the same HTML into the hosted project's Magic Link and
+# Confirm signup templates (Dashboard > Authentication > Email Templates).
+[auth.email.template.magic_link]
+subject = "Your sign-in link for Udan Tours and Travels"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "Your sign-in link for Udan Tours and Travels"
+content_path = "./supabase/templates/magic_link.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
