@@ -9,6 +9,7 @@ import {
   Carousel, 
   CarouselContent, 
   CarouselItem,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 
 const destinations = [
@@ -41,7 +42,7 @@ const destinations = [
 const PopularDestinations = () => {
   const isMobile = useIsMobile();
   const [shouldShowControls, setShouldShowControls] = useState(true);
-  const [api, setApi] = useState<any>(null);
+  const [api, setApi] = useState<CarouselApi | null>(null);
   
   useEffect(() => {
     if (!api) return;
@@ -51,7 +52,7 @@ const PopularDestinations = () => {
       if (api) {
         const { slidesInView } = api;
         // Only show controls if we have more slides than what's visible
-        setShouldShowControls(slidesInView() < destinations.length);
+        setShouldShowControls(slidesInView().length < destinations.length);
       }
     };
     
