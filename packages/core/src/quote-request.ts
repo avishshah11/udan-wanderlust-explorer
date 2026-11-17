@@ -48,7 +48,7 @@ export const quoteRequestSchema = z
     origin_city: z.string().trim().max(100).optional(),
     start_date: isoDate.optional(),
     travel_month: isoMonth.optional(),
-    nights: z.int({ error: "Give the number of nights as a whole number." }).min(1).max(90, {
+    nights: z.int({ error: "Give the number of nights as a whole number." }).min(1, { error: "A trip needs at least one night." }).max(90, {
       error: "For trips longer than 90 nights, please call or email us.",
     }),
     adults: z.int().min(1, { error: "At least one adult is travelling." }).max(50).default(2),

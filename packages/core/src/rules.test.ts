@@ -60,3 +60,15 @@ describe("references", () => {
     expect(normalizeReference("")).toBeNull();
   });
 });
+
+import { tripSummary } from "./format";
+describe("tripSummary", () => {
+  it("reads naturally", () => {
+    expect(tripSummary({ destination: "Bali", nights: 5, adults: 2, hotel_tier: "4_star", start_date: "2027-05-10" })).toBe(
+      "Bali, 5 nights, 2 adults, 4-star, from 10 May 2027",
+    );
+    expect(tripSummary({ destination: "Goa", nights: 1, adults: 1, children: 1, travel_month: "2027-01-01" })).toBe(
+      "Goa, 1 night, 1 adult, 1 child, January 2027",
+    );
+  });
+});
