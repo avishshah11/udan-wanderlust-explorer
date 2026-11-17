@@ -12,7 +12,7 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="mb-2">
               <img
-                src="/lovable-uploads/63530745-0165-4ea9-b5fc-8a25f2a7ca50.png"
+                src="/images/udan-logo.jpg"
                 alt="Udan Tours and Travels"
                 className="h-16 w-auto"
               />

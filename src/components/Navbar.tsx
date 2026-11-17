@@ -29,7 +29,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           <Link to="/" className="text-udan-charcoal">
             <img 
-              src="/lovable-uploads/63530745-0165-4ea9-b5fc-8a25f2a7ca50.png" 
+              src="/images/udan-logo.jpg" 
               alt="Udan Tours and Travels" 
               className="h-12 w-auto"
             />
