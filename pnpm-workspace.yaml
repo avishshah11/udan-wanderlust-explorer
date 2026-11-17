@@ -1,0 +1,9 @@
+packages:
+  - web
+  - app
+  - mcp
+  - supabase
+  - packages/*
+allowBuilds:
+  '@swc/core': true
+  esbuild: true

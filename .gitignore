@@ -23,3 +23,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Monorepo build output and tool state
+.next
+.astro
+.wrangler
+.vercel
+coverage
+*.tsbuildinfo
+supabase/.temp
+supabase/.branches
+
+# Secrets: only .env.example files are committed
+.env.*
+!.env.example
+.dev.vars

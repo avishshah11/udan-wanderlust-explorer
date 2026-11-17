@@ -8,6 +8,8 @@ export default defineConfig({
     port: 8080,
   },
   plugins: [react()],
+  // .env lives at the repository root (never committed).
+  envDir: path.resolve(__dirname, ".."),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
