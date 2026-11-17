@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, quote-desk]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  packages:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  database:
+    name: Migrations, RLS and function tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.2.0
+      - name: Start Postgres, Auth and Storage with migrations and dev seed
+        run: supabase start -x studio,imgproxy,realtime,edge-runtime,logflare,vector,supavisor,postgres-meta,mailpit
+      - name: pgTAP tests
+        run: supabase test db
+      - name: Generated types are up to date
+        run: |
+          supabase gen types typescript --local > "$RUNNER_TEMP/database.types.ts"
+          diff -u packages/core/src/database.types.ts "$RUNNER_TEMP/database.types.ts"
