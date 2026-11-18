@@ -208,8 +208,9 @@ then commit the updated `docs/` and push to `main`. The build also writes
 
 ### Website cutover (Astro, needs the owner's go-ahead)
 
-1. Merge this work into `main` and push. The live site does not change:
-   Pages still serves `main:/docs`, which is untouched.
+1. Merge this work into `main` and push. Pages still serves `main:/docs`,
+   so the live site stays the old SPA, rebuilt with the carousel-arrow fix;
+   `docs/_config.yml` keeps the Markdown docs in that folder off the site.
 2. Repository Settings > Pages > Source: **GitHub Actions** (or
    `gh api -X PUT repos/avishshah11/udan-wanderlust-explorer/pages -f build_type=workflow`).
    The custom domain and HTTPS certificate stay as they are.
