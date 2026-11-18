@@ -44,7 +44,9 @@ Work that waits on these decisions:
 - [ ] Desk "send quote" writes a rate sample.
 - [ ] Seed script with obviously fake bands for 5 destinations (dev only).
 - [ ] CSV importer for the owner's historical quotes, with documented columns.
-- [ ] Website: price bands on `/destinations/<slug>` and destination cards.
+- [ ] Website: price bands on `/destinations/<slug>` and destination cards,
+      with a small island that shows the visitor's currency next to INR
+      (`currencyForLocale` in packages/core).
 - [ ] MCP: `get_indicative_price` and `compare_price` return real bands
       (today they return "no band yet, request a firm quote").
 
@@ -66,6 +68,13 @@ Work that waits on these decisions:
 - [ ] Taxes: sell prices are treated as tax-inclusive, as the current terms
       say. Confirm with the accountant how GST on packages and TCS on overseas
       packages should appear on quotes before launch.
+
+- [ ] Review the new website copy: privacy policy and terms (rewritten for
+      accounts, sign-in and the Claude connector), the six destination pages
+      (summaries, best months, sample itineraries), and pick the top 20
+      destinations for pages.
+- [ ] Approve the website cutover (README, "Website cutover"), then delete
+      the legacy SPA and the old `docs/` build output.
 
 ## Engineering follow-ups
 

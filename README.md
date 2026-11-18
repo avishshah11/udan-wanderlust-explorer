@@ -15,7 +15,7 @@ accepts in their account; staff collect payment by hand and record it.
 
 | Path | What it is | Status |
 | --- | --- | --- |
-| `web/` | Public website. Currently the original Vite/React SPA, built into `docs/` for GitHub Pages; being migrated to Astro | live |
+| `web/` | Public website: static Astro site in `web/src` (ready, not yet live); the original Vite/React SPA in `web/legacy` still builds the live `docs/` until cutover | Phase 3 done, cutover pending |
 | `app/` | Next.js app at app.udantravelsbdq.com: customer account, staff pricing desk, public quote-form endpoint | done (Phase 1-2) |
 | `mcp/` | Remote MCP server (Cloudflare Workers) at mcp.udantravelsbdq.com | Phase 4 |
 | `supabase/` | Migrations, row level security, database functions, dev seed, pgTAP tests | done (Phase 0) |
@@ -117,11 +117,34 @@ recorded in `audit_log`.
 Emails go out after the response (`after()`), so accepting a quote and
 sending one are instant for the person clicking.
 
-### Website (`web/`, legacy SPA until the Astro migration)
+### Website (`web/`)
 
 ```bash
 pnpm --filter @udan/web dev
 ```
+
+```bash
+pnpm --filter @udan/web build
+```
+
+```bash
+pnpm --filter @udan/web verify
+```
+
+`build` runs `astro build` and then `scripts/check-build.ts`, which fails the
+build if any page lacks a title, description, absolute `og:image`, canonical
+URL or TravelAgency data, or contains a conflicting founding claim, a
+placeholder price or turnaround language. `verify` serves `dist/` the way
+GitHub Pages does and checks every route (including the old SPA URLs) returns
+200 HTML with content readable without JavaScript. Set `PUBLIC_APP_URL` to
+point the Get a quote form at a local app (default
+`https://app.udantravelsbdq.com`).
+
+Destination pages come from `web/src/content/destinations/*.md`; the file
+name must match the slug in the desk's `destinations` table.
+
+The old SPA lives in `web/legacy` until cutover:
+`pnpm --filter @udan/web legacy:build` rebuilds the live `docs/`.
 
 ## Environment variables
 
@@ -142,20 +165,39 @@ Secrets are never committed. Each package documents its own variables in an
 
 ## Deploying
 
-### Website (today)
+### Website (today: legacy SPA)
 
 GitHub Pages serves `main:/docs` (legacy Pages build, custom domain
-udantravelsbdq.com). To publish a change to the current site:
+udantravelsbdq.com). To publish a change to the old site before cutover:
 
 ```bash
-pnpm --filter @udan/web build
+pnpm --filter @udan/web legacy:build
 ```
 
 then commit the updated `docs/` and push to `main`. The build also writes
 `docs/404.html` (so deep links render) and keeps `docs/CNAME`.
 
-The move to Astro and a GitHub Actions deploy is Phase 3; the plan is in
-`planning/BUILD-PROMPT.md` and the cutover steps will be documented here.
+### Website cutover (Astro, needs the owner's go-ahead)
+
+1. Merge this work into `main` and push. The live site does not change:
+   Pages still serves `main:/docs`, which is untouched.
+2. Repository Settings > Pages > Source: **GitHub Actions** (or
+   `gh api -X PUT repos/avishshah11/udan-wanderlust-explorer/pages -f build_type=workflow`).
+   The custom domain and HTTPS certificate stay as they are.
+3. Actions > **Deploy website** > Run workflow. It builds, runs the page
+   rules and the static verification, and publishes `web/dist`.
+4. Check the live site:
+
+   ```bash
+   pnpm --filter @udan/web verify https://udantravelsbdq.com
+   ```
+
+5. Rollback, if anything is wrong: set the Pages source back to
+   **Deploy from a branch**, `main`, `/docs`.
+6. Once it has been stable for a few days: add the push trigger to
+   `deploy-web.yml`, delete `web/legacy`, `vite.legacy.config.ts` and the
+   built files in `docs/`, and move documentation (runbooks, MCP test log,
+   review checklist) into `docs/`.
 
 ### Database
 
