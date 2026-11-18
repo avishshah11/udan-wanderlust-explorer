@@ -3,12 +3,12 @@ import QuoteForm from "../components/QuoteForm.astro";
 import Base from "../layouts/Base.astro";
 ---
 
-<Base title="Beat my price" description="Found a hotel or holiday price on a booking site? Send Udan Tours and Travels the screenshot. We price the same trip at our agent rates and tell you if we can beat it.">
+<Base title="Beat my price" description="Found a hotel, flight or holiday price on a booking site? Send Udan Tours and Travels the screenshot. We price the same trip at our agent rates and tell you if we can beat it.">
   <section class="bg-udan-orange/5 py-12 md:py-16">
     <div class="container mx-auto max-w-4xl px-4 md:px-6">
       <h1 class="text-3xl font-bold text-udan-charcoal md:text-4xl">Beat my price</h1>
       <p class="mt-4 max-w-2xl text-lg text-udan-gray">
-        Found a hotel or package on a booking site? Send us the price. We have been buying from hotels and suppliers at agent rates since 1997, so for many trips we can offer the same thing for less.
+        Found a hotel, flight or package on a booking site? Send us the price. We have been buying from hotels and suppliers at agent rates since 1997, so for many trips we can offer the same thing for less.
       </p>
       <ol class="mt-8 grid gap-4 md:grid-cols-3">
         <li class="rounded-xl bg-white p-5 shadow-sm"><p class="font-semibold text-udan-charcoal">1. Send the price</p><p class="mt-1 text-sm text-udan-gray">A screenshot, or the site, the hotel or package, the room and the price.</p></li>
@@ -22,6 +22,6 @@ import Base from "../layouts/Base.astro";
   </section>
   <section class="container mx-auto max-w-4xl px-4 py-12 md:px-6">
     <h2 class="mb-6 text-2xl font-bold text-udan-charcoal">Send us the price</h2>
-    <QuoteForm screenshotFirst />
+    <QuoteForm screenshotFirst sectionHeading="h3" />
   </section>
 </Base>

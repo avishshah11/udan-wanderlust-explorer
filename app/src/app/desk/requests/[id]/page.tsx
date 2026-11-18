@@ -12,6 +12,8 @@ import {
   quoteMargin,
   travelWhen,
   tripSummary,
+  REQUEST_TYPE_LABELS,
+  CABIN_CLASS_LABELS,
 } from "@udan/core";
 import { notFound } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -120,7 +122,7 @@ export default async function DeskRequest({
           <p className="font-mono text-sm text-udan-gray">{r.reference}</p>
           <p className="text-xl font-semibold">{tripSummary(r)}</p>
           <p className="mt-1 text-sm text-udan-gray">
-            {r.channel} request · received {formatDateTime(r.created_at)} ({ageText(r.created_at)} ago)
+            {REQUEST_TYPE_LABELS[r.request_type]} · {r.channel} request · received {formatDateTime(r.created_at)} ({ageText(r.created_at)} ago)
             {r.staff?.name ? ` · assigned to ${r.staff.name}` : ""}
             {r.quote_version > 0 ? ` · quote v${r.quote_version}` : ""}
           </p>
@@ -156,9 +158,20 @@ export default async function DeskRequest({
         </Panel>
 
         <Panel title="What they asked for">
-          <Field label="Destination">{r.destination}{r.destinations ? ` · group ${group}` : " · no catalogue match"}</Field>
-          <Field label="When">{travelWhen(r)} · {FLEXIBILITY_LABELS[r.flexibility]}</Field>
-          {r.origin_city && <Field label="From">{r.origin_city}</Field>}
+          <Field label="Type">{REQUEST_TYPE_LABELS[r.request_type]}</Field>
+          <Field label={r.request_type === "flights" ? "Flying to" : r.request_type === "hotels" ? "City or area" : "Destination"}>
+            {r.destination}{r.destinations ? ` · group ${group}` : " · no catalogue match"}
+          </Field>
+          {r.origin_city && <Field label={r.request_type === "flights" ? "Flying from" : "From"}>{r.origin_city}</Field>}
+          <Field label={r.request_type === "flights" ? "Departure" : r.request_type === "hotels" ? "Check-in" : "When"}>
+            {travelWhen(r)} · {FLEXIBILITY_LABELS[r.flexibility]}
+          </Field>
+          {r.request_type === "flights" && <Field label="Return">{r.end_date ? travelWhen({ start_date: r.end_date }) : "One way"}</Field>}
+          {r.request_type === "hotels" && r.end_date && (
+            <Field label="Check-out">{travelWhen({ start_date: r.end_date })}{r.nights ? ` · ${r.nights} night${r.nights === 1 ? "" : "s"}` : ""}</Field>
+          )}
+          {r.cabin_class && <Field label="Cabin">{CABIN_CLASS_LABELS[r.cabin_class]}</Field>}
+          {r.rooms && <Field label="Rooms">{r.rooms}</Field>}
           <Field label="Party">{r.adults} adults{r.children ? `, ${r.children} children${r.child_ages.length ? ` (ages ${r.child_ages.join(", ")})` : ""}` : ""}</Field>
           <Field label="Budget">
             {r.budget_min != null || r.budget_max != null

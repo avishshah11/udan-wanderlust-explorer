@@ -71,4 +71,24 @@ describe("tripSummary", () => {
       "Goa, 1 night, 1 adult, 1 child, January 2027",
     );
   });
+
+  it("describes flights and hotels", () => {
+    expect(
+      tripSummary({
+        request_type: "flights",
+        origin_city: "Vadodara",
+        destination: "Dubai",
+        adults: 2,
+        cabin_class: "premium_economy",
+        start_date: "2027-05-10",
+        end_date: "2027-05-17",
+      }),
+    ).toBe("Flights from Vadodara to Dubai, return, 2 adults, premium economy, 10 May 2027 to 17 May 2027");
+    expect(tripSummary({ request_type: "flights", origin_city: "Mumbai", destination: "London", adults: 1, start_date: "2027-06-01" })).toBe(
+      "Flights from Mumbai to London, one way, 1 adult, 1 Jun 2027",
+    );
+    expect(
+      tripSummary({ request_type: "hotels", destination: "Goa", nights: 3, rooms: 1, adults: 2, hotel_tier: "4_star", start_date: "2027-01-10", end_date: "2027-01-13" }),
+    ).toBe("Hotel in Goa, 3 nights, 1 room, 2 adults, 4-star, 10 Jan 2027 to 13 Jan 2027");
+  });
 });

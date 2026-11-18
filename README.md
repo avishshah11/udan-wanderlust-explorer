@@ -71,6 +71,12 @@ here). Dev logins and fake data are listed at the top of
 
 What the schema enforces:
 
+- Every request has a type. `package`: a whole holiday (destination, start
+  date or month, nights). `flights`: air tickets only (from, to, departure,
+  return date or one way, cabin class). `hotels`: a stay only (city or area,
+  check-in, check-out, rooms; nights are worked out from the dates). The
+  website, the account, the desk and the Claude connector all send it, and
+  the desk prices every type the same way, with quote lines.
 - Customers see only their own rows. Staff (an active row in `staff`) see
   everything.
 - `quote_lines` (net cost, markup, supplier reference) and `markup_rules` are
@@ -168,6 +174,11 @@ GitHub Pages does and checks every route (including the old SPA URLs) returns
 200 HTML with content readable without JavaScript. Set `PUBLIC_APP_URL` to
 point the Get a quote form at a local app (default
 `https://app.udantravelsbdq.com`).
+
+The Get a quote page (`/quote`) has three sections, one form each: holiday
+package, flights only and hotel only. Without JavaScript they stack; with it
+they become tabs. Link to one with `/quote#flights`, `/quote#hotels` or
+`?type=`, and pre-fill a destination with `?destination=`.
 
 Destination pages come from `web/src/content/destinations/*.md`; the file
 name must match the slug in the desk's `destinations` table.

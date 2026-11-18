@@ -1,175 +1,369 @@
 ---
-// The Get a quote form. Plain HTML that posts to the app, so it works with
-// JavaScript off; a small script only fills in the visitor's time zone and
-// currency and pre-selects a destination from ?destination=.
+// The Get a quote forms: a whole holiday package, flights only, or a hotel
+// only. Each section is its own plain HTML form that posts to the app, so the
+// page works with JavaScript off (the three sections simply stack). The small
+// script turns the sections into tabs, opens the one named in #package,
+// #flights, #hotels or ?type=, fills in the visitor's time zone and currency,
+// pre-fills a destination from ?destination=, and makes the return date
+// required only for return flights.
 import { DISPLAY_CURRENCIES } from "@udan/core/currency";
-import { FLEXIBILITY, FLEXIBILITY_LABELS, HOTEL_TIERS, HOTEL_TIER_LABELS, INCLUSIONS, INCLUSION_LABELS } from "@udan/core/domain";
+import {
+  CABIN_CLASSES,
+  CABIN_CLASS_LABELS,
+  FLEXIBILITY,
+  FLEXIBILITY_LABELS,
+  HOTEL_TIERS,
+  HOTEL_TIER_LABELS,
+  INCLUSIONS,
+  INCLUSION_LABELS,
+  REQUEST_TYPES,
+  REQUEST_TYPE_LABELS,
+  type RequestType,
+} from "@udan/core/domain";
 import { getCollection } from "astro:content";
 import { SITE } from "../lib/site";
 
 interface Props {
-  /** Beat-my-price puts the OTA price and screenshot first. */
+  /** Beat-my-price puts the booking-site price and screenshot first. */
   screenshotFirst?: boolean;
+  /** Heading level for each section's title, below the page's own headings. */
+  sectionHeading?: "h2" | "h3";
 }
-const { screenshotFirst = false } = Astro.props;
+const { screenshotFirst = false, sectionHeading = "h2" } = Astro.props;
+const Heading = sectionHeading;
 const destinations = (await getCollection("destinations")).map((d) => d.data.name).sort();
 const action = `${SITE.appUrl}/api/quote-requests`;
+
+const INTRO: Record<RequestType, string> = {
+  package: "Hotels, transfers and sightseeing planned together, with flights if you want them.",
+  flights: "Air tickets only, one way or return, in the cabin you prefer.",
+  hotels: "A hotel stay only, in the city or area you choose.",
+};
+const SUBMIT: Record<RequestType, string> = {
+  package: "Send my package request",
+  flights: "Send my flight request",
+  hotels: "Send my hotel request",
+};
+const OTA_PRODUCT: Record<RequestType, string> = { package: "Hotel or package", flights: "Airline or flight", hotels: "Hotel" };
+const OTA_DETAIL: Record<RequestType, string> = { package: "Room type", flights: "Fare type", hotels: "Room type" };
 ---
 
-<form method="post" action={action} enctype="multipart/form-data" class="space-y-8" id="quote-form">
-  <div class="hidden" aria-hidden="true">
-    <label>Company (leave empty) <input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
-  </div>
-  <input type="hidden" name="time_zone" value="" />
-
-  {
-    screenshotFirst && (
-      <fieldset class="grid gap-4 rounded-xl border-2 border-dashed border-udan-orange/40 bg-udan-orange/5 p-5 md:grid-cols-2">
-        <legend class="px-1 text-base font-semibold text-udan-charcoal">The price you want us to beat</legend>
-        <div class="md:col-span-2">
-          <label class="label" for="screenshot-first">Screenshot of the price (optional)</label>
-          <input id="screenshot-first" class="block w-full text-sm" type="file" name="screenshot" accept="image/*,application/pdf" />
-          <p class="mt-1 text-xs text-udan-gray">A screenshot from the booking site is fine. We read it by hand.</p>
-        </div>
-        <div><label class="label" for="ota_name">Website</label><input class="field" id="ota_name" name="ota_name" placeholder="The site you saw it on" /></div>
-        <div><label class="label" for="ota_product">Hotel or package</label><input class="field" id="ota_product" name="ota_product" /></div>
-        <div><label class="label" for="ota_room">Room type</label><input class="field" id="ota_room" name="ota_room" /></div>
-        <div class="grid grid-cols-[1fr_7rem] gap-3">
-          <div><label class="label" for="ota_price">Price</label><input class="field" id="ota_price" name="ota_price" inputmode="numeric" /></div>
-          <div>
-            <label class="label" for="ota_currency">Currency</label>
-            <select class="field" id="ota_currency" name="ota_currency">{DISPLAY_CURRENCIES.map((c) => <option value={c}>{c}</option>)}</select>
-          </div>
-        </div>
-      </fieldset>
-    )
-  }
-
-  <fieldset class="grid gap-4 md:grid-cols-3">
-    <legend class="mb-3 text-base font-semibold text-udan-charcoal">Your trip</legend>
-    <div class="md:col-span-2">
-      <label class="label" for="destination">Where would you like to go?</label>
-      <input class="field" id="destination" name="destination" list="destination-list" required minlength="2" placeholder="Kerala, Bali, Dubai…" />
-      <datalist id="destination-list">{destinations.map((d) => <option value={d} />)}</datalist>
-    </div>
-    <div><label class="label" for="origin_city">Travelling from</label><input class="field" id="origin_city" name="origin_city" placeholder="Vadodara" /></div>
-    <div><label class="label" for="start_date">Start date</label><input class="field" id="start_date" name="start_date" type="date" /></div>
-    <div><label class="label" for="travel_month">Or just the month</label><input class="field" id="travel_month" name="travel_month" type="month" placeholder="YYYY-MM" /></div>
-    <div><label class="label" for="nights">Nights</label><input class="field" id="nights" name="nights" type="number" min="1" max="90" required /></div>
-    <div><label class="label" for="adults">Adults</label><input class="field" id="adults" name="adults" type="number" min="1" max="50" value="2" required /></div>
-    <div><label class="label" for="children">Children</label><input class="field" id="children" name="children" type="number" min="0" max="20" value="0" /></div>
-    <div><label class="label" for="child_ages">Children's ages</label><input class="field" id="child_ages" name="child_ages" placeholder="e.g. 6, 9" /></div>
-    <div>
-      <label class="label" for="hotel_tier">Hotel category</label>
-      <select class="field" id="hotel_tier" name="hotel_tier">
-        <option value="">No preference</option>
-        {HOTEL_TIERS.map((t) => <option value={t}>{HOTEL_TIER_LABELS[t]}</option>)}
-      </select>
-    </div>
-    <div>
-      <label class="label" for="flexibility">Dates</label>
-      <select class="field" id="flexibility" name="flexibility">{FLEXIBILITY.map((f) => <option value={f}>{FLEXIBILITY_LABELS[f]}</option>)}</select>
-    </div>
-    <div class="grid grid-cols-[1fr_1fr_6.5rem] gap-3 md:col-span-2">
-      <div><label class="label" for="budget_min">Budget from</label><input class="field" id="budget_min" name="budget_min" inputmode="numeric" /></div>
-      <div><label class="label" for="budget_max">Budget up to</label><input class="field" id="budget_max" name="budget_max" inputmode="numeric" /></div>
-      <div>
-        <label class="label" for="budget_currency">Currency</label>
-        <select class="field" id="budget_currency" name="budget_currency">{DISPLAY_CURRENCIES.map((c) => <option value={c}>{c}</option>)}</select>
-      </div>
-    </div>
-  </fieldset>
-
-  <fieldset>
-    <legend class="mb-3 text-base font-semibold text-udan-charcoal">What should we include?</legend>
-    <div class="flex flex-wrap gap-x-6 gap-y-2">
+<div class="quote-forms" data-quote-forms>
+  <nav aria-label="Type of quote" class="mb-8">
+    <ul class="grid grid-cols-3 gap-2" data-quote-tabs>
       {
-        INCLUSIONS.map((i) => (
-          <label class="flex items-center gap-2 text-sm text-udan-charcoal">
-            <input type="checkbox" name="inclusions_wanted" value={i} checked={i === "hotel" || i === "transfers"} />
-            {INCLUSION_LABELS[i]}
-          </label>
+        REQUEST_TYPES.map((t) => (
+          <li>
+            <a
+              href={`#${t}`}
+              data-tab={t}
+              class="block h-full rounded-xl border border-gray-200 bg-white p-3 text-left sm:p-4 transition-colors hover:border-udan-blue/60 aria-selected:border-udan-blue aria-selected:bg-udan-blue/5 aria-selected:ring-1 aria-selected:ring-udan-blue"
+            >
+              <span class="block text-sm font-semibold leading-snug text-udan-charcoal sm:text-base">{REQUEST_TYPE_LABELS[t]}</span>
+              <span class="mt-0.5 hidden text-sm text-udan-gray sm:block">{INTRO[t]}</span>
+            </a>
+          </li>
         ))
       }
-    </div>
-  </fieldset>
-
-  <div>
-    <label class="label" for="itinerary">Your itinerary, if you have one</label>
-    <textarea class="field h-auto py-2" id="itinerary" name="itinerary" rows="4" placeholder={"One item per line, for example:\nhotel: Ubud, 3 nights, pool villa\nflight: Ahmedabad to Bali, return"}></textarea>
-  </div>
+    </ul>
+  </nav>
 
   {
-    !screenshotFirst && (
-      <details class="rounded-xl border border-dashed p-5">
-        <summary class="cursor-pointer font-semibold text-udan-charcoal">Seen a price elsewhere? Send it and we will try to beat it</summary>
-        <div class="mt-4 grid gap-4 md:grid-cols-2">
+    REQUEST_TYPES.map((t) => {
+      const id = (name: string) => `${t}-${name}`;
+      const ota = (
+        <>
           <div class="md:col-span-2">
-            <label class="label" for="screenshot">Screenshot of the price (optional)</label>
-            <input id="screenshot" class="block w-full text-sm" type="file" name="screenshot" accept="image/*,application/pdf" />
+            <label class="label" for={id("screenshot")}>Screenshot of the price (optional)</label>
+            <input id={id("screenshot")} class="block w-full text-sm" type="file" name="screenshot" accept="image/*,application/pdf" />
+            <p class="mt-1 text-xs text-udan-gray">A screenshot from the booking site is fine. We read it by hand.</p>
           </div>
-          <div><label class="label" for="ota_name">Website</label><input class="field" id="ota_name" name="ota_name" /></div>
-          <div><label class="label" for="ota_product">Hotel or package</label><input class="field" id="ota_product" name="ota_product" /></div>
-          <div><label class="label" for="ota_room">Room type</label><input class="field" id="ota_room" name="ota_room" /></div>
+          <div><label class="label" for={id("ota_name")}>Website</label><input class="field" id={id("ota_name")} name="ota_name" placeholder="The site you saw it on" /></div>
+          <div><label class="label" for={id("ota_product")}>{OTA_PRODUCT[t]}</label><input class="field" id={id("ota_product")} name="ota_product" /></div>
+          <div><label class="label" for={id("ota_room")}>{OTA_DETAIL[t]}</label><input class="field" id={id("ota_room")} name="ota_room" /></div>
           <div class="grid grid-cols-[1fr_7rem] gap-3">
-            <div><label class="label" for="ota_price">Price</label><input class="field" id="ota_price" name="ota_price" inputmode="numeric" /></div>
+            <div><label class="label" for={id("ota_price")}>Price</label><input class="field" id={id("ota_price")} name="ota_price" inputmode="numeric" /></div>
             <div>
-              <label class="label" for="ota_currency">Currency</label>
-              <select class="field" id="ota_currency" name="ota_currency">{DISPLAY_CURRENCIES.map((c) => <option value={c}>{c}</option>)}</select>
+              <label class="label" for={id("ota_currency")}>Currency</label>
+              <select class="field" id={id("ota_currency")} name="ota_currency">{DISPLAY_CURRENCIES.map((c) => <option value={c}>{c}</option>)}</select>
             </div>
           </div>
+        </>
+      );
+      const party = (
+        <>
+          <div><label class="label" for={id("adults")}>Adults</label><input class="field" id={id("adults")} name="adults" type="number" min="1" max="50" value="2" required /></div>
+          <div><label class="label" for={id("children")}>Children</label><input class="field" id={id("children")} name="children" type="number" min="0" max="20" value="0" /></div>
+          <div><label class="label" for={id("child_ages")}>Children's ages</label><input class="field" id={id("child_ages")} name="child_ages" placeholder="e.g. 6, 9" /></div>
+        </>
+      );
+      const flexibility = (
+        <div>
+          <label class="label" for={id("flexibility")}>Dates</label>
+          <select class="field" id={id("flexibility")} name="flexibility">{FLEXIBILITY.map((f) => <option value={f}>{FLEXIBILITY_LABELS[f]}</option>)}</select>
         </div>
-      </details>
-    )
+      );
+      const hotelTier = (
+        <div>
+          <label class="label" for={id("hotel_tier")}>Hotel category</label>
+          <select class="field" id={id("hotel_tier")} name="hotel_tier">
+            <option value="">No preference</option>
+            {HOTEL_TIERS.map((tier) => <option value={tier}>{HOTEL_TIER_LABELS[tier]}</option>)}
+          </select>
+        </div>
+      );
+      const budget = (
+        <div class="grid grid-cols-[1fr_1fr_6.5rem] gap-3 md:col-span-2">
+          <div><label class="label" for={id("budget_min")}>Budget from</label><input class="field" id={id("budget_min")} name="budget_min" inputmode="numeric" /></div>
+          <div><label class="label" for={id("budget_max")}>Budget up to</label><input class="field" id={id("budget_max")} name="budget_max" inputmode="numeric" /></div>
+          <div>
+            <label class="label" for={id("budget_currency")}>Currency</label>
+            <select class="field" id={id("budget_currency")} name="budget_currency">{DISPLAY_CURRENCIES.map((c) => <option value={c}>{c}</option>)}</select>
+          </div>
+        </div>
+      );
+
+      return (
+        <section id={t} data-section={t} class="quote-section scroll-mt-24 border-t border-gray-200 pt-8 first-of-type:border-0 first-of-type:pt-0 [&+&]:mt-12">
+          <Heading class="text-2xl font-bold text-udan-charcoal">{REQUEST_TYPE_LABELS[t]}</Heading>
+          <p class="mb-6 mt-1 text-udan-gray">{INTRO[t]}</p>
+
+          <form method="post" action={action} enctype="multipart/form-data" class="space-y-8" data-quote-form={t}>
+            <div class="hidden" aria-hidden="true">
+              <label>Company (leave empty) <input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
+            </div>
+            <input type="hidden" name="request_type" value={t} />
+            <input type="hidden" name="time_zone" value="" />
+
+            {screenshotFirst && (
+              <fieldset class="grid gap-4 rounded-xl border-2 border-dashed border-udan-orange/40 bg-udan-orange/5 p-5 md:grid-cols-2">
+                <legend class="px-1 text-base font-semibold text-udan-charcoal">The price you want us to beat</legend>
+                {ota}
+              </fieldset>
+            )}
+
+            {t === "package" && (
+              <>
+                <fieldset class="grid gap-4 md:grid-cols-3">
+                  <legend class="mb-3 text-base font-semibold text-udan-charcoal">Your trip</legend>
+                  <div class="md:col-span-2">
+                    <label class="label" for={id("destination")}>Where would you like to go?</label>
+                    <input class="field" id={id("destination")} name="destination" list="destination-list" required minlength="2" placeholder="Kerala, Bali, Dubai…" />
+                  </div>
+                  <div><label class="label" for={id("origin_city")}>Travelling from</label><input class="field" id={id("origin_city")} name="origin_city" placeholder="Vadodara" /></div>
+                  <div><label class="label" for={id("start_date")}>Start date</label><input class="field" id={id("start_date")} name="start_date" type="date" /></div>
+                  <div><label class="label" for={id("travel_month")}>Or just the month</label><input class="field" id={id("travel_month")} name="travel_month" type="month" placeholder="YYYY-MM" /></div>
+                  <div><label class="label" for={id("nights")}>Nights</label><input class="field" id={id("nights")} name="nights" type="number" min="1" max="90" required /></div>
+                  {party}
+                  {hotelTier}
+                  {flexibility}
+                  {budget}
+                </fieldset>
+
+                <fieldset>
+                  <legend class="mb-3 text-base font-semibold text-udan-charcoal">What should we include?</legend>
+                  <div class="flex flex-wrap gap-x-6 gap-y-2">
+                    {INCLUSIONS.map((i) => (
+                      <label class="flex items-center gap-2 text-sm text-udan-charcoal">
+                        <input type="checkbox" name="inclusions_wanted" value={i} checked={i === "hotel" || i === "transfers"} />
+                        {INCLUSION_LABELS[i]}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <div>
+                  <label class="label" for={id("itinerary")}>Your itinerary, if you have one</label>
+                  <textarea class="field h-auto py-2" id={id("itinerary")} name="itinerary" rows="4" placeholder={"One item per line, for example:\nhotel: Ubud, 3 nights, pool villa\nflight: Ahmedabad to Bali, return"} />
+                </div>
+              </>
+            )}
+
+            {t === "flights" && (
+              <fieldset class="grid gap-4 md:grid-cols-3">
+                <legend class="mb-3 text-base font-semibold text-udan-charcoal">Your flights</legend>
+                <div><label class="label" for={id("origin_city")}>Flying from</label><input class="field" id={id("origin_city")} name="origin_city" required minlength="2" placeholder="Vadodara, Ahmedabad, Mumbai…" /></div>
+                <div><label class="label" for={id("destination")}>Flying to</label><input class="field" id={id("destination")} name="destination" required minlength="2" placeholder="Dubai, London, Bali…" /></div>
+                <fieldset>
+                  <legend class="label">Trip</legend>
+                  <div class="flex h-10 items-center gap-6 text-sm text-udan-charcoal">
+                    <label class="flex items-center gap-2"><input type="radio" name="trip_way" value="return" checked data-trip-way /> Return</label>
+                    <label class="flex items-center gap-2"><input type="radio" name="trip_way" value="one_way" data-trip-way /> One way</label>
+                  </div>
+                </fieldset>
+                <div><label class="label" for={id("start_date")}>Departure date</label><input class="field" id={id("start_date")} name="start_date" type="date" required /></div>
+                <div data-return-date>
+                  <label class="label" for={id("end_date")}>Return date</label>
+                  <input class="field" id={id("end_date")} name="end_date" type="date" />
+                </div>
+                {flexibility}
+                {party}
+                <div>
+                  <label class="label" for={id("cabin_class")}>Cabin class</label>
+                  <select class="field" id={id("cabin_class")} name="cabin_class">{CABIN_CLASSES.map((c) => <option value={c}>{CABIN_CLASS_LABELS[c]}</option>)}</select>
+                </div>
+                {budget}
+              </fieldset>
+            )}
+
+            {t === "hotels" && (
+              <fieldset class="grid gap-4 md:grid-cols-3">
+                <legend class="mb-3 text-base font-semibold text-udan-charcoal">Your stay</legend>
+                <div>
+                  <label class="label" for={id("destination")}>City or area</label>
+                  <input class="field" id={id("destination")} name="destination" list="destination-list" required minlength="2" placeholder="Goa, Munnar, Dubai Marina…" />
+                </div>
+                <div class="md:col-span-2">
+                  <label class="label" for={id("hotel_name")}>Hotel you have in mind (optional)</label>
+                  <input class="field" id={id("hotel_name")} name="hotel_name" placeholder="A name, or the kind of place you want" />
+                </div>
+                <div><label class="label" for={id("start_date")}>Check-in</label><input class="field" id={id("start_date")} name="start_date" type="date" required /></div>
+                <div><label class="label" for={id("end_date")}>Check-out</label><input class="field" id={id("end_date")} name="end_date" type="date" required /></div>
+                <div><label class="label" for={id("rooms")}>Rooms</label><input class="field" id={id("rooms")} name="rooms" type="number" min="1" max="20" value="1" required /></div>
+                {party}
+                {hotelTier}
+                {flexibility}
+                {budget}
+              </fieldset>
+            )}
+
+            {!screenshotFirst && (
+              <details class="rounded-xl border border-dashed p-5">
+                <summary class="cursor-pointer font-semibold text-udan-charcoal">Seen a price elsewhere? Send it and we will try to beat it</summary>
+                <div class="mt-4 grid gap-4 md:grid-cols-2">{ota}</div>
+              </details>
+            )}
+
+            <div>
+              <label class="label" for={id("customer_notes")}>Anything else we should know?</label>
+              <textarea
+                class="field h-auto py-2"
+                id={id("customer_notes")}
+                name="customer_notes"
+                rows="3"
+                placeholder={t === "flights" ? "Preferred airline, baggage, meal or seat needs" : t === "hotels" ? "Bed type, view, early check-in, accessibility" : "Occasion, dietary needs, places you'd love to see"}
+              />
+            </div>
+
+            <fieldset class="grid gap-4 rounded-xl bg-udan-lightGray p-5 md:grid-cols-3">
+              <legend class="sr-only">Your details</legend>
+              <div><label class="label" for={id("name")}>Your name</label><input class="field" id={id("name")} name="name" autocomplete="name" required /></div>
+              <div><label class="label" for={id("email")}>Email</label><input class="field" id={id("email")} name="email" type="email" autocomplete="email" required /></div>
+              <div><label class="label" for={id("phone")}>Phone (optional)</label><input class="field" id={id("phone")} name="phone" type="tel" autocomplete="tel" /></div>
+              <div>
+                <label class="label" for={id("preferred_currency")}>Show prices also in</label>
+                <select class="field" id={id("preferred_currency")} name="preferred_currency">
+                  {DISPLAY_CURRENCIES.map((c) => <option value={c}>{c === "INR" ? "INR only" : c}</option>)}
+                </select>
+              </div>
+              <p class="text-sm text-udan-gray md:col-span-2 md:self-end">
+                Your email is your Udan account. We send you a sign-in link and your reference number, and your quote arrives in your account and your inbox.
+              </p>
+            </fieldset>
+
+            <div class="flex flex-wrap items-center gap-4">
+              <button type="submit" class="btn-primary px-8 py-3 text-base">{SUBMIT[t]}</button>
+              <p class="text-sm text-udan-gray">
+                No payment now. By sending this you agree to our <a class="underline" href="/terms">terms</a> and <a class="underline" href="/privacy">privacy policy</a>.
+              </p>
+            </div>
+          </form>
+        </section>
+      );
+    })
   }
-
-  <div>
-    <label class="label" for="customer_notes">Anything else we should know?</label>
-    <textarea class="field h-auto py-2" id="customer_notes" name="customer_notes" rows="3" placeholder="Occasion, dietary needs, places you'd love to see"></textarea>
-  </div>
-
-  <fieldset class="grid gap-4 rounded-xl bg-udan-lightGray p-5 md:grid-cols-3">
-    <legend class="sr-only">Your details</legend>
-    <div><label class="label" for="name">Your name</label><input class="field" id="name" name="name" autocomplete="name" required /></div>
-    <div><label class="label" for="email">Email</label><input class="field" id="email" name="email" type="email" autocomplete="email" required /></div>
-    <div><label class="label" for="phone">Phone (optional)</label><input class="field" id="phone" name="phone" type="tel" autocomplete="tel" /></div>
-    <div>
-      <label class="label" for="preferred_currency">Show prices also in</label>
-      <select class="field" id="preferred_currency" name="preferred_currency">
-        {DISPLAY_CURRENCIES.map((c) => <option value={c}>{c === "INR" ? "INR only" : c}</option>)}
-      </select>
-    </div>
-    <p class="text-sm text-udan-gray md:col-span-2 md:self-end">
-      Your email is your Udan account. We send you a sign-in link and your reference number, and your quote arrives in your account and your inbox.
-    </p>
-  </fieldset>
-
-  <div class="flex flex-wrap items-center gap-4">
-    <button type="submit" class="btn-primary px-8 py-3 text-base">Send my request</button>
-    <p class="text-sm text-udan-gray">
-      No payment now. By sending this you agree to our <a class="underline" href="/terms">terms</a> and <a class="underline" href="/privacy">privacy policy</a>.
-    </p>
-  </div>
-</form>
+  <datalist id="destination-list">{destinations.map((d) => <option value={d} />)}</datalist>
+</div>
 
 <script>
   import { currencyForLocale } from "@udan/core/currency";
 
-  const form = document.getElementById("quote-form") as HTMLFormElement | null;
-  if (form) {
-    const tz = form.elements.namedItem("time_zone") as HTMLInputElement | null;
-    if (tz) tz.value = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
+  const TYPES = ["package", "flights", "hotels"] as const;
+  type QuoteType = (typeof TYPES)[number];
+  const isType = (v: string | null | undefined): v is QuoteType => !!v && (TYPES as readonly string[]).includes(v);
 
+  const root = document.querySelector<HTMLElement>("[data-quote-forms]");
+  if (root) {
+    const params = new URLSearchParams(location.search);
     const currency = currencyForLocale(navigator.language);
-    if (currency) {
-      for (const name of ["preferred_currency", "budget_currency"]) {
-        const select = form.elements.namedItem(name) as HTMLSelectElement | null;
-        if (select) select.value = currency;
-      }
-    }
+    const destination = params.get("destination")?.slice(0, 200);
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
 
-    const destination = new URLSearchParams(location.search).get("destination");
-    const destInput = form.elements.namedItem("destination") as HTMLInputElement | null;
-    if (destination && destInput && !destInput.value) destInput.value = destination.slice(0, 200);
+    root.querySelectorAll<HTMLFormElement>("form[data-quote-form]").forEach((form) => {
+      const tz = form.elements.namedItem("time_zone") as HTMLInputElement | null;
+      if (tz) tz.value = timeZone;
+      if (currency) {
+        for (const name of ["preferred_currency", "budget_currency"]) {
+          const select = form.elements.namedItem(name) as HTMLSelectElement | null;
+          if (select) select.value = currency;
+        }
+      }
+      const type = form.dataset.quoteForm;
+      const dest = form.elements.namedItem("destination") as HTMLInputElement | null;
+      if (destination && dest && !dest.value && type !== "flights") dest.value = destination;
+
+      // Return flights need a return date; one-way flights hide it.
+      const returnBox = form.querySelector<HTMLElement>("[data-return-date]");
+      const returnInput = returnBox?.querySelector<HTMLInputElement>("input");
+      if (returnBox && returnInput) {
+        const sync = () => {
+          const oneWay = (form.querySelector<HTMLInputElement>('input[name="trip_way"]:checked')?.value ?? "return") === "one_way";
+          returnBox.hidden = oneWay;
+          returnInput.required = !oneWay;
+          returnInput.disabled = oneWay;
+        };
+        form.querySelectorAll<HTMLInputElement>("[data-trip-way]").forEach((radio) => radio.addEventListener("change", sync));
+        sync();
+      }
+    });
+
+    // Tabs: show one section at a time once JavaScript is running. The
+    // sections' #package/#flights/#hotels anchors are only for the no-script
+    // page; renaming them stops the browser jumping past the heading when the
+    // page is opened at one of those hashes.
+    const tabs = Array.from(root.querySelectorAll<HTMLAnchorElement>("[data-tab]"));
+    const sections = Array.from(root.querySelectorAll<HTMLElement>("[data-section]"));
+    for (const section of sections) section.id = `quote-${section.dataset.section}`;
+    const tabList = root.querySelector<HTMLElement>("[data-quote-tabs]");
+    tabList?.setAttribute("role", "tablist");
+    const show = (type: QuoteType, focus = false) => {
+      for (const tab of tabs) {
+        const on = tab.dataset.tab === type;
+        tab.setAttribute("role", "tab");
+        tab.setAttribute("aria-selected", String(on));
+        tab.setAttribute("aria-controls", `quote-${tab.dataset.tab}`);
+        tab.tabIndex = on ? 0 : -1;
+        if (on && focus) tab.focus();
+      }
+      for (const section of sections) {
+        section.hidden = section.dataset.section !== type;
+        section.setAttribute("role", "tabpanel");
+      }
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", (event) => {
+        event.preventDefault();
+        const type = tab.dataset.tab;
+        if (!isType(type)) return;
+        show(type);
+        history.replaceState(null, "", `${location.pathname}${location.search}#${type}`);
+      });
+      tab.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+        event.preventDefault();
+        const next = tabs[(i + (event.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+        const type = next?.dataset.tab;
+        if (isType(type)) show(type, true);
+      });
+    });
+    const hash = location.hash.slice(1);
+    const fromUrl = isType(hash) ? hash : params.get("type");
+    show(isType(fromUrl) ? fromUrl : "package");
+    // A link such as /quote#flights opens that tab at the top of the page.
+    if (isType(hash)) window.scrollTo(0, 0);
+    window.addEventListener("hashchange", () => {
+      const next = location.hash.slice(1);
+      if (isType(next)) show(next);
+    });
   }
 </script>

@@ -1,18 +1,22 @@
-import type { DocumentType, HotelTier, LineType, PaymentKind, PaymentMethod, PaymentStatus, RequestChannel, RequestStatus } from "@udan/core";
+import type { CabinClass, DocumentType, HotelTier, LineType, PaymentKind, PaymentMethod, PaymentStatus, RequestChannel, RequestStatus, RequestType } from "@udan/core";
 
 /** Shape returned by public.quote_for_customer(): sell prices only. */
 export interface CustomerQuote {
   reference: string;
   status: RequestStatus;
   channel: RequestChannel;
+  request_type: RequestType;
   destination: string;
   origin_city: string | null;
   start_date: string | null;
+  end_date: string | null;
   travel_month: string;
-  nights: number;
+  nights: number | null;
   adults: number;
   children: number;
+  rooms: number | null;
   hotel_tier: HotelTier | null;
+  cabin_class: CabinClass | null;
   preferred_currency: string;
   requested_at: string;
   quote_version: number;

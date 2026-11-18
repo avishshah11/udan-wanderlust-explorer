@@ -82,6 +82,7 @@ describe("handlers", () => {
   it("request_quote returns the reference and queues the emails", async () => {
     const background: Promise<unknown>[] = [];
     const r = await requestQuote(context(fakeUser(), background), {
+      request_type: "package",
       destination: "Bali",
       travel_month: `${nextYear}-05`,
       nights: 5,
@@ -97,10 +98,64 @@ describe("handlers", () => {
   });
 
   it("request_quote passes validation problems back in words", async () => {
-    const r = await requestQuote(context(fakeUser()), { destination: "Goa", start_date: "2020-01-01", nights: 3, adults: 2, children: 2, child_ages: [4], budget_currency: "INR", flexibility: "fixed", preferred_currency: "INR" });
+    const r = await requestQuote(context(fakeUser()), { request_type: "package", destination: "Goa", start_date: "2020-01-01", nights: 3, adults: 2, children: 2, child_ages: [4], budget_currency: "INR", flexibility: "fixed", preferred_currency: "INR" });
     expect(r.isError).toBe(true);
     expect(text(r)).toContain("start_date: The start date is in the past.");
     expect(text(r)).toContain("child_ages: Give one age for each child");
+  });
+
+  it("request_quote takes a return flight and a hotel stay", async () => {
+    const submitted: Record<string, unknown>[] = [];
+    const user = fakeUser({
+      submitRequest: async (payload) => {
+        submitted.push(payload);
+        return { reference: "UDN-2611-NEWRF" };
+      },
+    });
+    const flight = await requestQuote(context(user), {
+      request_type: "flights",
+      origin_city: "Vadodara",
+      destination: "Dubai",
+      start_date: `${nextYear}-05-10`,
+      end_date: `${nextYear}-05-17`,
+      cabin_class: "economy",
+      adults: 2,
+      children: 0,
+      budget_currency: "INR",
+      flexibility: "fixed",
+      preferred_currency: "INR",
+    });
+    expect(text(flight)).toContain(`Flights from Vadodara to Dubai, return, 2 adults, economy`);
+    const hotel = await requestQuote(context(user), {
+      request_type: "hotels",
+      destination: "Goa",
+      start_date: `${nextYear}-01-10`,
+      end_date: `${nextYear}-01-13`,
+      rooms: 1,
+      adults: 2,
+      children: 0,
+      budget_currency: "INR",
+      flexibility: "fixed",
+      preferred_currency: "INR",
+    });
+    expect(text(hotel)).toContain("Hotel in Goa, 3 nights, 1 room, 2 adults");
+    expect(submitted.map((p) => p.request_type)).toEqual(["flights", "hotels"]);
+    expect(submitted[1]).toMatchObject({ nights: 3, rooms: 1 });
+  });
+
+  it("request_quote asks a flight for the city it leaves from", async () => {
+    const r = await requestQuote(context(fakeUser()), {
+      request_type: "flights",
+      destination: "Dubai",
+      start_date: `${nextYear}-05-10`,
+      adults: 1,
+      children: 0,
+      budget_currency: "INR",
+      flexibility: "fixed",
+      preferred_currency: "INR",
+    });
+    expect(r.isError).toBe(true);
+    expect(text(r)).toContain("origin_city: Tell us the city you fly from.");
   });
 
   it("get_quote returns prices, validity and the approximate local amount", async () => {
@@ -130,7 +185,7 @@ describe("handlers", () => {
     const results = [
       await getIndicativePrice(context(null), { destination: "Bali", nights: 5, adults: 2, children: 0 }),
       await comparePrice(context(null), { ota_name: "X site", product_name: "Hotel", ota_price: 1000, currency: "INR", adults: 2, children: 0 }),
-      await requestQuote(context(fakeUser()), { destination: "Bali", travel_month: `${nextYear}-05`, nights: 5, adults: 2, children: 0, budget_currency: "INR", flexibility: "fixed", preferred_currency: "INR" }),
+      await requestQuote(context(fakeUser()), { request_type: "package", destination: "Bali", travel_month: `${nextYear}-05`, nights: 5, adults: 2, children: 0, budget_currency: "INR", flexibility: "fixed", preferred_currency: "INR" }),
       await getQuote(context(fakeUser()), { reference: "UDN-2611-K7QMX" }),
       await confirmBooking(context(fakeUser()), { reference: "UDN-2611-K7QMX" }),
       await confirmBooking(context(fakeUser({ accept: async () => ({ result: "recheck" }) })), { reference: "UDN-2611-K7QMX" }),

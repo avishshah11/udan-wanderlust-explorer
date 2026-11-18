@@ -2,7 +2,7 @@
 -- Run with: pnpm --filter @udan/supabase test:db  (local stack must be running)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(41);
+select plan(51);
 
 -- ---------------------------------------------------------------- anonymous
 set local role anon;
@@ -70,7 +70,59 @@ select throws_ok(
   $$ select * from public.submit_quote_request('web', '{"destination":"Goa","start_date":"2020-01-01","nights":3}') $$,
   '22023', 'The travel date is in the past.', 'intake rejects past dates with a readable message'
 );
-select is((select count(*)::int from public.quote_requests), 2, 'customer: new request visible in own list');
+
+-- Request types: package (default), flights only, hotel only
+-- (Each submit is its own statement: a query cannot see rows inserted by a
+-- function it calls.)
+select isnt(
+  (select reference from public.submit_quote_request('claude',
+    '{"request_type":"flights","origin_city":"Vadodara","destination":"Dubai","start_date":"2030-05-10","end_date":"2030-05-17","cabin_class":"business","nights":4}')),
+  null,
+  'customer: submits a return flight'
+);
+select is(
+  (select row(r.request_type::text, r.end_date, r.cabin_class::text, r.nights is null)::text
+     from public.quote_requests r where r.request_type = 'flights'),
+  '(flights,2030-05-17,business,t)',
+  'intake stores a return flight, with no nights'
+);
+select throws_ok(
+  $$ select * from public.submit_quote_request('web', '{"request_type":"flights","destination":"Dubai","start_date":"2030-05-10"}') $$,
+  '22023', 'Flights need the city you fly from.', 'intake asks a flight for the city it leaves from'
+);
+select isnt(
+  (select reference from public.submit_quote_request('web',
+    '{"request_type":"hotels","destination":"Goa","start_date":"2030-01-10","end_date":"2030-01-14","rooms":2,"nights":9}')),
+  null,
+  'customer: submits a hotel stay'
+);
+select is(
+  (select row(r.nights, r.rooms)::text from public.quote_requests r where r.request_type = 'hotels'),
+  '(4,2)',
+  'intake works out hotel nights from check-in and check-out'
+);
+select throws_ok(
+  $$ select * from public.submit_quote_request('web', '{"request_type":"hotels","destination":"Goa","start_date":"2030-01-10","end_date":"2030-01-10"}') $$,
+  '22023', 'Hotels need a check-in date and a later check-out date.', 'intake rejects a hotel stay with no nights'
+);
+select isnt(
+  (select reference from public.submit_quote_request('web',
+    '{"destination":"Goa","start_date":"2030-01-10","end_date":"2030-01-20","nights":3}')),
+  null,
+  'customer: submits a package with a stray end date'
+);
+select is(
+  (select count(*)::int from public.quote_requests r
+    where r.request_type = 'package' and r.start_date = '2030-01-10' and r.end_date is null and r.nights = 3),
+  1,
+  'intake stores no end date on a package'
+);
+select is(
+  public.quote_for_customer('UDN-0000-SENTQ') ->> 'request_type',
+  'package',
+  'customer view includes the request type'
+);
+select is((select count(*)::int from public.quote_requests), 5, 'customer: new requests visible in own list');
 
 -- accept
 select is(public.accept_quote('UDN-0000-ACCPT') ->> 'result', 'not_found', 'accept: other customer''s quote is not_found');
@@ -81,10 +133,13 @@ select is(public.accept_quote('UDN-0000-SENTQ') ->> 'result', 'already_accepted'
 
 -- ---------------------------------------------------------------- staff: pricer
 reset role;
+-- Every request in the database at this point, for the staff check below
+-- (the local database may hold requests made by hand, besides the seed).
+select set_config('test.total_requests', (select count(*)::text from public.quote_requests), true);
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"22222222-2222-4222-8222-222222222222","email":"pricer@udan.test","role":"authenticated"}';
 
-select is((select count(*)::int from public.quote_requests), 5, 'staff: sees every request');
+select is((select count(*)::int from public.quote_requests), current_setting('test.total_requests')::int, 'staff: sees every request');
 select throws_ok(
   $$ update public.quote_lines set markup_pct = 20
       where request_id = (select id from public.quote_requests where reference = 'UDN-0000-SENTQ') $$,
@@ -149,6 +204,13 @@ reset role;
 set local role authenticated;
 set local request.jwt.claims to '{"sub":"44444444-4444-4444-8444-444444444444","email":"rohan@example.com","role":"authenticated"}';
 select is((select count(*)::int from storage.objects where bucket_id = 'documents'), 0, 'storage: other customers see nothing');
+
+-- ------------------------------------------------------------ table constraints
+reset role;
+select throws_ok(
+  $$ update public.quote_requests set nights = null where reference = 'UDN-0000-QUEUE' $$,
+  '23514', null, 'a package must have nights'
+);
 
 select * from finish();
 rollback;

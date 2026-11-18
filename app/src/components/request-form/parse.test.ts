@@ -40,4 +40,32 @@ describe("formDataToRequestInput", () => {
     fd.set("nights", "five");
     expect(quoteRequestSchema.safeParse(formDataToRequestInput(fd)).success).toBe(false);
   });
+  it("reads a one-way flight and ignores a stray return date", () => {
+    const fd = new FormData();
+    const year = new Date().getFullYear() + 1;
+    fd.set("request_type", "flights");
+    fd.set("trip_way", "one_way");
+    fd.set("origin_city", "Vadodara");
+    fd.set("destination", "Dubai");
+    fd.set("start_date", `${year}-05-10`);
+    fd.set("end_date", `${year}-05-17`);
+    fd.set("cabin_class", "economy");
+    const parsed = quoteRequestSchema.parse(formDataToRequestInput(fd));
+    expect(parsed).toMatchObject({ request_type: "flights", origin_city: "Vadodara", cabin_class: "economy" });
+    expect(parsed.end_date).toBeUndefined();
+  });
+
+  it("reads a hotel stay and keeps the preferred hotel as a requested item", () => {
+    const fd = new FormData();
+    const year = new Date().getFullYear() + 1;
+    fd.set("request_type", "hotels");
+    fd.set("destination", "Goa");
+    fd.set("hotel_name", "A beach resort in Candolim");
+    fd.set("start_date", `${year}-01-10`);
+    fd.set("end_date", `${year}-01-14`);
+    fd.set("rooms", "2");
+    const parsed = quoteRequestSchema.parse(formDataToRequestInput(fd));
+    expect(parsed).toMatchObject({ request_type: "hotels", nights: 4, rooms: 2 });
+    expect(parsed.requested_items).toEqual([{ type: "hotel", description: "A beach resort in Candolim" }]);
+  });
 });

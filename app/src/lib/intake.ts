@@ -23,7 +23,7 @@ export async function sendIntakeNotifications(input: {
   const service = createServiceClient();
   const { data: r } = await service
     .from("quote_requests")
-    .select("destination, nights, adults, children, hotel_tier, start_date, travel_month, customers(name, email)")
+    .select("request_type, destination, origin_city, nights, adults, children, rooms, hotel_tier, cabin_class, start_date, end_date, travel_month, customers(name, email)")
     .eq("id", input.requestId)
     .single();
   if (!r) return;

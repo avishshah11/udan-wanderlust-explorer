@@ -32,8 +32,16 @@ const stringOrUndefined = (v: FormDataEntryValue | null) => {
   return s === "" ? undefined : s;
 };
 
-/** FormData from the request form (or the website form) to quoteRequestSchema input. */
+/**
+ * FormData from the request form (or the website form) to quoteRequestSchema
+ * input. request_type picks the section: package (default), flights or
+ * hotels. Flights send trip_way=one_way|return (the schema drops the return
+ * date of a one-way trip and asks for one on a return trip). Hotels may name a preferred hotel, kept as a requested item.
+ */
 export function formDataToRequestInput(fd: FormData): Record<string, unknown> {
+  const requestType = stringOrUndefined(fd.get("request_type")) ?? "package";
+  const hotelName = requestType === "hotels" ? stringOrUndefined(fd.get("hotel_name")) : undefined;
+  const itinerary = parseItineraryText(String(fd.get("itinerary") ?? ""));
   const childAges = String(fd.get("child_ages") ?? "")
     .split(/[,\s]+/)
     .filter(Boolean)
@@ -48,22 +56,27 @@ export function formDataToRequestInput(fd: FormData): Record<string, unknown> {
       }
     : undefined;
   return {
+    request_type: requestType,
     destination: stringOrUndefined(fd.get("destination")) ?? "",
     destination_slug: stringOrUndefined(fd.get("destination_slug")),
     origin_city: stringOrUndefined(fd.get("origin_city")),
     start_date: stringOrUndefined(fd.get("start_date")),
+    end_date: stringOrUndefined(fd.get("end_date")),
+    trip_way: requestType === "flights" ? stringOrUndefined(fd.get("trip_way")) : undefined,
     travel_month: stringOrUndefined(fd.get("travel_month")),
     nights: numberOrUndefined(fd.get("nights")),
     adults: numberOrUndefined(fd.get("adults")),
     children: numberOrUndefined(fd.get("children")),
     child_ages: childAges.length > 0 ? childAges : undefined,
+    rooms: numberOrUndefined(fd.get("rooms")),
     hotel_tier: stringOrUndefined(fd.get("hotel_tier")),
+    cabin_class: stringOrUndefined(fd.get("cabin_class")),
     budget_min: numberOrUndefined(fd.get("budget_min")),
     budget_max: numberOrUndefined(fd.get("budget_max")),
     budget_currency: stringOrUndefined(fd.get("budget_currency")),
     flexibility: stringOrUndefined(fd.get("flexibility")),
     inclusions_wanted: fd.getAll("inclusions_wanted").map(String),
-    requested_items: parseItineraryText(String(fd.get("itinerary") ?? "")),
+    requested_items: hotelName ? [{ type: "hotel", description: hotelName.slice(0, 300) }, ...itinerary] : itinerary,
     ota_comparison: ota,
     customer_notes: stringOrUndefined(fd.get("customer_notes")),
     preferred_currency: stringOrUndefined(fd.get("preferred_currency")),

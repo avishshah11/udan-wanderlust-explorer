@@ -25,7 +25,7 @@ export async function acceptQuote(fd: FormData) {
       const service = createServiceClient();
       const { data: r } = await service
         .from("quote_requests")
-        .select("id, reference, channel, customer_id, destination, nights, adults, children, hotel_tier, start_date, travel_month, total_sell_inr, customers(name, email, display_currency)")
+        .select("id, reference, channel, customer_id, request_type, destination, origin_city, nights, adults, children, rooms, hotel_tier, cabin_class, start_date, end_date, travel_month, total_sell_inr, customers(name, email, display_currency)")
         .eq("reference", reference)
         .single();
       if (!r) return;

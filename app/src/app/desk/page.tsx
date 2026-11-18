@@ -1,9 +1,11 @@
-import { HOTEL_TIER_LABELS, type RequestStatus, findRate, formatInr, partyText, travelWhen } from "@udan/core";
+import { CABIN_CLASS_LABELS, HOTEL_TIER_LABELS, type RequestStatus, type RequestType, findRate, formatInr, partyText, travelWhen } from "@udan/core";
 import Link from "next/link";
 import { ageText, localTimeIn } from "@/lib/format";
 import { loadRates } from "@/lib/fx";
 import { createClient } from "@/lib/supabase/server";
 import { DeskStatus } from "./desk-status";
+
+const TYPE_BADGE: Record<RequestType, string> = { package: "Package", flights: "Flights", hotels: "Hotel" };
 
 export const metadata = { title: "Desk queue" };
 
@@ -21,7 +23,7 @@ export default async function DeskQueue({ searchParams }: { searchParams: Promis
   let query = supabase
     .from("quote_requests")
     .select(
-      "id, reference, status, channel, destination, start_date, travel_month, nights, adults, children, hotel_tier, budget_min, budget_max, budget_currency, created_at, accept_requested_at, accepted_at, valid_until, total_sell_inr, customers(name, email, time_zone, country)",
+      "id, reference, status, channel, request_type, destination, origin_city, start_date, end_date, travel_month, nights, adults, children, rooms, hotel_tier, cabin_class, budget_min, budget_max, budget_currency, created_at, accept_requested_at, accepted_at, valid_until, total_sell_inr, customers(name, email, time_zone, country)",
     )
     .limit(300);
   if (view.statuses) query = query.in("status", view.statuses);
@@ -86,10 +88,22 @@ export default async function DeskQueue({ searchParams }: { searchParams: Promis
                       </div>
                     </td>
                     <td className="py-2.5 pr-3">
-                      <div>{r.destination}</div>
+                      <div>
+                        <span className="mr-1.5 rounded bg-udan-lightGray px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-udan-gray">
+                          {TYPE_BADGE[r.request_type]}
+                        </span>
+                        {r.request_type === "flights" ? `${r.origin_city ?? "?"} → ${r.destination}` : r.destination}
+                      </div>
                       <div className="text-xs text-udan-gray">
-                        {r.nights}N · {partyText(r.adults, r.children)}
-                        {r.hotel_tier ? ` · ${HOTEL_TIER_LABELS[r.hotel_tier]}` : ""}
+                        {[
+                          r.request_type === "flights" ? (r.end_date ? "Return" : "One way") : r.nights ? `${r.nights}N` : null,
+                          r.request_type === "hotels" && r.rooms ? `${r.rooms} room${r.rooms === 1 ? "" : "s"}` : null,
+                          partyText(r.adults, r.children),
+                          r.cabin_class ? CABIN_CLASS_LABELS[r.cabin_class] : null,
+                          r.hotel_tier ? HOTEL_TIER_LABELS[r.hotel_tier] : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </div>
                     </td>
                     <td className="py-2.5 pr-3 whitespace-nowrap">{travelWhen(r)}</td>

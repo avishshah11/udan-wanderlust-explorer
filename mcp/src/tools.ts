@@ -4,10 +4,12 @@
 // turnaround time.
 
 import {
+  type CabinClass,
   type FxRate,
-  HOTEL_TIER_LABELS,
+  type HotelTier,
   REFERENCE_HELP,
   type RequestStatus,
+  type RequestType,
   customerStatus,
   describeIssues,
   displayPrice,
@@ -17,7 +19,7 @@ import {
   partyText,
   quoteRequestSchema,
   toIntakePayload,
-  travelWhen,
+  tripSummary,
 } from "@udan/core";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
@@ -43,13 +45,18 @@ export interface PriceBand {
 export interface CustomerQuoteData {
   reference: string;
   status: RequestStatus;
+  request_type: RequestType;
   destination: string;
+  origin_city: string | null;
   start_date: string | null;
+  end_date: string | null;
   travel_month: string;
-  nights: number;
+  nights: number | null;
   adults: number;
   children: number;
-  hotel_tier: keyof typeof HOTEL_TIER_LABELS | null;
+  rooms: number | null;
+  hotel_tier: HotelTier | null;
+  cabin_class: CabinClass | null;
   preferred_currency: string;
   valid_until: string | null;
   is_expired: boolean;
@@ -136,15 +143,29 @@ const itemSchema = z.object({
 });
 
 export const requestQuoteInput = {
-  destination: z.string().trim().min(2).max(200).describe("Main destination or route, e.g. 'Bali' or 'Jaipur, Udaipur'"),
-  start_date: isoDate.optional().describe("Start date, YYYY-MM-DD (give this or travel_month)"),
-  travel_month: month.optional().describe("Month of travel, YYYY-MM, when dates are open"),
-  nights: z.int().min(1).max(90),
+  request_type: z
+    .enum(["package", "flights", "hotels"])
+    .default("package")
+    .describe("package: a whole holiday (hotels, transfers, sightseeing, optionally flights). flights: air tickets only. hotels: a hotel stay only"),
+  destination: z
+    .string()
+    .trim()
+    .min(2)
+    .max(200)
+    .describe("package: main destination or route, e.g. 'Bali' or 'Jaipur, Udaipur'. flights: the city flown to. hotels: the city or area of the stay"),
+  start_date: isoDate
+    .optional()
+    .describe("YYYY-MM-DD. package: start date (give this or travel_month). flights: departure date (required). hotels: check-in date (required)"),
+  end_date: isoDate.optional().describe("YYYY-MM-DD. flights: return date; leave out for a one-way trip. hotels: check-out date (required)"),
+  travel_month: month.optional().describe("package only: month of travel, YYYY-MM, when dates are open"),
+  nights: z.int().min(1).max(90).optional().describe("package: number of nights (required). Not used for flights; worked out from the dates for hotels"),
+  rooms: z.int().min(1).max(20).optional().describe("hotels: number of rooms"),
+  cabin_class: z.enum(["economy", "premium_economy", "business", "first"]).optional().describe("flights: cabin class"),
   adults: z.int().min(1).max(50).default(2),
   children: z.int().min(0).max(20).default(0),
   child_ages: z.array(z.int().min(0).max(17)).max(20).optional().describe("One age per child"),
   hotel_tier: tier.optional(),
-  origin_city: z.string().trim().max(100).optional().describe("City the trip starts from, for flights"),
+  origin_city: z.string().trim().max(100).optional().describe("City the trip starts from; required for flights"),
   items: z.array(itemSchema).max(30).optional().describe("Itinerary line items"),
   inclusions_wanted: z.array(z.enum(["flights", "hotel", "transfers", "sightseeing", "meals", "visa", "insurance"])).optional(),
   budget_min: z.number().nonnegative().max(1e9).optional(),
@@ -249,7 +270,7 @@ export const TOOL_DEFINITIONS = {
   request_quote: {
     title: "Request a firm quote",
     description:
-      "Sends a trip to Udan Tours and Travels' pricing desk as a firm quote request for the signed-in user, and returns its reference number. A confirmation is emailed to the user and the request appears in their Udan account, where the priced quote is delivered. Use it when someone wants an exact price for a trip. Requires sign-in.",
+      "Sends a firm quote request to Udan Tours and Travels' pricing desk for the signed-in user and returns its reference number. The request can be a whole holiday package, flights only or a hotel stay only (request_type). A confirmation is emailed to the user and the request appears in their Udan account, where the priced quote is delivered. Use it when someone wants an exact price for a trip, a flight or a hotel. Requires sign-in.",
     inputSchema: requestQuoteInput,
     outputSchema: requestQuoteOutput,
     annotations: { title: "Request a firm quote", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
@@ -390,10 +411,14 @@ export async function requestQuote(ctx: ToolContext, args: Input<typeof requestQ
   if (!ctx.user) return signInError("request_quote");
   const user = ctx.user;
   const parsed = quoteRequestSchema.safeParse({
+    request_type: args.request_type,
     destination: args.destination,
     start_date: args.start_date,
+    end_date: args.end_date,
     travel_month: args.travel_month,
     nights: args.nights,
+    rooms: args.rooms,
+    cabin_class: args.cabin_class,
     adults: args.adults,
     children: args.children,
     child_ages: args.child_ages ?? [],
@@ -415,12 +440,10 @@ export async function requestQuote(ctx: ToolContext, args: Input<typeof requestQ
   const result = await user.data.submitRequest(toIntakePayload({ ...parsed.data, destination_slug: dest?.slug }));
   if ("error" in result) return toolError(`The request could not be created: ${result.error}`);
 
-  const summary = [
-    parsed.data.destination,
-    `${parsed.data.nights} nights`,
-    partyText(parsed.data.adults, parsed.data.children),
-    travelWhen({ start_date: parsed.data.start_date, travel_month: parsed.data.travel_month }),
-  ].join(", ");
+  const summary = tripSummary({
+    ...parsed.data,
+    travel_month: parsed.data.travel_month ? `${parsed.data.travel_month}-01` : undefined,
+  });
   ctx.background(ctx.notify.requestReceived(user, result.reference, summary));
   ctx.background(ctx.notify.staff("new_request", user, result.reference, summary));
 
@@ -447,9 +470,7 @@ export async function getQuote(ctx: ToolContext, args: Input<typeof referenceInp
   const rates = await ctx.publicData.rates();
   const display = q.total_inr != null ? displayPrice(Number(q.total_inr), q.preferred_currency, rates) : null;
   const totalDisplay = display ? (display.approxLabel ? `${display.inr} (${display.approxLabel})` : display.inr) : null;
-  const trip = [q.destination, `${q.nights} nights`, partyText(q.adults, q.children), q.hotel_tier ? HOTEL_TIER_LABELS[q.hotel_tier] : null, travelWhen(q)]
-    .filter(Boolean)
-    .join(", ");
+  const trip = tripSummary(q);
   const accountUrl = `${ctx.appUrl}/account/quotes/${q.reference}`;
   const validUntil = q.valid_until ? new Date(q.valid_until).toISOString().slice(0, 10) : null;
 

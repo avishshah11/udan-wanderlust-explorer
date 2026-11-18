@@ -15,7 +15,7 @@ export default async function AccountHome({ searchParams }: { searchParams: Prom
     supabase.from("customers").select("id, name").eq("user_id", user.id).maybeSingle(),
     supabase
       .from("quote_requests")
-      .select("reference, status, destination, nights, adults, children, hotel_tier, start_date, travel_month, total_sell_inr, valid_until, accepted_at, accept_requested_at, created_at")
+      .select("reference, status, request_type, destination, origin_city, nights, adults, children, rooms, hotel_tier, cabin_class, start_date, end_date, travel_month, total_sell_inr, valid_until, accepted_at, accept_requested_at, created_at")
       .order("created_at", { ascending: false }),
   ]);
 

@@ -7,6 +7,8 @@ import type { Database } from "./database.types";
 type Enums = Database["public"]["Enums"];
 
 export const REQUEST_CHANNELS = ["claude", "web", "email", "staff"] as const;
+export const REQUEST_TYPES = ["package", "flights", "hotels"] as const;
+export const CABIN_CLASSES = ["economy", "premium_economy", "business", "first"] as const;
 export const REQUEST_STATUSES = [
   "queued",
   "pricing",
@@ -52,6 +54,8 @@ export const INCLUSIONS = [
 ] as const;
 
 export type RequestChannel = (typeof REQUEST_CHANNELS)[number];
+export type RequestType = (typeof REQUEST_TYPES)[number];
+export type CabinClass = (typeof CABIN_CLASSES)[number];
 export type RequestStatus = (typeof REQUEST_STATUSES)[number];
 export type HotelTier = (typeof HOTEL_TIERS)[number];
 export type Flexibility = (typeof FLEXIBILITY)[number];
@@ -65,6 +69,8 @@ export type Inclusion = (typeof INCLUSIONS)[number];
 // Compile-time drift checks against the generated database types.
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 true satisfies Same<RequestChannel, Enums["request_channel"]>;
+true satisfies Same<RequestType, Enums["request_type"]>;
+true satisfies Same<CabinClass, Enums["cabin_class"]>;
 true satisfies Same<RequestStatus, Enums["request_status"]>;
 true satisfies Same<HotelTier, Enums["hotel_tier"]>;
 true satisfies Same<Flexibility, Enums["flexibility"]>;
@@ -73,6 +79,19 @@ true satisfies Same<PaymentKind, Enums["payment_kind"]>;
 true satisfies Same<PaymentMethod, Enums["payment_method"]>;
 true satisfies Same<PaymentStatus, Enums["payment_status"]>;
 true satisfies Same<DocumentType, Enums["document_type"]>;
+
+export const REQUEST_TYPE_LABELS: Record<RequestType, string> = {
+  package: "Holiday package",
+  flights: "Flights only",
+  hotels: "Hotel only",
+};
+
+export const CABIN_CLASS_LABELS: Record<CabinClass, string> = {
+  economy: "Economy",
+  premium_economy: "Premium economy",
+  business: "Business",
+  first: "First",
+};
 
 export const HOTEL_TIER_LABELS: Record<HotelTier, string> = {
   "3_star": "3-star",
