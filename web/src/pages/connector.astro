@@ -1,0 +1,106 @@
+---
+import Base from "../layouts/Base.astro";
+import { SITE } from "../lib/site";
+
+const tools = [
+  {
+    name: "get_indicative_price",
+    title: "Typical price for a trip",
+    signIn: false,
+    what: "Gives a typical price range for a destination, number of nights, party size, hotel category and month, taken from Udan's own past quotes, with how many quotes it is based on. Ranges are only shown when we have at least five past quotes to base them on; otherwise it says so, and that a firm quote follows by email.",
+  },
+  {
+    name: "compare_price",
+    title: "Compare a booking-site price",
+    signIn: false,
+    what: "Takes a price you have found on a booking site (the site, the hotel or package, dates, room type, number of travellers and the price) and tells you whether Udan is likely to beat it, with the difference where a typical range exists, and how to ask for an exact quote.",
+  },
+  {
+    name: "request_quote",
+    title: "Request a firm quote",
+    signIn: true,
+    what: "Sends your trip to Udan's pricing desk: destinations, dates or month, nights, travellers, hotel category, budget, flexibility, the items you want, and the currency you would like to see prices in. Returns your reference number; a confirmation is emailed and the request appears in your Udan account.",
+  },
+  {
+    name: "get_quote",
+    title: "Check a quote",
+    signIn: true,
+    what: "Looks up one of your quotes by reference number: its status (received, being priced, quote ready, accepted and awaiting payment, advance received, paid in full), the price and what it includes, and how long the price holds.",
+  },
+  {
+    name: "confirm_booking",
+    title: "Accept a quote",
+    signIn: true,
+    what: "Accepts one of your quotes. The price and inclusions are fixed, the status becomes 'accepted, awaiting payment', and our team is told. No money moves through Claude: payment details come to you by email from our team.",
+  },
+];
+---
+
+<Base
+  title="Udan in Claude"
+  description="Documentation for the Udan Tours and Travels connector for Claude: what it does, how to connect it, how sign-in works, each tool in plain words, and how your data is handled."
+>
+  <section class="container mx-auto max-w-3xl px-4 py-12 md:px-6 md:py-16">
+    <h1 class="text-3xl font-bold text-udan-charcoal md:text-4xl">Udan in Claude</h1>
+    <p class="mt-4 text-lg text-udan-gray">
+      The Udan Tours and Travels connector lets you ask for holiday, hotel and flight quotes from inside a conversation with Claude. Claude can give you a typical price range from our past quotes and compare a price you have found online. When you want an exact price, it sends your trip to our pricing desk, where a member of our family prices it against our supplier rates; the quote arrives in your inbox and your Udan account, and you can read and accept it in Claude.
+    </p>
+
+    <div class="prose-udan mt-10">
+      <h2>How to connect</h2>
+      <ul>
+        <li>In Claude, open <strong>Settings → Connectors</strong> and find <strong>Udan Tours and Travels</strong> in the directory, or choose <strong>Add custom connector</strong> and enter <code>{SITE.mcpUrl}</code>.</li>
+        <li>Turn the connector on in a conversation and ask about a trip, for example "What does a 5-night Bali trip for two cost in May?" or "Can Udan beat this hotel price?"</li>
+        <li>Typical prices and comparisons work without signing in. To request a quote, check one or accept one, Claude asks you to sign in to Udan.</li>
+      </ul>
+
+      <h2>Signing in</h2>
+      <p>
+        Sign-in happens on our own page at app.udantravelsbdq.com, with a one-time link sent to your email or with your Google account. Your email address is your Udan account, the same one you use on our website. Claude receives a token that lets it act for you in the Udan account only: read your own quotes, request new ones and accept them. You can disconnect at any time in Claude's connector settings.
+      </p>
+
+      <h2>What each tool does</h2>
+    </div>
+    <div class="mt-4 space-y-4">
+      {
+        tools.map((t) => (
+          <div class="rounded-xl border border-udan-lightGray p-5">
+            <p class="flex flex-wrap items-center gap-2">
+              <span class="font-semibold text-udan-charcoal">{t.title}</span>
+              <code class="rounded bg-udan-lightGray px-1.5 py-0.5 text-xs">{t.name}</code>
+              <span class:list={["rounded-full px-2 py-0.5 text-xs", t.signIn ? "bg-blue-50 text-blue-800" : "bg-emerald-50 text-emerald-800"]}>
+                {t.signIn ? "needs sign-in" : "no sign-in needed"}
+              </span>
+            </p>
+            <p class="mt-2 text-udan-gray">{t.what}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="prose-udan mt-10">
+      <h2>What the connector does not do</h2>
+      <ul>
+        <li>It never takes or moves money. Payment is arranged by our team by email, by bank transfer, UPI or a card payment link.</li>
+        <li>It does not show supplier net rates, and it never shows a firm price to anyone except the signed-in customer it belongs to.</li>
+        <li>It does not book anything on its own. Accepting a quote tells our team to go ahead once your payment arrives.</li>
+      </ul>
+
+      <h2>Why use Udan</h2>
+      <p>
+        We are a family travel agency in Vadodara, established 1997. We buy hotels, transfers and tours at agent rates, so our firm quotes are often below the prices on online travel agencies. Send us any price you have found and we will tell you honestly whether we can beat it.
+      </p>
+
+      <h2>Your data</h2>
+      <p>
+        When you request a quote, we store the trip details you give us, your email address and, if you share it, your phone number, so we can price the trip and send you the quote. We use them only to arrange your travel. Details are in our <a href="/privacy">privacy policy</a>.
+      </p>
+
+      <h2>Help</h2>
+      <p>
+        Call <a href={`tel:${SITE.phones[0].tel}`}>{SITE.phones[0].display}</a>, email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>, or visit us in Sayajiganj, Vadodara ({SITE.hours[0].days}, {SITE.hours[0].opens} to {SITE.hours[0].closes} IST).
+      </p>
+    </div>
+    <p class="mt-10"><a href="/quote" class="btn-primary">Prefer a form? Get a quote here</a></p>
+  </section>
+</Base>

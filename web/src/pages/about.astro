@@ -1,0 +1,53 @@
+---
+import Base from "../layouts/Base.astro";
+import { SITE } from "../lib/site";
+---
+
+<Base title="About us" description="Udan Tours and Travels is a family travel agency in Sayajiganj, Vadodara, established 1997, arranging holidays, hotels, flights and visas for 10,000+ travellers.">
+  <section class="pb-16 pt-12 md:pt-20">
+    <div class="container mx-auto grid items-center gap-12 px-4 md:px-6 lg:grid-cols-2">
+      <div>
+        <h1 class="mb-6 text-3xl font-bold text-udan-charcoal md:text-4xl">About Udan</h1>
+        <div class="space-y-4 text-udan-gray">
+          <p>
+            Established in 1997, Udan is a family travel agency in Vadodara. From flights to hotels, tours to transfers, visas to travel insurance, we arrange the whole trip.
+          </p>
+          <p>
+            Our way of working is simple: you tell us what you want, and a member of our family prices it against the agent rates we have built up with hotels, airlines and ground handlers over the years. You get one firm quote with everything it includes, and one team looking after you until you are home.
+          </p>
+          <p>
+            Travel is not just about destinations; it is about how the trip feels from start to finish. That is why we still answer the phone ourselves, and why many of our travellers have been coming back to us for years.
+          </p>
+        </div>
+        <ul class="mt-8 grid gap-4 sm:grid-cols-3">
+          <li class="rounded-lg bg-udan-lightGray p-4"><p class="text-xl font-bold text-udan-charcoal">1997</p><p class="text-udan-gray">Established</p></li>
+          <li class="rounded-lg bg-udan-lightGray p-4"><p class="text-xl font-bold text-udan-charcoal">{SITE.travellers}</p><p class="text-udan-gray">Travellers</p></li>
+          <li class="rounded-lg bg-udan-lightGray p-4"><p class="text-xl font-bold text-udan-charcoal">Vadodara</p><p class="text-udan-gray">Our only office</p></li>
+        </ul>
+      </div>
+      <img src="https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=900&q=70" alt="Travellers looking out over a landscape" class="w-full rounded-xl shadow-lg" width="900" height="900" />
+    </div>
+  </section>
+
+  <section class="bg-udan-lightGray py-16">
+    <div class="container mx-auto px-4 md:px-6">
+      <h2 class="mb-10 text-center text-2xl font-bold text-udan-charcoal md:text-3xl">What we care about</h2>
+      <div class="grid gap-8 md:grid-cols-3">
+        <div class="rounded-xl bg-white p-8 shadow-sm"><h3 class="mb-3 text-xl font-semibold text-udan-charcoal">You first</h3><p class="text-udan-gray">We plan around your dates, your party and your budget, not around what is easiest to sell.</p></div>
+        <div class="rounded-xl bg-white p-8 shadow-sm"><h3 class="mb-3 text-xl font-semibold text-udan-charcoal">Honest prices</h3><p class="text-udan-gray">One quote with what is included and what is not, and how long the price holds. No surprises at payment.</p></div>
+        <div class="rounded-xl bg-white p-8 shadow-sm"><h3 class="mb-3 text-xl font-semibold text-udan-charcoal">Responsible travel</h3><p class="text-udan-gray">We work with local guides and hotels that respect the places and people you visit.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-16">
+    <div class="container mx-auto px-4 md:px-6">
+      <div class="mx-auto mb-10 max-w-2xl text-center">
+        <h2 class="mb-4 text-2xl font-bold text-udan-charcoal md:text-3xl">Visit our office</h2>
+        <p class="text-udan-gray">{SITE.address.lines.join(", ")}. Come and plan your next trip with us in person.</p>
+      </div>
+      <iframe src={SITE.mapEmbed} width="100%" height="420" style="border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map of Udan Tours and Travels office" class="rounded-xl shadow-lg"></iframe>
+      <p class="mt-8 text-center"><a href="/quote" class="btn-primary">Get a quote</a></p>
+    </div>
+  </section>
+</Base>

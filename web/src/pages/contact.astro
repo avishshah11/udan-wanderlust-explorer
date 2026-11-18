@@ -1,0 +1,44 @@
+---
+import Base from "../layouts/Base.astro";
+import { SITE } from "../lib/site";
+---
+
+<Base title="Contact us" description="Call, email or visit Udan Tours and Travels in Sayajiganj, Vadodara. Office hours, phone numbers, email, WhatsApp and directions.">
+  <section class="bg-udan-lightGray pb-12 pt-12 md:pt-16">
+    <div class="container mx-auto px-4 text-center md:px-6">
+      <h1 class="mb-4 text-3xl font-bold text-udan-charcoal md:text-4xl">Contact us</h1>
+      <p class="mx-auto max-w-2xl text-udan-gray">
+        For a price on a trip, the quickest way is the <a class="text-udan-orange underline" href="/quote">Get a quote form</a>: it goes straight to our pricing desk and your quote arrives in your inbox. For anything else, call, email or drop in.
+      </p>
+    </div>
+  </section>
+
+  <section class="py-14">
+    <div class="container mx-auto grid gap-10 px-4 md:px-6 lg:grid-cols-2">
+      <dl class="space-y-6">
+        <div>
+          <dt class="text-lg font-semibold text-udan-charcoal">Office</dt>
+          <dd class="text-udan-gray">{SITE.address.lines.map((l) => <>{l}<br /></>)}</dd>
+        </div>
+        <div>
+          <dt class="text-lg font-semibold text-udan-charcoal">Call us</dt>
+          <dd class="space-y-1 text-udan-gray">{SITE.phones.map((p) => <p>{p.label}: <a class="text-udan-orange underline" href={`tel:${p.tel}`}>{p.display}</a></p>)}</dd>
+        </div>
+        <div>
+          <dt class="text-lg font-semibold text-udan-charcoal">WhatsApp</dt>
+          <dd class="text-udan-gray">If you prefer WhatsApp, <a class="text-udan-orange underline" href={SITE.whatsapp}>message us on +91 93762 14442</a>.</dd>
+        </div>
+        <div>
+          <dt class="text-lg font-semibold text-udan-charcoal">Email</dt>
+          <dd><a class="text-udan-orange underline" href={`mailto:${SITE.email}`}>{SITE.email}</a></dd>
+        </div>
+        <div>
+          <dt class="text-lg font-semibold text-udan-charcoal">Office hours (IST)</dt>
+          <dd class="text-udan-gray">{SITE.hours.map((h) => <p>{h.days}: {h.opens} to {h.closes}</p>)}</dd>
+        </div>
+        <div class="pt-2"><a href="/quote" class="btn-primary">Get a quote</a></div>
+      </dl>
+      <iframe src={SITE.mapEmbed} width="100%" height="460" style="border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map of Udan Tours and Travels office" class="rounded-xl shadow-lg"></iframe>
+    </div>
+  </section>
+</Base>

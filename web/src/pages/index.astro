@@ -1,0 +1,125 @@
+---
+import { getCollection } from "astro:content";
+import DestinationCarousel from "../components/DestinationCarousel";
+import Base from "../layouts/Base.astro";
+import { SITE } from "../lib/site";
+
+const destinations = (await getCollection("destinations"))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map((d) => ({ slug: d.id, name: d.data.name, country: d.data.country, summary: d.data.summary, image: d.data.image, imageAlt: d.data.imageAlt }));
+
+const steps = [
+  ["Tell us the trip", "Where, when, how many of you, and a budget if you have one. Or send us a price you have seen on a booking site."],
+  ["We price it against our supplier rates", "A member of our family checks the agent rates we have built up with hotels and suppliers since 1997, line by line."],
+  ["Your quote arrives in your inbox", "It sits in your Udan account with everything included and how long the price holds. Accept it there, and we take it from there."],
+];
+
+const services = [
+  ["Holiday packages", "Domestic and international, built around your dates, your party and your budget."],
+  ["Hotels", "From 3-star to the best resorts, at the rates we get as an agent."],
+  ["Flights", "Fares for your dates from Vadodara, Ahmedabad, Mumbai or wherever you start."],
+  ["Visa services", "Guidance on documents and appointments for tourist and business visas."],
+  ["Travel insurance", "Cover for medical emergencies, cancellations and lost baggage."],
+  ["Cruises", "Ocean and river cruises, with flights and hotel nights before or after."],
+];
+---
+
+<Base
+  title="Holiday packages, hotels and flights from Vadodara"
+  description="Udan Tours and Travels, a family travel agency in Vadodara established 1997. Tell us your trip and we price it against our supplier rates; your quote arrives in your inbox."
+>
+  <section class="pb-16 pt-12 md:pb-24 md:pt-20">
+    <div class="container mx-auto grid items-center gap-12 px-4 md:px-6 lg:grid-cols-2">
+      <div class="space-y-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-udan-orange">{SITE.foundedText} · Vadodara</p>
+        <h1 class="text-4xl font-bold leading-tight text-udan-charcoal md:text-5xl lg:text-6xl">
+          Your trip, priced by our family at <span class="text-udan-orange">agent rates</span>
+        </h1>
+        <p class="max-w-lg text-lg text-udan-gray md:text-xl">
+          Tell us where you want to go. We check our supplier rates for your dates and send a firm quote to your inbox. Seen a lower price online? Send it and we will try to beat it.
+        </p>
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <a href="/quote" class="btn-primary px-8 py-3 text-lg">Get a quote</a>
+          <a href="/beat-my-price" class="btn-outline px-8 py-3 text-lg">Beat my price</a>
+        </div>
+      </div>
+      <div class="relative grid grid-cols-2 gap-4">
+        <div class="flex flex-col gap-4">
+          <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=700&q=70" alt="Mountain valley at sunrise" class="max-h-60 w-full rounded-xl object-cover" width="700" height="460" />
+          <img src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=700&q=70" alt="Waves on a beach" class="max-h-60 w-full rounded-xl object-cover" width="700" height="460" loading="lazy" />
+        </div>
+        <img src="https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=700&q=70" alt="Deer in a meadow below mountains" class="mt-8 h-full w-full rounded-xl object-cover" width="700" height="900" />
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-udan-lightGray py-8">
+    <ul class="container mx-auto grid gap-6 px-4 text-center sm:grid-cols-2 md:px-6 lg:grid-cols-4">
+      <li><p class="text-2xl font-bold text-udan-charcoal">1997</p><p class="text-sm text-udan-gray">Established in Vadodara</p></li>
+      <li><p class="text-2xl font-bold text-udan-charcoal">{SITE.travellers}</p><p class="text-sm text-udan-gray">Travellers</p></li>
+      <li><p class="text-2xl font-bold text-udan-charcoal">Sayajiganj</p><p class="text-sm text-udan-gray">Our office, opposite M.S. University</p></li>
+      <li><p class="text-2xl font-bold text-udan-charcoal">India and abroad</p><p class="text-sm text-udan-gray">Domestic and international trips</p></li>
+    </ul>
+  </section>
+
+  <section class="py-16 md:py-24">
+    <div class="container mx-auto px-4 md:px-6">
+      <h2 class="mb-10 text-center text-2xl font-bold text-udan-charcoal md:text-3xl">How a quote works</h2>
+      <ol class="grid gap-8 md:grid-cols-3">
+        {
+          steps.map(([title, text], i) => (
+            <li class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+              <span class="flex h-10 w-10 items-center justify-center rounded-full bg-udan-orange/10 font-bold text-udan-orange">{i + 1}</span>
+              <h3 class="mt-4 text-lg font-semibold text-udan-charcoal">{title}</h3>
+              <p class="mt-2 text-udan-gray">{text}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="mt-8 text-center"><a href="/quote" class="btn-primary">Get a quote</a></p>
+    </div>
+  </section>
+
+  <section class="bg-udan-lightGray py-16 md:py-24">
+    <div class="container mx-auto px-4 md:px-6">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <h2 class="text-2xl font-bold text-udan-charcoal md:text-3xl">Popular with our travellers</h2>
+        <a href="/packages" class="font-medium text-udan-orange hover:underline">All destinations</a>
+      </div>
+      <div class="mt-4">
+        <DestinationCarousel client:visible destinations={destinations} />
+      </div>
+    </div>
+  </section>
+
+  <section class="py-16 md:py-24">
+    <div class="container mx-auto px-4 md:px-6">
+      <h2 class="mb-10 text-center text-2xl font-bold text-udan-charcoal md:text-3xl">What we arrange</h2>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {
+          services.map(([title, text]) => (
+            <div class="rounded-xl border border-udan-lightGray p-6">
+              <h3 class="text-lg font-semibold text-udan-charcoal">{title}</h3>
+              <p class="mt-2 text-udan-gray">{text}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-16 md:pb-24">
+    <div class="container mx-auto grid gap-6 px-4 md:grid-cols-2 md:px-6">
+      <div class="rounded-2xl bg-udan-orange/10 p-8">
+        <h2 class="text-2xl font-bold text-udan-charcoal">Seen a price on a booking site?</h2>
+        <p class="mt-3 text-udan-gray">Send us a screenshot or the details. We price the same trip at our agent rates and tell you whether we can beat it.</p>
+        <a href="/beat-my-price" class="btn-primary mt-6">Beat my price</a>
+      </div>
+      <div class="rounded-2xl bg-udan-lightGray p-8">
+        <h2 class="text-2xl font-bold text-udan-charcoal">Planning your trip in Claude?</h2>
+        <p class="mt-3 text-udan-gray">Add Udan to Claude and ask for a quote without leaving the conversation. Your quote still comes from our family, to your inbox.</p>
+        <a href="/connector" class="btn-outline mt-6">Udan in Claude</a>
+      </div>
+    </div>
+  </section>
+</Base>

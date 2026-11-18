@@ -1,0 +1,175 @@
+---
+// The Get a quote form. Plain HTML that posts to the app, so it works with
+// JavaScript off; a small script only fills in the visitor's time zone and
+// currency and pre-selects a destination from ?destination=.
+import { DISPLAY_CURRENCIES } from "@udan/core/currency";
+import { FLEXIBILITY, FLEXIBILITY_LABELS, HOTEL_TIERS, HOTEL_TIER_LABELS, INCLUSIONS, INCLUSION_LABELS } from "@udan/core/domain";
+import { getCollection } from "astro:content";
+import { SITE } from "../lib/site";
+
+interface Props {
+  /** Beat-my-price puts the OTA price and screenshot first. */
+  screenshotFirst?: boolean;
+}
+const { screenshotFirst = false } = Astro.props;
+const destinations = (await getCollection("destinations")).map((d) => d.data.name).sort();
+const action = `${SITE.appUrl}/api/quote-requests`;
+---
+
+<form method="post" action={action} enctype="multipart/form-data" class="space-y-8" id="quote-form">
+  <div class="hidden" aria-hidden="true">
+    <label>Company (leave empty) <input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
+  </div>
+  <input type="hidden" name="time_zone" value="" />
+
+  {
+    screenshotFirst && (
+      <fieldset class="grid gap-4 rounded-xl border-2 border-dashed border-udan-orange/40 bg-udan-orange/5 p-5 md:grid-cols-2">
+        <legend class="px-1 text-base font-semibold text-udan-charcoal">The price you want us to beat</legend>
+        <div class="md:col-span-2">
+          <label class="label" for="screenshot-first">Screenshot of the price (optional)</label>
+          <input id="screenshot-first" class="block w-full text-sm" type="file" name="screenshot" accept="image/*,application/pdf" />
+          <p class="mt-1 text-xs text-udan-gray">A screenshot from the booking site is fine. We read it by hand.</p>
+        </div>
+        <div><label class="label" for="ota_name">Website</label><input class="field" id="ota_name" name="ota_name" placeholder="The site you saw it on" /></div>
+        <div><label class="label" for="ota_product">Hotel or package</label><input class="field" id="ota_product" name="ota_product" /></div>
+        <div><label class="label" for="ota_room">Room type</label><input class="field" id="ota_room" name="ota_room" /></div>
+        <div class="grid grid-cols-[1fr_7rem] gap-3">
+          <div><label class="label" for="ota_price">Price</label><input class="field" id="ota_price" name="ota_price" inputmode="numeric" /></div>
+          <div>
+            <label class="label" for="ota_currency">Currency</label>
+            <select class="field" id="ota_currency" name="ota_currency">{DISPLAY_CURRENCIES.map((c) => <option value={c}>{c}</option>)}</select>
+          </div>
+        </div>
+      </fieldset>
+    )
+  }
+
+  <fieldset class="grid gap-4 md:grid-cols-3">
+    <legend class="mb-3 text-base font-semibold text-udan-charcoal">Your trip</legend>
+    <div class="md:col-span-2">
+      <label class="label" for="destination">Where would you like to go?</label>
+      <input class="field" id="destination" name="destination" list="destination-list" required minlength="2" placeholder="Kerala, Bali, Dubai…" />
+      <datalist id="destination-list">{destinations.map((d) => <option value={d} />)}</datalist>
+    </div>
+    <div><label class="label" for="origin_city">Travelling from</label><input class="field" id="origin_city" name="origin_city" placeholder="Vadodara" /></div>
+    <div><label class="label" for="start_date">Start date</label><input class="field" id="start_date" name="start_date" type="date" /></div>
+    <div><label class="label" for="travel_month">Or just the month</label><input class="field" id="travel_month" name="travel_month" type="month" placeholder="YYYY-MM" /></div>
+    <div><label class="label" for="nights">Nights</label><input class="field" id="nights" name="nights" type="number" min="1" max="90" required /></div>
+    <div><label class="label" for="adults">Adults</label><input class="field" id="adults" name="adults" type="number" min="1" max="50" value="2" required /></div>
+    <div><label class="label" for="children">Children</label><input class="field" id="children" name="children" type="number" min="0" max="20" value="0" /></div>
+    <div><label class="label" for="child_ages">Children's ages</label><input class="field" id="child_ages" name="child_ages" placeholder="e.g. 6, 9" /></div>
+    <div>
+      <label class="label" for="hotel_tier">Hotel category</label>
+      <select class="field" id="hotel_tier" name="hotel_tier">
+        <option value="">No preference</option>
+        {HOTEL_TIERS.map((t) => <option value={t}>{HOTEL_TIER_LABELS[t]}</option>)}
+      </select>
+    </div>
+    <div>
+      <label class="label" for="flexibility">Dates</label>
+      <select class="field" id="flexibility" name="flexibility">{FLEXIBILITY.map((f) => <option value={f}>{FLEXIBILITY_LABELS[f]}</option>)}</select>
+    </div>
+    <div class="grid grid-cols-[1fr_1fr_6.5rem] gap-3 md:col-span-2">
+      <div><label class="label" for="budget_min">Budget from</label><input class="field" id="budget_min" name="budget_min" inputmode="numeric" /></div>
+      <div><label class="label" for="budget_max">Budget up to</label><input class="field" id="budget_max" name="budget_max" inputmode="numeric" /></div>
+      <div>
+        <label class="label" for="budget_currency">Currency</label>
+        <select class="field" id="budget_currency" name="budget_currency">{DISPLAY_CURRENCIES.map((c) => <option value={c}>{c}</option>)}</select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend class="mb-3 text-base font-semibold text-udan-charcoal">What should we include?</legend>
+    <div class="flex flex-wrap gap-x-6 gap-y-2">
+      {
+        INCLUSIONS.map((i) => (
+          <label class="flex items-center gap-2 text-sm text-udan-charcoal">
+            <input type="checkbox" name="inclusions_wanted" value={i} checked={i === "hotel" || i === "transfers"} />
+            {INCLUSION_LABELS[i]}
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>
+
+  <div>
+    <label class="label" for="itinerary">Your itinerary, if you have one</label>
+    <textarea class="field h-auto py-2" id="itinerary" name="itinerary" rows="4" placeholder={"One item per line, for example:\nhotel: Ubud, 3 nights, pool villa\nflight: Ahmedabad to Bali, return"}></textarea>
+  </div>
+
+  {
+    !screenshotFirst && (
+      <details class="rounded-xl border border-dashed p-5">
+        <summary class="cursor-pointer font-semibold text-udan-charcoal">Seen a price elsewhere? Send it and we will try to beat it</summary>
+        <div class="mt-4 grid gap-4 md:grid-cols-2">
+          <div class="md:col-span-2">
+            <label class="label" for="screenshot">Screenshot of the price (optional)</label>
+            <input id="screenshot" class="block w-full text-sm" type="file" name="screenshot" accept="image/*,application/pdf" />
+          </div>
+          <div><label class="label" for="ota_name">Website</label><input class="field" id="ota_name" name="ota_name" /></div>
+          <div><label class="label" for="ota_product">Hotel or package</label><input class="field" id="ota_product" name="ota_product" /></div>
+          <div><label class="label" for="ota_room">Room type</label><input class="field" id="ota_room" name="ota_room" /></div>
+          <div class="grid grid-cols-[1fr_7rem] gap-3">
+            <div><label class="label" for="ota_price">Price</label><input class="field" id="ota_price" name="ota_price" inputmode="numeric" /></div>
+            <div>
+              <label class="label" for="ota_currency">Currency</label>
+              <select class="field" id="ota_currency" name="ota_currency">{DISPLAY_CURRENCIES.map((c) => <option value={c}>{c}</option>)}</select>
+            </div>
+          </div>
+        </div>
+      </details>
+    )
+  }
+
+  <div>
+    <label class="label" for="customer_notes">Anything else we should know?</label>
+    <textarea class="field h-auto py-2" id="customer_notes" name="customer_notes" rows="3" placeholder="Occasion, dietary needs, places you'd love to see"></textarea>
+  </div>
+
+  <fieldset class="grid gap-4 rounded-xl bg-udan-lightGray p-5 md:grid-cols-3">
+    <legend class="sr-only">Your details</legend>
+    <div><label class="label" for="name">Your name</label><input class="field" id="name" name="name" autocomplete="name" required /></div>
+    <div><label class="label" for="email">Email</label><input class="field" id="email" name="email" type="email" autocomplete="email" required /></div>
+    <div><label class="label" for="phone">Phone (optional)</label><input class="field" id="phone" name="phone" type="tel" autocomplete="tel" /></div>
+    <div>
+      <label class="label" for="preferred_currency">Show prices also in</label>
+      <select class="field" id="preferred_currency" name="preferred_currency">
+        {DISPLAY_CURRENCIES.map((c) => <option value={c}>{c === "INR" ? "INR only" : c}</option>)}
+      </select>
+    </div>
+    <p class="text-sm text-udan-gray md:col-span-2 md:self-end">
+      Your email is your Udan account. We send you a sign-in link and your reference number, and your quote arrives in your account and your inbox.
+    </p>
+  </fieldset>
+
+  <div class="flex flex-wrap items-center gap-4">
+    <button type="submit" class="btn-primary px-8 py-3 text-base">Send my request</button>
+    <p class="text-sm text-udan-gray">
+      No payment now. By sending this you agree to our <a class="underline" href="/terms">terms</a> and <a class="underline" href="/privacy">privacy policy</a>.
+    </p>
+  </div>
+</form>
+
+<script>
+  import { currencyForLocale } from "@udan/core/currency";
+
+  const form = document.getElementById("quote-form") as HTMLFormElement | null;
+  if (form) {
+    const tz = form.elements.namedItem("time_zone") as HTMLInputElement | null;
+    if (tz) tz.value = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
+
+    const currency = currencyForLocale(navigator.language);
+    if (currency) {
+      for (const name of ["preferred_currency", "budget_currency"]) {
+        const select = form.elements.namedItem(name) as HTMLSelectElement | null;
+        if (select) select.value = currency;
+      }
+    }
+
+    const destination = new URLSearchParams(location.search).get("destination");
+    const destInput = form.elements.namedItem("destination") as HTMLInputElement | null;
+    if (destination && destInput && !destInput.value) destInput.value = destination.slice(0, 200);
+  }
+</script>

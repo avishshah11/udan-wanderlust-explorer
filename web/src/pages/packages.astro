@@ -1,0 +1,40 @@
+---
+import { getCollection } from "astro:content";
+import DestinationCard from "../components/DestinationCard.astro";
+import Base from "../layouts/Base.astro";
+
+const all = (await getCollection("destinations")).sort((a, b) => a.data.order - b.data.order);
+const card = (d: (typeof all)[number]) => ({ slug: d.id, ...d.data });
+const india = all.filter((d) => d.data.domestic).map(card);
+const abroad = all.filter((d) => !d.data.domestic).map(card);
+---
+
+<Base title="Destinations and holiday packages" description="Holiday packages in India and abroad from Udan Tours and Travels, Vadodara: Kerala, Rajasthan, Goa, Ladakh, Bali, the Maldives and more, priced for your dates.">
+  <section class="bg-udan-lightGray pb-12 pt-12 md:pt-16">
+    <div class="container mx-auto px-4 text-center md:px-6">
+      <h1 class="mb-4 text-3xl font-bold text-udan-charcoal md:text-4xl">Destinations and holiday packages</h1>
+      <p class="mx-auto max-w-2xl text-udan-gray">
+        Every package is built for your dates and your party, and priced against our supplier rates. Here are some of the places our travellers ask about most; we arrange trips almost anywhere.
+      </p>
+    </div>
+  </section>
+  <section class="py-14">
+    <div class="container mx-auto px-4 md:px-6">
+      <h2 class="mb-8 text-2xl font-bold text-udan-charcoal md:text-3xl">In India</h2>
+      <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">{india.map((d) => <DestinationCard {...d} />)}</div>
+    </div>
+  </section>
+  <section class="bg-udan-lightGray py-14">
+    <div class="container mx-auto px-4 md:px-6">
+      <h2 class="mb-8 text-2xl font-bold text-udan-charcoal md:text-3xl">Abroad</h2>
+      <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">{abroad.map((d) => <DestinationCard {...d} />)}</div>
+    </div>
+  </section>
+  <section class="py-14">
+    <div class="container mx-auto px-4 text-center md:px-6">
+      <h2 class="mb-4 text-2xl font-bold text-udan-charcoal md:text-3xl">Somewhere else in mind?</h2>
+      <p class="mx-auto mb-8 max-w-2xl text-udan-gray">Tell us where and when, and we will price it.</p>
+      <a href="/quote" class="btn-primary">Get a quote</a>
+    </div>
+  </section>
+</Base>
