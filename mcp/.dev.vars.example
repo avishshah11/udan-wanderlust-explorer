@@ -1,0 +1,9 @@
+# Copy to .dev.vars for `pnpm --filter @udan/mcp dev`. Values for the local
+# Supabase stack come from `supabase status`.
+SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_PUBLISHABLE_KEY=
+MCP_URL=http://localhost:8787/mcp
+APP_URL=http://localhost:3000
+DOCS_URL=http://localhost:4321/connector
+STAFF_ALERT_EMAIL=desk@udan.test
+# RESEND_API_KEY=   # without it, emails are printed to the log
