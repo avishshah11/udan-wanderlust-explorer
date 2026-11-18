@@ -23,10 +23,10 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./legacy/*"],
       "react": ["./node_modules/@types/react"],
       "react/*": ["./node_modules/@types/react/*"]
     }
   },
-  "include": ["src"]
+  "include": ["legacy"]
 }
