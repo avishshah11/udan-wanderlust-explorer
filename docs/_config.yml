@@ -1,0 +1,6 @@
+# Until the Astro cutover, GitHub Pages builds the live website from this
+# folder with Jekyll. The Markdown files here are repository documentation
+# (runbooks, MCP test log, review checklist) and must not be published.
+exclude:
+  - "*.md"
+  - runbooks

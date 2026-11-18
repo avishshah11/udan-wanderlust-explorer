@@ -38,3 +38,4 @@ supabase/.branches
 .env.*
 !.env.example
 .dev.vars
+web/legacy-dist

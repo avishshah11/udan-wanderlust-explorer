@@ -78,6 +78,15 @@ Work that waits on these decisions:
 
 ## Engineering follow-ups
 
+- [ ] Deploy the MCP Worker and test it as a custom connector in Claude
+      (`docs/mcp-test-log.md`, "Still to do"). Needs the hosted Supabase
+      project with its OAuth server enabled, and the udantravelsbdq.com DNS
+      zone on Cloudflare for the mcp. custom domain (or another host).
+- [ ] Directory submission: square icon, listing copy, test access
+      (`docs/review-checklist.md`).
+- [ ] Spam protection on the public quote form beyond the honeypot and the
+      per-email limit (e.g. Cloudflare Turnstile) if bots find it.
+
 - [ ] Daily FX feed. `fx_rates` is seeded with RBI reference rates for
       6 Nov 2026 (AED via the USD peg), labelled approximate. Pick a source
       and add a daily job.

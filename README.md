@@ -17,10 +17,10 @@ accepts in their account; staff collect payment by hand and record it.
 | --- | --- | --- |
 | `web/` | Public website: static Astro site in `web/src` (ready, not yet live); the original Vite/React SPA in `web/legacy` still builds the live `docs/` until cutover | Phase 3 done, cutover pending |
 | `app/` | Next.js app at app.udantravelsbdq.com: customer account, staff pricing desk, public quote-form endpoint | done (Phase 1-2) |
-| `mcp/` | Remote MCP server (Cloudflare Workers) at mcp.udantravelsbdq.com | Phase 4 |
+| `mcp/` | Remote MCP server (Cloudflare Workers) at mcp.udantravelsbdq.com: the Claude connector, OAuth via Supabase | done (Phase 4), not deployed |
 | `supabase/` | Migrations, row level security, database functions, dev seed, pgTAP tests | done (Phase 0) |
 | `packages/core` | Shared types, markup calculation, currency display, customer status copy, request schema, email templates and senders | done |
-| `docs/` | **Today: the live website build output** served by GitHub Pages (`main:/docs`). Becomes documentation only after the Astro cutover | live |
+| `docs/` | **Today: the live website build output** served by GitHub Pages (`main:/docs`), plus documentation kept off the site by `docs/_config.yml`: `runbooks/`, `mcp-test-log.md`, `review-checklist.md`. Documentation only after the Astro cutover | live |
 | `planning/` | PRD and build prompt | reference |
 
 ## Prerequisites
@@ -116,6 +116,35 @@ recorded in `audit_log`.
 
 Emails go out after the response (`after()`), so accepting a quote and
 sending one are instant for the person clicking.
+
+### Claude connector (`mcp/`)
+
+```bash
+cp mcp/.dev.vars.example mcp/.dev.vars
+```
+
+Fill in the local publishable key, then:
+
+```bash
+pnpm --filter @udan/mcp dev
+```
+
+The MCP endpoint is `http://localhost:8787/mcp`. Try it with the MCP
+Inspector:
+
+```bash
+npx @modelcontextprotocol/inspector --cli http://localhost:8787/mcp --transport http --method tools/list
+```
+
+Five tools: `get_indicative_price` and `compare_price` (no sign-in),
+`request_quote`, `get_quote` and `confirm_booking` (sign-in). Sign-in is
+OAuth 2.1 with Supabase Auth as the authorization server (dynamic client
+registration, PKCE); people sign in and approve on the app's
+`/oauth/consent` page. Calling a sign-in tool without a token returns HTTP
+401 with a `WWW-Authenticate` challenge, which starts the client's OAuth
+flow. Set `AUTH_MODE=all` to require sign-in for every request. Test results
+are in `docs/mcp-test-log.md`; the directory checklist is in
+`docs/review-checklist.md`.
 
 ### Website (`web/`)
 
@@ -245,6 +274,42 @@ In the Supabase dashboard for the hosted project:
 
 Resend: verify the sending domain (DNS records shown in Resend) before setting
 `EMAIL_FROM` to an address on it.
+
+### Claude connector (Cloudflare Workers)
+
+1. Supabase dashboard > Authentication > OAuth Server: enable it, allow
+   dynamic client registration, authorization path `/oauth/consent` (the
+   local equivalents are in `supabase/config.toml`).
+2. In `mcp/wrangler.jsonc`, set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`
+   for the hosted project, then add secrets:
+
+   ```bash
+   pnpm --filter @udan/mcp exec wrangler secret put RESEND_API_KEY
+   ```
+
+   ```bash
+   pnpm --filter @udan/mcp exec wrangler secret put STAFF_ALERT_EMAIL
+   ```
+
+3. Deploy:
+
+   ```bash
+   pnpm --filter @udan/mcp deploy
+   ```
+
+4. Custom domain: a Worker can serve `mcp.udantravelsbdq.com` only if the
+   `udantravelsbdq.com` DNS zone is on Cloudflare (nameserver change; the
+   apex records keep pointing at GitHub Pages). Then uncomment the `routes`
+   entry in `wrangler.jsonc` and deploy again.
+5. Repeat the Inspector run against the deployed URL, add it to Claude as a
+   custom connector, and record the results in `docs/mcp-test-log.md` before
+   submitting to the directory.
+
+For the directory reviewer, after they sign in once:
+
+```bash
+psql "$DATABASE_URL" -v email=reviewer@example.com -f supabase/scripts/test-account.sql
+```
 
 ## Rules every surface follows
 
