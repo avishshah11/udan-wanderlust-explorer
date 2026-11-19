@@ -1,0 +1,72 @@
+---
+import Base from "../layouts/Base.astro";
+import { SITE } from "../lib/site";
+---
+
+<Base title="Terms and conditions" description="Terms for quotes, bookings, payments, cancellations and use of the Udan Tours and Travels website, account and Claude connector.">
+  <section class="container mx-auto max-w-3xl px-4 py-12 md:px-6 md:py-16">
+    <h1 class="text-3xl font-bold text-udan-charcoal md:text-4xl">Terms and conditions</h1>
+    <div class="prose-udan mt-6">
+      <p>Last updated: 18 November 2026</p>
+
+      <h2>1. Introduction</h2>
+      <p>These terms govern your use of the Udan Tours and Travels website, your Udan account, the Udan connector for Claude, and the travel services we arrange. By using them, you agree to these terms. If you do not agree, please do not use our website or services.</p>
+
+      <h2>2. Definitions</h2>
+      <p>
+        "Website" means udantravelsbdq.com. "Account" means your Udan account at app.udantravelsbdq.com. "Connector" means the Udan connector for Claude. "Services" means the travel services arranged by Udan Tours and Travels. "You" means the person using them, and "we", "us" and "Udan" mean Udan Tours and Travels.
+      </p>
+
+      <h2>3. Quotes</h2>
+      <h3>3.1 Typical prices</h3>
+      <p>Typical price ranges on the website or given through Claude are based on our past quotes. They are a guide, not an offer.</p>
+      <h3>3.2 Firm quotes</h3>
+      <p>A firm quote is sent to your email and your account. It lists what is included and not included, and the date until which the price holds. Supplier prices change, so after that date we re-check prices before confirming.</p>
+      <h3>3.3 Accepting a quote</h3>
+      <p>Accepting a quote in your account or through Claude fixes its price and inclusions and asks us to go ahead. Your booking is confirmed once your payment (or deposit, as stated in the quote) reaches us and we confirm with the suppliers. All bookings are subject to availability.</p>
+
+      <h2>4. Payment</h2>
+      <p>We do not take payment on the website, in your account or through Claude. We send payment details by email: bank transfer, UPI, or a card payment link from our payment provider. You can also pay in person at our office. Prices are in Indian rupees (INR) and include applicable taxes unless the quote says otherwise; amounts shown in other currencies are approximate and for information only.</p>
+
+      <h2>5. Documents</h2>
+      <p>It is your responsibility to have all necessary travel documents, including valid passports, visas, vaccinations and insurance. We help with visas, but the decision is the embassy's, and we are not responsible for the consequences of missing or invalid documents.</p>
+
+      <h2>6. Cancellations and refunds</h2>
+      <h3>6.1 Cancellation by you</h3>
+      <p>Cancellation terms depend on the services booked and will be given with your quote. In general:</p>
+      <ul>
+        <li>Cancellations 30 days or more before departure: full refund minus administrative fees</li>
+        <li>Cancellations 15 to 29 days before departure: 50% refund</li>
+        <li>Cancellations 0 to 14 days before departure: no refund</li>
+      </ul>
+      <h3>6.2 Cancellation by us</h3>
+      <p>We may cancel a booking because of circumstances beyond our control, including natural disasters, political instability or insufficient participation. In that case we will offer you an alternative or a full refund.</p>
+
+      <h2>7. Limitation of liability</h2>
+      <p>We act as an intermediary between you and travel suppliers (airlines, hotels, transport companies and others). We choose them with care, but we are not responsible for their acts or omissions, or for loss, damage, injury or inconvenience caused by their services, or by circumstances beyond our control such as natural disasters, war or civil unrest, government action, mechanical breakdowns, or theft or loss of belongings.</p>
+
+      <h2>8. Travel insurance</h2>
+      <p>We strongly recommend comprehensive travel insurance covering cancellation, medical emergencies, personal accident and baggage.</p>
+
+      <h2>9. Your account and the Claude connector</h2>
+      <p>You are responsible for keeping access to your email account secure, since sign-in links are sent there. When you connect the Udan connector in Claude, Claude can read your quotes, request quotes and accept quotes on your behalf when you ask it to. Check a quote before you ask Claude to accept it.</p>
+
+      <h2>10. Use of the website</h2>
+      <p>You may use the website for lawful purposes only. You agree not to copy or resell any part of it, access it in an unauthorised way, transmit harmful material, or try to access our systems or other customers' data.</p>
+
+      <h2>11. Changes</h2>
+      <p>We may change these terms. Changes apply from the date they are posted; terms in a quote you have already accepted do not change.</p>
+
+      <h2>12. Governing law</h2>
+      <p>These terms are governed by the laws of India. Disputes are subject to the exclusive jurisdiction of the courts of Vadodara, Gujarat, India.</p>
+
+      <h2>13. Contact</h2>
+      <p>
+        {SITE.name}<br />
+        {SITE.address.lines.map((l) => <>{l}<br /></>)}
+        Email: <a href={`mailto:${SITE.email}`}>{SITE.email}</a><br />
+        Phone: <a href={`tel:${SITE.phones[1].tel}`}>{SITE.phones[1].display}</a>
+      </p>
+    </div>
+  </section>
+</Base>

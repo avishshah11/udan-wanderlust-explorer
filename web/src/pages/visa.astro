@@ -1,0 +1,72 @@
+---
+import Base from "../layouts/Base.astro";
+
+const countries = [
+  { name: "United States", flag: "🇺🇸", types: ["Tourist", "Business", "Student", "Work"] },
+  { name: "Canada", flag: "🇨🇦", types: ["Tourist", "Business", "Student", "Work"] },
+  { name: "United Kingdom", flag: "🇬🇧", types: ["Tourist", "Business", "Student", "Work"] },
+  { name: "Schengen (Europe)", flag: "🇪🇺", types: ["Tourist", "Business", "Student", "Work"] },
+  { name: "Australia", flag: "🇦🇺", types: ["Tourist", "Business", "Student", "Work"] },
+  { name: "Singapore", flag: "🇸🇬", types: ["Tourist", "Business", "Work"] },
+  { name: "United Arab Emirates", flag: "🇦🇪", types: ["Tourist", "Business", "Work"] },
+  { name: "Japan", flag: "🇯🇵", types: ["Tourist", "Business", "Student", "Work"] },
+];
+const steps = [
+  ["Consultation", "We understand your travel plans and tell you which visa you need and what it takes."],
+  ["Documents", "We give you a checklist for the embassy and check your documents before you submit them."],
+  ["Application", "We help you fill in the forms and book appointments, and keep track of the application."],
+  ["Decision", "You collect your visa and get ready for the trip."],
+];
+---
+
+<Base title="Visa services" description="Visa help from Udan Tours and Travels, Vadodara, established 1997: tourist, business and student visas for the US, UK, Canada, Schengen, Australia, Singapore, UAE and Japan.">
+  <section class="bg-udan-lightGray pb-12 pt-12 md:pt-16">
+    <div class="container mx-auto px-4 text-center md:px-6">
+      <h1 class="mb-4 text-3xl font-bold text-udan-charcoal md:text-4xl">Visa services</h1>
+      <p class="mx-auto max-w-2xl text-udan-gray">Established in 1997, we help travellers from Vadodara and across Gujarat with visas for all the countries they visit most.</p>
+    </div>
+  </section>
+
+  <section class="py-14">
+    <div class="container mx-auto grid gap-6 px-4 md:grid-cols-3 md:px-6">
+      <div class="rounded-lg p-6 shadow-md"><h2 class="mb-2 text-xl font-semibold text-udan-charcoal">Established 1997</h2><p class="text-udan-gray">Visa guidance from the same Vadodara office for decades.</p></div>
+      <div class="rounded-lg p-6 shadow-md"><h2 class="mb-2 text-xl font-semibold text-udan-charcoal">Most destinations</h2><p class="text-udan-gray">Tourist, business, student and work visas for the countries Indian travellers visit most.</p></div>
+      <div class="rounded-lg p-6 shadow-md"><h2 class="mb-2 text-xl font-semibold text-udan-charcoal">Personal help</h2><p class="text-udan-gray">One person from our team guides you through the documents and the appointment.</p></div>
+    </div>
+  </section>
+
+  <section class="bg-udan-lightGray py-14">
+    <div class="container mx-auto px-4 md:px-6">
+      <h2 class="mb-8 text-center text-2xl font-bold text-udan-charcoal md:text-3xl">Popular visa destinations</h2>
+      <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          countries.map((c) => (
+            <li class="rounded-lg bg-white p-5 shadow-md">
+              <p class="text-3xl" aria-hidden="true">{c.flag}</p>
+              <h3 class="mt-2 text-lg font-semibold text-udan-charcoal">{c.name}</h3>
+              <p class="mt-2 flex flex-wrap gap-2">{c.types.map((t) => <span class="rounded-full bg-udan-orange/10 px-2 py-1 text-xs text-udan-orange">{t}</span>)}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="py-14">
+    <div class="container mx-auto px-4 md:px-6">
+      <h2 class="mb-10 text-center text-2xl font-bold text-udan-charcoal md:text-3xl">How it works</h2>
+      <ol class="grid gap-8 md:grid-cols-4">
+        {steps.map(([t, d], i) => <li class="text-center"><span class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-udan-orange/10 text-xl font-bold text-udan-orange">{i + 1}</span><h3 class="mb-2 text-lg font-semibold text-udan-charcoal">{t}</h3><p class="text-udan-gray">{d}</p></li>)}
+      </ol>
+      <p class="mx-auto mt-10 max-w-2xl text-center text-sm text-udan-gray">The decision on every visa is the embassy's. We help you apply correctly; we cannot promise an outcome.</p>
+    </div>
+  </section>
+
+  <section class="bg-udan-orange/5 py-14">
+    <div class="container mx-auto px-4 text-center md:px-6">
+      <h2 class="mb-4 text-2xl font-bold text-udan-charcoal md:text-3xl">Need a visa with your trip?</h2>
+      <p class="mx-auto mb-8 max-w-2xl text-udan-gray">Tick "Visa" on the quote form and we will include it, or call us to talk through a visa on its own.</p>
+      <a href="/quote" class="btn-primary">Get a quote</a>
+    </div>
+  </section>
+</Base>

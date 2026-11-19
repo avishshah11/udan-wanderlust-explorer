@@ -1,0 +1,71 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { monthRange } from "../../lib/site";
+
+export async function getStaticPaths() {
+  const all = await getCollection("destinations");
+  return all.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+const best = monthRange(d.bestMonths);
+const quoteHref = `/quote?destination=${encodeURIComponent(d.name)}`;
+const breadcrumbs = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Destinations", item: "https://udantravelsbdq.com/packages" },
+    { "@type": "ListItem", position: 2, name: d.name, item: `https://udantravelsbdq.com/destinations/${entry.id}` },
+  ],
+};
+---
+
+<Base
+  title={`${d.name} holiday packages`}
+  description={`${d.name} holidays from Udan Tours and Travels, Vadodara: best time to go (${best}), what a typical trip includes, a sample itinerary, and a quote priced for your dates.`}
+  jsonLd={[breadcrumbs]}
+>
+  <article>
+    <header class="relative">
+      <img src={d.image} alt={d.imageAlt} class="h-64 w-full object-cover md:h-96" width="1200" height="600" />
+      <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+      <div class="container absolute inset-x-0 bottom-0 mx-auto px-4 pb-8 md:px-6">
+        <p class="text-sm text-white/80"><a href="/packages" class="underline">Destinations</a> / {d.country}</p>
+        <h1 class="text-3xl font-bold text-white md:text-5xl">{d.name}</h1>
+      </div>
+    </header>
+
+    <div class="container mx-auto grid gap-10 px-4 py-12 md:px-6 lg:grid-cols-[1fr_22rem]">
+      <div>
+        <p class="text-lg text-udan-charcoal">{d.summary}</p>
+        <div class="prose-udan mt-6"><Content /></div>
+
+        <h2 class="mb-3 mt-10 text-xl font-semibold text-udan-charcoal">A sample itinerary</h2>
+        <p class="mb-4 text-sm text-udan-gray">Every trip is planned around your dates and party; this is a starting point.</p>
+        <ol class="space-y-4 border-l-2 border-udan-orange/30 pl-6">
+          {d.itinerary.map((step) => <li><p class="font-medium text-udan-charcoal">{step.days}</p><p class="text-udan-gray">{step.plan}</p></li>)}
+        </ol>
+      </div>
+
+      <aside class="space-y-6">
+        <div class="rounded-xl bg-udan-lightGray p-6">
+          <h2 class="text-lg font-semibold text-udan-charcoal">Best time to go</h2>
+          <p class="mt-1 text-udan-gray">{best}</p>
+          <h2 class="mt-6 text-lg font-semibold text-udan-charcoal">A typical Udan trip includes</h2>
+          <ul class="mt-2 list-disc space-y-1 pl-5 text-udan-gray">{d.inclusions.map((i) => <li>{i}</li>)}</ul>
+          <h2 class="mt-6 text-lg font-semibold text-udan-charcoal">Price</h2>
+          <p class="mt-1 text-udan-gray">
+            We price every {d.name} trip against our supplier rates for your dates, party and hotel category. Typical price ranges from our past quotes will appear here once we have enough of them.
+          </p>
+          <a href={quoteHref} class="btn-primary mt-6 w-full">Get a {d.name} quote</a>
+        </div>
+        <p class="text-sm text-udan-gray">
+          Seen a {d.name} price online? <a class="text-udan-orange underline" href="/beat-my-price">Send it and we will try to beat it.</a>
+        </p>
+      </aside>
+    </div>
+  </article>
+</Base>

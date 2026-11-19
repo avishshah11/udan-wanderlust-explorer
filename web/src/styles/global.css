@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 18%;
+    --primary: 18 100% 66%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 18%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 18%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 85%;
+    --ring: 18 100% 66%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Inter Variable", Inter, system-ui, sans-serif;
+  }
+
+  .prose-udan h2 {
+    @apply mb-3 mt-8 text-xl font-semibold text-udan-charcoal;
+  }
+  .prose-udan h3 {
+    @apply mb-2 mt-6 text-lg font-medium text-udan-charcoal;
+  }
+  .prose-udan p,
+  .prose-udan ul {
+    @apply mb-4 leading-relaxed text-udan-gray;
+  }
+  .prose-udan ul {
+    @apply list-disc pl-6;
+  }
+  .prose-udan a {
+    @apply text-udan-orange underline;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-udan-orange px-6 py-2.5 font-medium text-white transition-colors hover:bg-udan-orange/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-udan-orange focus-visible:ring-offset-2;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center rounded-full border border-udan-charcoal/20 px-6 py-2.5 font-medium text-udan-charcoal transition-colors hover:border-udan-orange hover:text-udan-orange;
+  }
+  .field {
+    @apply h-11 w-full rounded-md border border-input bg-white px-3 text-base text-udan-charcoal focus:outline-none focus:ring-2 focus:ring-udan-orange/30;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-udan-charcoal;
+  }
+}

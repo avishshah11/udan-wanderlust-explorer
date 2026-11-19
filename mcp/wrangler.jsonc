@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "udan-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  // Production: the custom domain needs the udantravelsbdq.com zone on
+  // Cloudflare (see README). Until then the Worker is reachable on workers.dev.
+  // "routes": [{ "pattern": "mcp.udantravelsbdq.com", "custom_domain": true }],
+  "vars": {
+    "SUPABASE_URL": "https://YOUR-PROJECT-REF.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_REPLACE_ME",
+    "MCP_URL": "https://mcp.udantravelsbdq.com/mcp",
+    "APP_URL": "https://app.udantravelsbdq.com",
+    "DOCS_URL": "https://udantravelsbdq.com/connector",
+    "EMAIL_FROM": "Udan Tours and Travels <quotes@udantravelsbdq.com>",
+    "AUTH_MODE": "protected_tools"
+  }
+  // Secrets (wrangler secret put): RESEND_API_KEY, STAFF_ALERT_EMAIL
+}
