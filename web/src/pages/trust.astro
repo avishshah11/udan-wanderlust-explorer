@@ -1,0 +1,187 @@
+---
+// Why customers can trust Udan, and how to tell Udan from someone pretending
+// to be Udan. Every promise here is something the account and the desk
+// already enforce; registrations and the payee name appear only once the
+// owner supplies them (src/lib/site.ts).
+import Base from "../layouts/Base.astro";
+import { PAYEE_NAME, REGISTRATIONS, SITE, yearsInBusiness } from "../lib/site";
+
+const office = SITE.phones[1];
+const years = yearsInBusiness();
+
+const promises: [string, string][] = [
+  [
+    "A written quote before anything else",
+    "Every price comes as a written quote, in your inbox and in your Udan account. It lists each part of the trip with its price, what is included, what is not, and the date the price holds until.",
+  ],
+  [
+    "Nothing to pay until you accept",
+    "A quote costs you nothing. You accept it in your account when you are ready, and only then do we send payment details.",
+  ],
+  [
+    "What you accept stays on record",
+    "Accepting fixes the price and inclusions in your account, so you always have a copy of what we agreed. If the trip needs to change, we send a revised quote under the same reference for you to accept.",
+  ],
+  [
+    "Every payment shows in your account",
+    "Each payment we ask for appears in your account with its amount. When it reaches us, we mark it received and email you to confirm.",
+  ],
+  [
+    "Your documents in one place",
+    "Hotel vouchers, tickets and invoices go into your account, so you can check each booking reference directly with the hotel or airline.",
+  ],
+  [
+    "The same family, start to finish",
+    "A member of our family prices your trip and looks after you until you are home. We answer the office phone ourselves.",
+  ],
+];
+
+const checks: [string, string][] = [
+  [
+    "Find the payment in your Udan account",
+    "Every payment we ask for appears in your account under your booking reference, which starts with UDN-. If a payment request is not there, it is not from us.",
+  ],
+  [
+    "Never share an OTP or a PIN",
+    "We never ask for a one-time password, card PIN, UPI PIN or account password, by phone, WhatsApp or email. Nobody needs your PIN to send you money.",
+  ],
+  [
+    "Check the website address",
+    "Our website is udantravelsbdq.com and your account is at app.udantravelsbdq.com. Look at the address bar before you sign in or pay.",
+  ],
+  [
+    "If in doubt, call our office",
+    `If a call, message or email about your trip feels wrong, hang up and call our office landline, ${office.display}, before you pay anything.`,
+  ],
+];
+if (PAYEE_NAME) {
+  checks.splice(1, 0, ["Pay only into our business account", `We only ask you to pay into an account in the name of ${PAYEE_NAME}. If the name is different, stop and call us.`]);
+}
+---
+
+<Base
+  title="Why you can trust us"
+  description="How Udan Tours and Travels works and how to check us: established 1997 in Vadodara, a written quote before any payment, every payment shown in your account, and how to spot someone pretending to be us."
+>
+  <section class="pb-12 pt-12 md:pt-20">
+    <div class="container mx-auto max-w-4xl px-4 md:px-6">
+      <p class="text-sm font-semibold uppercase tracking-wide text-udan-orange">{SITE.foundedText} · Vadodara</p>
+      <h1 class="mt-3 text-3xl font-bold text-udan-charcoal md:text-5xl">Why you can trust Udan</h1>
+      <p class="mt-5 max-w-2xl text-lg text-udan-gray">
+        A holiday is a large payment for something you only see when you arrive, and some people take advantage of that. So here is who we are, how we work, and how you can check us before you pay us anything.
+      </p>
+      <ul class="mt-10 grid gap-4 sm:grid-cols-3">
+        <li class="rounded-xl bg-udan-lightGray p-5">
+          <p class="text-3xl font-bold text-udan-charcoal">{years} years</p>
+          <p class="mt-1 text-udan-gray">Arranging trips from Vadodara since 1997</p>
+        </li>
+        <li class="rounded-xl bg-udan-lightGray p-5">
+          <p class="text-3xl font-bold text-udan-charcoal">{SITE.travellers}</p>
+          <p class="mt-1 text-udan-gray">Travellers</p>
+        </li>
+        <li class="rounded-xl bg-udan-lightGray p-5">
+          <p class="text-3xl font-bold text-udan-charcoal">One office</p>
+          <p class="mt-1 text-udan-gray">In Sayajiganj, opposite M.S. University. Come and meet us.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="bg-udan-lightGray py-14 md:py-20" aria-labelledby="check-us">
+    <div class="container mx-auto max-w-4xl px-4 md:px-6">
+      <h2 id="check-us" class="text-2xl font-bold text-udan-charcoal md:text-3xl">Check us for yourself</h2>
+      <p class="mt-3 max-w-2xl text-udan-gray">You do not have to take our word for any of this.</p>
+      <div class="mt-8 grid gap-5 md:grid-cols-3">
+        <div class="rounded-xl bg-white p-6 shadow-sm">
+          <h3 class="text-lg font-semibold text-udan-charcoal">Visit our office</h3>
+          <address class="mt-2 text-sm not-italic leading-relaxed text-udan-gray">{SITE.address.lines.map((l) => <>{l}<br /></>)}</address>
+          <p class="mt-2 text-sm text-udan-gray">{SITE.hours.map((h) => <>{h.days}: {h.opens} to {h.closes}<br /></>)}</p>
+          <a class="mt-3 inline-block text-sm font-medium text-udan-orange underline" href={SITE.googleListing} rel="noopener" target="_blank">Open in Google Maps</a>
+        </div>
+        <div class="rounded-xl bg-white p-6 shadow-sm">
+          <h3 class="text-lg font-semibold text-udan-charcoal">Call the office landline</h3>
+          <p class="mt-2 text-sm text-udan-gray">
+            <a class="text-lg font-semibold text-udan-orange underline" href={`tel:${office.tel}`}>{office.display}</a>
+          </p>
+          <p class="mt-2 text-sm text-udan-gray">The phone on our desk in Sayajiganj. If anyone contacts you claiming to be from Udan, call this number to check.</p>
+        </div>
+        <div class="rounded-xl bg-white p-6 shadow-sm">
+          <h3 class="text-lg font-semibold text-udan-charcoal">Read our Google reviews</h3>
+          <p class="mt-2 text-sm text-udan-gray">Reviews on our Google listing are written by travellers, not by us. Read them before you decide.</p>
+          <a class="mt-3 inline-block text-sm font-medium text-udan-orange underline" href={SITE.googleListing} rel="noopener" target="_blank">Read reviews on Google</a>
+        </div>
+      </div>
+      {
+        REGISTRATIONS.length > 0 && (
+          <div class="mt-5 rounded-xl bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-udan-charcoal">Registrations and memberships</h3>
+            <dl class="mt-3 grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
+              {REGISTRATIONS.map((r) => (
+                <div class="flex flex-wrap gap-x-2">
+                  <dt class="font-medium text-udan-charcoal">{r.label}</dt>
+                  <dd class="text-udan-gray">{r.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="py-14 md:py-20" aria-labelledby="how-we-work">
+    <div class="container mx-auto max-w-4xl px-4 md:px-6">
+      <h2 id="how-we-work" class="text-2xl font-bold text-udan-charcoal md:text-3xl">How we work</h2>
+      <p class="mt-3 max-w-2xl text-udan-gray">Your Udan account keeps the record, so you can see every step for yourself.</p>
+      <ol class="mt-8 grid gap-5 md:grid-cols-2">
+        {
+          promises.map(([title, text], i) => (
+            <li class="flex gap-4 rounded-xl p-5 ring-1 ring-black/5">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-udan-orange/10 font-bold text-udan-orange">{i + 1}</span>
+              <div>
+                <h3 class="font-semibold text-udan-charcoal">{title}</h3>
+                <p class="mt-1 text-sm text-udan-gray">{text}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section id="pay-safely" class="bg-udan-orange/5 py-14 md:py-20" aria-labelledby="pay-safely-heading">
+    <div class="container mx-auto max-w-4xl px-4 md:px-6">
+      <h2 id="pay-safely-heading" class="text-2xl font-bold text-udan-charcoal md:text-3xl">Pay safely: how to spot someone pretending to be us</h2>
+      <p class="mt-3 max-w-2xl text-udan-gray">Travel scams often copy a real agency's name and logo. Before you pay anyone who says they are Udan:</p>
+      <ul class="mt-8 grid gap-5 md:grid-cols-2">
+        {
+          checks.map(([title, text]) => (
+            <li class="rounded-xl border-l-4 border-udan-orange bg-white p-5 shadow-sm">
+              <h3 class="font-semibold text-udan-charcoal">{title}</h3>
+              <p class="mt-1 text-sm text-udan-gray">{text}</p>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-8 rounded-xl bg-white p-6 shadow-sm">
+        <h3 class="font-semibold text-udan-charcoal">If you think you have paid a fraudster</h3>
+        <p class="mt-1 text-sm text-udan-gray">
+          Call your bank at once, report it on the national cyber crime helpline, <a class="font-medium text-udan-orange underline" href="tel:1930">1930</a>, or at{" "}
+          <a class="font-medium text-udan-orange underline" href="https://cybercrime.gov.in" rel="noopener" target="_blank">cybercrime.gov.in</a>, and tell us on{" "}
+          <a class="font-medium text-udan-orange underline" href={`tel:${office.tel}`}>{office.display}</a> so we can warn other travellers.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-14 md:py-20">
+    <div class="container mx-auto max-w-4xl px-4 text-center md:px-6">
+      <h2 class="text-2xl font-bold text-udan-charcoal md:text-3xl">Ask us for a quote</h2>
+      <p class="mx-auto mt-3 max-w-xl text-udan-gray">It costs nothing, and there is nothing to pay until you accept the quote in your account.</p>
+      <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+        <a href="/quote" class="btn-primary px-8 py-3">Get a quote</a>
+        <a href="/contact" class="btn-outline px-8 py-3">Contact us</a>
+      </div>
+    </div>
+  </section>
+</Base>

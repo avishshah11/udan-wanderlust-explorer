@@ -10,7 +10,7 @@ import {
   type LineType,
   type PaymentKind,
 } from "../domain";
-import { type Block, type RenderedEmail, button, heading, para, preformatted, renderEmail, rows } from "./layout";
+import { type Block, OFFICE, type RenderedEmail, button, heading, para, preformatted, renderEmail, rows } from "./layout";
 
 const firstName = (name: string | null | undefined) => {
   const first = (name ?? "").trim().split(/\s+/)[0];
@@ -130,9 +130,14 @@ export function paymentDetailsEmail(input: {
       para(`Please put ${input.reference} in the payment reference so we can match it to your booking.`),
     );
   }
+  const landline = OFFICE.phones.find((p) => p.label === "Office")!.display;
   blocks.push(
+    heading("Before you pay"),
+    para(
+      `This payment is also shown in your Udan account under ${input.reference}. If the amount there is different, or anyone asks you to pay somewhere else, call our office on ${landline} before paying. We never ask for an OTP or a PIN.`,
+    ),
+    button("Check it in your account", input.quoteUrl),
     para("Once the payment reaches us, we will confirm by email and your account will show it as received."),
-    button("View your booking", input.quoteUrl),
   );
   return renderEmail(`Payment details for ${input.reference}`, firstName(input.name), blocks);
 }
