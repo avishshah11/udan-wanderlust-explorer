@@ -1,7 +1,7 @@
 import { findTurnaroundLanguage } from "@udan/core";
 import { describe, expect, it } from "vitest";
 import { HANDLERS, SIGN_IN_REQUIRED, TOOL_DEFINITIONS, comparePrice, confirmBooking, getIndicativePrice, getQuote, requestQuote } from "../src/tools";
-import { context, fakeUser, publicData } from "./fakes";
+import { context, fakeUser, sentQuote, publicData } from "./fakes";
 
 const text = (r: { content: { type: string; text?: string }[] }) => r.content.map((c) => c.text ?? "").join("\n");
 const nextYear = new Date().getFullYear() + 1;
@@ -162,6 +162,13 @@ describe("handlers", () => {
     const r = await getQuote(context(fakeUser()), { reference: "udn 2611 k7qmx" });
     expect(r.structuredContent).toMatchObject({ reference: "UDN-2611-K7QMX", status: "sent", status_label: "Quote ready", total_inr: 102525, valid_until: "2027-01-10" });
     expect(text(r)).toMatch(/Total: ₹1,02,525 \(approx\. AED\s?3,953\)/);
+  });
+
+  it("get_quote includes messages from the desk", async () => {
+    const withMessage = { ...sentQuote, messages: [{ body: "Would you like a sea-view room?\nIt is a little more.", sent_at: "2026-11-19T05:00:00Z", from: "Meera" }] };
+    const r = await getQuote(context(fakeUser({ quote: async () => withMessage })), { reference: "UDN-2611-K7QMX" });
+    expect(text(r)).toContain("Messages from Udan's team:\n- Meera, 2026-11-19: Would you like a sea-view room? It is a little more.");
+    expect(r.structuredContent).toMatchObject({ messages: [{ from: "Meera", text: "Would you like a sea-view room?\nIt is a little more." }] });
   });
 
   it("get_quote explains bad and unknown references", async () => {

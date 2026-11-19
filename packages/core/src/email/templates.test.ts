@@ -4,6 +4,7 @@ import { type DisplayPrice, displayPrice } from "../currency";
 import { escapeHtml } from "./layout";
 import { notifyCustomer, sendEmail } from "./send";
 import {
+  deskMessageEmail,
   documentsReadyEmail,
   paymentDetailsEmail,
   paymentReceivedEmail,
@@ -37,6 +38,7 @@ const customerEmails = {
   advanceReceived: paymentReceivedEmail({ name: "Asha", reference: "UDN-2611-K7QMX", kind: "advance", amount: "₹30,000", quoteUrl: url }),
   balanceReceived: paymentReceivedEmail({ name: "Asha", reference: "UDN-2611-K7QMX", kind: "balance", amount: "₹72,525", quoteUrl: url }),
   documentsReady: documentsReadyEmail({ name: "Asha", reference: "UDN-2611-K7QMX", documents: [{ type: "voucher", fileName: "hotel.pdf" }], quoteUrl: url }),
+  deskMessage: deskMessageEmail({ name: "Asha", reference: "UDN-2611-K7QMX", from: "Meera", message: "Would you like a sea-view room?\nIt is ₹2,000 more a night.", quoteUrl: url }),
 };
 
 describe("customer emails", () => {
@@ -115,5 +117,15 @@ describe("delivery", () => {
       ["email", true, false],
       ["whatsapp", false, true],
     ]);
+  });
+});
+
+describe("deskMessageEmail", () => {
+  it("shows the family member's words as written, escaped, with line breaks", () => {
+    const email = deskMessageEmail({ name: "Asha", reference: "UDN-2611-K7QMX", from: "Meera", message: "Line one <b>bold?</b>\nLine two", quoteUrl: url });
+    expect(email.subject).toBe("A message about your request UDN-2611-K7QMX");
+    expect(email.html).toContain("Line one &lt;b&gt;bold?&lt;/b&gt;<br>Line two");
+    expect(email.text).toContain("Meera from Udan Tours and Travels has written to you about UDN-2611-K7QMX:");
+    expect(email.text).toContain("Line one <b>bold?</b>\nLine two");
   });
 });

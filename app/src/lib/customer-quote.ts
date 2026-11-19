@@ -31,4 +31,6 @@ export interface CustomerQuote {
   lines: { type: LineType; description: string; price_inr: number }[];
   payments: { kind: PaymentKind; amount: number; currency: string; method: PaymentMethod; status: PaymentStatus; requested_at: string; received_at: string | null }[];
   documents: { id: string; type: DocumentType; file_name: string; uploaded_at: string }[];
+  /** Messages from the desk, oldest first. */
+  messages: { body: string; sent_at: string; from: string }[];
 }

@@ -33,6 +33,7 @@ import {
   notifyDocuments,
   reopenQuote,
   requestPayment,
+  sendMessage,
   sendQuote,
   startPricing,
   updateLine,
@@ -82,12 +83,13 @@ export default async function DeskRequest({
     .maybeSingle();
   if (!r) notFound();
 
-  const [{ data: lines }, { data: payments }, { data: documents }, { data: activity }, { data: rules }, rates] = await Promise.all([
+  const [{ data: lines }, { data: payments }, { data: documents }, { data: activity }, { data: rules }, { data: messages }, rates] = await Promise.all([
     supabase.from("quote_lines").select("*").eq("request_id", id).order("position").order("created_at"),
     supabase.from("payments").select("*").eq("request_id", id).order("requested_at"),
     supabase.from("documents").select("*").eq("request_id", id).order("uploaded_at"),
     supabase.from("audit_log").select("at, action, detail").eq("request_id", id).order("at", { ascending: false }).limit(40),
     supabase.from("markup_rules").select("destination_group, product_type, markup_pct").eq("active", true),
+    supabase.from("request_messages").select("id, body, created_at, staff(name)").eq("request_id", id).order("created_at"),
     loadRates(supabase),
   ]);
 
@@ -215,6 +217,42 @@ export default async function DeskRequest({
           )}
         </Panel>
       </div>
+
+      <Panel title="Messages to the customer">
+        {(messages ?? []).length > 0 ? (
+          <ul className="mb-4 space-y-2">
+            {messages!.map((m) => (
+              <li key={m.id} className="rounded-lg bg-udan-lightGray p-3 text-sm">
+                <p className="text-xs text-udan-gray">
+                  {m.staff?.name ?? "A former team member"} · {formatDateTime(m.created_at)}
+                </p>
+                <p className="mt-1 whitespace-pre-wrap">{m.body}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mb-4 text-sm text-udan-gray">No messages yet.</p>
+        )}
+        <form action={sendMessage} className="space-y-2">
+          <input type="hidden" name="id" value={id} />
+          <Label htmlFor="message">Write to {c.name ?? c.email}</Label>
+          <Textarea
+            id="message"
+            name="message"
+            rows={4}
+            required
+            maxLength={4000}
+            placeholder="Ask about their trip, explain something in the quote, or give them an update."
+          />
+          <p className="text-xs text-udan-gray">
+            Emailed to {c.email} and shown in their account. Messages can&apos;t be edited once sent.{" "}
+            {serverEnv.emailReplyTo
+              ? `Their replies go to ${serverEnv.emailReplyTo}.`
+              : "Their replies go to the sending address until EMAIL_REPLY_TO is set."}
+          </p>
+          <SubmitButton pendingText="Sending…">Send message</SubmitButton>
+        </form>
+      </Panel>
 
       <Panel
         title="Priced lines"

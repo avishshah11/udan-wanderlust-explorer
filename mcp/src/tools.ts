@@ -67,6 +67,8 @@ export interface CustomerQuoteData {
   exclusions: string | null;
   lines: { type: string; description: string; price_inr: number }[];
   payments: { kind: string; amount: number; status: string }[];
+  /** Messages from Udan's desk, oldest first. */
+  messages?: { body: string; sent_at: string; from: string }[];
 }
 
 export interface PublicData {
@@ -233,6 +235,7 @@ export const quoteOutput = {
   inclusions: z.string().nullable(),
   exclusions: z.string().nullable(),
   payments: z.array(z.object({ kind: z.string(), amount_inr: z.number(), status: z.string() })),
+  messages: z.array(z.object({ from: z.string(), sent_at: z.string(), text: z.string() })),
   account_url: z.string(),
 };
 
@@ -278,7 +281,7 @@ export const TOOL_DEFINITIONS = {
   get_quote: {
     title: "Check a quote",
     description:
-      "Returns the status, total price, validity date and priced line items of one of the signed-in user's Udan quotes, looked up by reference number (for example UDN-2611-K7QMX). Use it to check on a quote request or to read a quote that has been sent. Requires sign-in.",
+      "Returns the status, total price, validity date and priced line items of one of the signed-in user's Udan quotes, looked up by reference number (for example UDN-2611-K7QMX), with any messages Udan's team has sent about it. Use it to check on a quote request or to read a quote that has been sent. Requires sign-in.",
     inputSchema: referenceInput,
     outputSchema: quoteOutput,
     annotations: { title: "Check a quote", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -482,6 +485,11 @@ export async function getQuote(ctx: ToolContext, args: Input<typeof referenceInp
     if (q.inclusions) lines.push(`Included: ${q.inclusions.replace(/\s*\n\s*/g, "; ")}`);
     if (q.exclusions) lines.push(`Not included: ${q.exclusions.replace(/\s*\n\s*/g, "; ")}`);
   }
+  const messages = q.messages ?? [];
+  if (messages.length > 0) {
+    lines.push("Messages from Udan's team:");
+    lines.push(...messages.map((m) => `- ${m.from}, ${new Date(m.sent_at).toISOString().slice(0, 10)}: ${m.body.replace(/\s*\n\s*/g, " ")}`));
+  }
   lines.push(`Account: ${accountUrl}`);
 
   return ok(lines.join("\n"), {
@@ -498,6 +506,7 @@ export async function getQuote(ctx: ToolContext, args: Input<typeof referenceInp
     inclusions: q.inclusions,
     exclusions: q.exclusions,
     payments: q.payments.map((p) => ({ kind: p.kind, amount_inr: Number(p.amount), status: p.status })),
+    messages: messages.map((m) => ({ from: m.from, sent_at: m.sent_at, text: m.body })),
     account_url: accountUrl,
   });
 }

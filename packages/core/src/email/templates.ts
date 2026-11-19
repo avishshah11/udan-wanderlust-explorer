@@ -173,6 +173,25 @@ export function documentsReadyEmail(input: {
   ]);
 }
 
+/**
+ * A message typed by a family member on the desk. The text is theirs, shown
+ * as written (escaped); the customer answers by replying to the email.
+ */
+export function deskMessageEmail(input: {
+  name: string | null;
+  reference: string;
+  from: string; // staff member's name
+  message: string;
+  quoteUrl: string;
+}): RenderedEmail {
+  return renderEmail(`A message about your request ${input.reference}`, firstName(input.name), [
+    para(`${input.from} from Udan Tours and Travels has written to you about ${input.reference}:`),
+    preformatted(input.message),
+    button("Open your request", input.quoteUrl),
+    para("Reply to this email to answer. Your request and this message are also in your Udan account."),
+  ]);
+}
+
 // ---------------------------------------------------------------------------
 // Staff alerts (internal; may mention timing, but they don't need to)
 // ---------------------------------------------------------------------------

@@ -2,7 +2,15 @@
 -- Run with: pnpm --filter @udan/supabase test:db  (local stack must be running)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(51);
+select plan(58);
+
+-- Desk messages on two customers' requests, written as the owner.
+insert into public.request_messages (request_id, sent_by, body)
+select id, '11111111-1111-4111-8111-111111111111', 'Would you like a sea-view room in Seminyak?'
+  from public.quote_requests where reference = 'UDN-0000-SENTQ';
+insert into public.request_messages (request_id, sent_by, body)
+select id, '11111111-1111-4111-8111-111111111111', 'Payment details are in your inbox.'
+  from public.quote_requests where reference = 'UDN-0000-ACCPT';
 
 -- ---------------------------------------------------------------- anonymous
 set local role anon;
@@ -11,6 +19,7 @@ set local request.jwt.claims to '{"role":"anon"}';
 select throws_ok($$ select count(*) from public.customers $$, '42501', null, 'anon: no access to customers');
 select throws_ok($$ select count(*) from public.quote_requests $$, '42501', null, 'anon: no access to quote_requests');
 select throws_ok($$ select count(*) from public.quote_lines $$, '42501', null, 'anon: no access to quote_lines');
+select throws_ok($$ select count(*) from public.request_messages $$, '42501', null, 'anon: no access to request_messages');
 select ok((select count(*) from public.destinations) > 0, 'anon: reads published destinations');
 select ok((select count(*) from public.fx_latest) >= 5, 'anon: reads fx rates');
 select throws_ok(
@@ -27,6 +36,16 @@ select is((select count(*)::int from public.quote_requests), 1, 'customer: sees 
 select is((select reference from public.quote_requests), 'UDN-0000-SENTQ', 'customer: the right request');
 select is((select count(*)::int from public.quote_lines), 0, 'customer: cannot read quote_lines (net cost)');
 select is((select count(*)::int from public.markup_rules), 0, 'customer: cannot read markup_rules');
+select is((select count(*)::int from public.request_messages), 1, 'customer: sees only messages on own requests');
+select is(
+  public.quote_for_customer('UDN-0000-SENTQ') -> 'messages' -> 0 ->> 'from',
+  'Dev Owner',
+  'customer view includes desk messages and who sent them'
+);
+select throws_ok(
+  $$ insert into public.request_messages (request_id, body) select id, 'Hello' from public.quote_requests limit 1 $$,
+  '42501', null, 'customer: cannot write messages'
+);
 select is((select count(*)::int from public.customers), 1, 'customer: sees only own customer row');
 select is((select count(*)::int from public.audit_log), 0, 'customer: cannot read audit_log');
 select is(public.is_staff(), false, 'customer: is_staff() is false');
@@ -140,6 +159,22 @@ set local role authenticated;
 set local request.jwt.claims to '{"sub":"22222222-2222-4222-8222-222222222222","email":"pricer@udan.test","role":"authenticated"}';
 
 select is((select count(*)::int from public.quote_requests), current_setting('test.total_requests')::int, 'staff: sees every request');
+select lives_ok(
+  $$ insert into public.request_messages (request_id, sent_by, body)
+     select id, '22222222-2222-4222-8222-222222222222', 'Checking flight options for you.'
+       from public.quote_requests where reference = 'UDN-0000-QUEUE' $$,
+  'staff: can send a message'
+);
+select throws_ok(
+  $$ insert into public.request_messages (request_id, sent_by, body)
+     select id, '11111111-1111-4111-8111-111111111111', 'Signed as someone else'
+       from public.quote_requests where reference = 'UDN-0000-QUEUE' $$,
+  '42501', null, 'staff: cannot send a message as someone else'
+);
+select throws_ok(
+  $$ update public.request_messages set body = 'Changed' $$,
+  '42501', null, 'staff: cannot edit a sent message'
+);
 select throws_ok(
   $$ update public.quote_lines set markup_pct = 20
       where request_id = (select id from public.quote_requests where reference = 'UDN-0000-SENTQ') $$,

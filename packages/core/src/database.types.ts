@@ -197,6 +197,32 @@ isOneToOne: false
       referencedColumns: ["slug"]
     }
                   ]
+                },"request_messages": {
+                  Row: {
+                    "body": string,"created_at": string,"id": string,"request_id": string,"sent_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"created_at"?: string,"id"?: string,"request_id": string,"sent_by"?: string | null
+                  }
+                  Update: {
+                    "body"?: string,"created_at"?: string,"id"?: string,"request_id"?: string,"sent_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "request_messages_request_id_fkey"
+      columns: ["request_id"]
+isOneToOne: false
+      referencedRelation: "quote_requests"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "request_messages_sent_by_fkey"
+      columns: ["sent_by"]
+isOneToOne: false
+      referencedRelation: "staff"
+      referencedColumns: ["user_id"]
+    }
+                  ]
                 },"staff": {
                   Row: {
                     "active": boolean,"created_at": string,"email": string,"name": string,"receives_alerts": boolean,"role": Database["public"]['Enums']["staff_role"],"user_id": string

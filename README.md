@@ -88,6 +88,10 @@ What the schema enforces:
   `awaiting_payment`; an expired quote goes back to the pricer instead.
 - Every markup override, markup rule edit, status change and payment is
   written to `audit_log`.
+- Desk messages (`request_messages`) are written by staff, read by the
+  customer they belong to, and never edited. Each is emailed to the customer
+  (replies go to `EMAIL_REPLY_TO`) and shown in their account and in Claude's
+  `get_quote`.
 
 ### Shared core (`packages/core`)
 
@@ -117,7 +121,7 @@ recorded in `audit_log`.
 | --- | --- | --- |
 | Sign-in | `/login` (magic link, Google), `/auth/confirm`, `/auth/callback` | everyone |
 | Customer account | `/account`, `/account/quotes/<ref>` (accept), `/account/quotes/<ref>/accepted`, `/account/new`, `/account/settings`, `/account/documents/<id>` | signed-in customers, own data only |
-| Pricing desk | `/desk` (queue by travel date then budget), `/desk/requests/<id>` (lines, send, payments, documents, activity), `/desk/new`, `/desk/metrics`, `/desk/markup` | active staff |
+| Pricing desk | `/desk` (queue by travel date then budget), `/desk/requests/<id>` (lines, send, messages to the customer, payments, documents, activity), `/desk/new`, `/desk/metrics`, `/desk/markup` | active staff |
 | Website form | `POST /api/quote-requests` (form post or JSON), `/quote/received` | public; origin allow-list, honeypot, 5 requests per email per hour |
 
 Emails go out after the response (`after()`), so accepting a quote and

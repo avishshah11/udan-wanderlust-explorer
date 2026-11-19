@@ -65,6 +65,23 @@ export default async function QuotePage({
         </p>
       </section>
 
+      {q.messages.length > 0 && (
+        <section className="rounded-xl bg-white p-6 shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold">Messages from Udan</h2>
+          <ul className="space-y-3">
+            {q.messages.map((m, i) => (
+              <li key={i} className="rounded-lg border-l-4 border-udan-orange bg-udan-lightGray p-4 text-sm">
+                <p className="text-xs text-udan-gray">
+                  {m.from} · {formatDate(m.sent_at)}
+                </p>
+                <p className="mt-1 whitespace-pre-wrap text-udan-charcoal">{m.body}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs text-udan-gray">To answer, reply to the email we sent you, or call us.</p>
+        </section>
+      )}
+
       {q.lines.length > 0 && q.total_inr != null && (
         <section className="rounded-xl bg-white p-6 shadow-sm">
           <h2 className="mb-3 text-lg font-semibold">{q.quote_version > 1 ? `Your quote (revision ${q.quote_version})` : "Your quote"}</h2>

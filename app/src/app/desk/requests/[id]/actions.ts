@@ -11,6 +11,7 @@ import {
   PAYMENT_METHODS,
   type PaymentKind,
   type PaymentMethod,
+  deskMessageEmail,
   displayPrice,
   documentsReadyEmail,
   formatInr,
@@ -341,4 +342,29 @@ export async function notifyDocuments(fd: FormData) {
   });
   after(() => notifyCustomerById(req!.customer_id, id, "documents_ready", email));
   done(id, { notice: "Customer emailed that their documents are ready." });
+}
+
+/** A free-text message to the customer: kept on the request and emailed. */
+export async function sendMessage(fd: FormData) {
+  const id = str(fd, "id");
+  const message = String(fd.get("message") ?? "").trim();
+  const { supabase, user, staff } = await requireStaff(`/desk/requests/${id}`);
+  if (message.length === 0) done(id, { error: "Write a message before sending." });
+  if (message.length > 4000) done(id, { error: "Keep the message under 4,000 characters, or split it in two." });
+
+  const { data: req } = await supabase.from("quote_requests").select("reference, customer_id, customers(name, email)").eq("id", id).single();
+  if (!req) done(id, { error: "This request no longer exists." });
+
+  const { error } = await supabase.from("request_messages").insert({ request_id: id, sent_by: user.id, body: message });
+  if (error) done(id, { error: `The message was not sent: ${error.message}` });
+
+  const email = deskMessageEmail({
+    name: req!.customers?.name ?? null,
+    reference: req!.reference,
+    from: staff!.name,
+    message,
+    quoteUrl: quoteUrl(req!.reference),
+  });
+  after(() => notifyCustomerById(req!.customer_id, id, "desk_message", email));
+  done(id, { notice: `Message sent to ${req!.customers?.email ?? "the customer"}. It is also in their account.` });
 }
