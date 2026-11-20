@@ -1,0 +1,80 @@
+---
+// Typical price ranges for one destination, from the rate card. INR first;
+// a small script adds the visitor's currency (approx.) by browser locale.
+import { type FxRate, formatInr } from "@udan/core/currency";
+import { HOTEL_TIER_LABELS, HOTEL_TIERS } from "@udan/core/domain";
+import { BAND_COVERS, BAND_EXCLUDES, type RateBand, nightsGroupLabel } from "@udan/core/rate-card";
+import { MONTHS } from "../lib/site";
+
+interface Props {
+  anyMonth: RateBand[];
+  byMonth: RateBand[];
+  rates: FxRate[];
+}
+const { anyMonth, byMonth, rates } = Astro.props;
+const tiers = HOTEL_TIERS.filter((t) => anyMonth.some((b) => b.hotelTier === t));
+const range = (b: RateBand) => `${formatInr(b.lowPerAdult)} to ${formatInr(b.highPerAdult)}`;
+---
+
+<div data-price-bands>
+  <p class="mt-1 text-sm text-udan-gray">Per adult on twin sharing, from our own past quotes.</p>
+  {
+    tiers.map((t) => (
+      <div class="mt-4">
+        <h3 class="text-sm font-semibold text-udan-charcoal">{HOTEL_TIER_LABELS[t]}</h3>
+        <ul class="mt-1 divide-y divide-black/5">
+          {anyMonth
+            .filter((b) => b.hotelTier === t)
+            .map((b) => (
+              <li class="flex items-start justify-between gap-3 py-2 text-sm">
+                <span class="text-udan-gray">{nightsGroupLabel(b.nightsGroup)}</span>
+                <span class="text-right">
+                  <span class="font-semibold text-udan-charcoal" data-low={b.lowPerAdult} data-high={b.highPerAdult}>{range(b)}</span>
+                  <span class="block text-xs text-udan-gray">{b.sampleCount} past quotes</span>
+                </span>
+              </li>
+            ))}
+        </ul>
+      </div>
+    ))
+  }
+  {
+    byMonth.length > 0 && (
+      <details class="mt-4 text-sm">
+        <summary class="cursor-pointer font-semibold text-udan-charcoal">By month of travel</summary>
+        <ul class="mt-2 space-y-2">
+          {byMonth.map((b) => (
+            <li>
+              <span class="text-udan-gray">{MONTHS[b.month! - 1]}, {HOTEL_TIER_LABELS[b.hotelTier]}, {nightsGroupLabel(b.nightsGroup)}:</span>{" "}
+              <span class="font-semibold text-udan-charcoal" data-low={b.lowPerAdult} data-high={b.highPerAdult}>{range(b)}</span>{" "}
+              <span class="text-xs text-udan-gray">({b.sampleCount} quotes)</span>
+            </li>
+          ))}
+        </ul>
+      </details>
+    )
+  }
+  <p class="mt-4 text-xs text-udan-gray">
+    Covers {BAND_COVERS}; {BAND_EXCLUDES} are priced in your quote. Each range is the middle half of our past prices. Your quote is priced for your own dates, party and hotels.
+  </p>
+  <script type="application/json" data-fx-rates set:html={JSON.stringify(rates)} />
+</div>
+
+<script>
+  import { type FxRate, convertFromInr, currencyForLocale, findRate, formatMoney } from "@udan/core/currency";
+
+  for (const box of document.querySelectorAll<HTMLElement>("[data-price-bands]")) {
+    const rates = JSON.parse(box.querySelector("[data-fx-rates]")?.textContent ?? "[]") as FxRate[];
+    const currency = currencyForLocale(navigator.language);
+    const rate = currency && currency !== "INR" ? findRate(rates, currency) : null;
+    if (!rate || !currency) continue;
+    for (const el of box.querySelectorAll<HTMLElement>("[data-low]")) {
+      const low = formatMoney(convertFromInr(Number(el.dataset.low), rate), currency);
+      const high = formatMoney(convertFromInr(Number(el.dataset.high), rate), currency);
+      const approx = document.createElement("span");
+      approx.className = "block text-xs text-udan-gray";
+      approx.textContent = `approx. ${low} to ${high}`;
+      el.after(approx);
+    }
+  }
+</script>

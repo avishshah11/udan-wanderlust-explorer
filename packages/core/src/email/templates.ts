@@ -31,10 +31,15 @@ export function requestReceivedEmail(input: {
   reference: string;
   tripSummary: string; // e.g. "Bali, 5 nights, 2 adults, May 2027"
   accountUrl: string;
+  /** The rate-card band for the party, when one exists (formatted INR, core bandBasis()). */
+  typical?: { low: string; high: string; basis: string } | null;
 }): RenderedEmail {
   return renderEmail(`We have your request ${input.reference}`, firstName(input.name), [
     para(`Thank you for asking us to price your trip. Your reference is ${input.reference}.`),
     rows([["Trip", input.tripSummary]]),
+    ...(input.typical
+      ? [heading("Typical price"), para(`Similar trips have typically cost ${input.typical.low} to ${input.typical.high}. ${input.typical.basis}`)]
+      : []),
     para(
       "A member of our family will price it against our supplier rates. Your quote will appear in your Udan account and in this inbox, with everything it includes and how long the price holds.",
     ),

@@ -66,6 +66,14 @@ describe("customer emails", () => {
     ).toThrow(/payment link/);
   });
 
+  it("request received shows a typical price only when there is one", () => {
+    const base = { name: "Asha", reference: "UDN-2611-K7QMX", tripSummary: "Bali, 5 nights, 2 adults, 4-star, May 2027", accountUrl: url };
+    expect(requestReceivedEmail(base).text).not.toContain("Typical price");
+    const email = requestReceivedEmail({ ...base, typical: { low: "₹62,400", high: "₹67,600", basis: "From 6 past Udan quotes for 4-star, 5 to 6 nights, any month." } });
+    expect(email.text).toContain("Similar trips have typically cost ₹62,400 to ₹67,600. From 6 past Udan quotes");
+    expect(findTurnaroundLanguage(email.text)).toEqual([]);
+  });
+
   it("escapes anything people typed", () => {
     const email = paymentDetailsEmail({
       name: "<script>x</script>",

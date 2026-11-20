@@ -1,4 +1,4 @@
-import { findTurnaroundLanguage } from "@udan/core";
+import { bandBasis, bandFromRow, findTurnaroundLanguage, partyRange } from "@udan/core";
 import { describe, expect, it } from "vitest";
 import { HANDLERS, SIGN_IN_REQUIRED, TOOL_DEFINITIONS, comparePrice, confirmBooking, getIndicativePrice, getQuote, requestQuote } from "../src/tools";
 import { context, fakeUser, sentQuote, publicData } from "./fakes";
@@ -56,10 +56,18 @@ describe("handlers", () => {
 
   it("get_indicative_price shows a band when the rate card has one", async () => {
     const ctx = context(null);
-    ctx.publicData = { ...publicData, band: async () => ({ low: 90000, high: 120000, sampleCount: 7, basis: "4-star, 5-6 nights, any month" }) };
-    const r = await getIndicativePrice(ctx, { destination: "Bali", nights: 5, adults: 2, children: 0, hotel_tier: "4_star" });
+    const seen: unknown[] = [];
+    const b = bandFromRow({ destination_slug: "bali", month: null, hotel_tier: "4_star", nights_group: "5-6", price_low: 45000, price_high: 60000, sample_count: 7 });
+    ctx.publicData = {
+      ...publicData,
+      band: async (input) => (seen.push(input), { ...partyRange(b, input.adults), sampleCount: 7, basis: bandBasis(b, input.adults, input.children) }),
+    };
+    const r = await getIndicativePrice(ctx, { destination: "Bali", nights: 5, adults: 2, children: 1, hotel_tier: "4_star", travel_month: `${nextYear}-05` });
+    expect(seen[0]).toEqual({ destinationSlug: "bali", month: 5, tier: "4_star", nights: 5, adults: 2, children: 1 });
     expect(text(r)).toContain("₹90,000 to ₹1,20,000");
-    expect(text(r)).toContain("7 past Udan quotes");
+    expect(text(r)).toContain("From 7 past Udan quotes for 4-star, 5 to 6 nights, any month.");
+    expect(text(r)).toContain("children are priced in the quote");
+    expect(text(r)).toContain("flights, visa and insurance are priced separately");
   });
 
   it("compare_price converts the OTA price and states the commitment", async () => {

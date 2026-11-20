@@ -1,4 +1,4 @@
-import type { Database, FxRate } from "@udan/core";
+import { type Database, type FxRate, RATE_CARD_COLUMNS, bandBasis, bandFromRow, nightsGroup, partyRange, pickBand } from "@udan/core";
 import { type SupabaseClient, createClient } from "@supabase/supabase-js";
 import type { Env } from "./env";
 import type { CustomerQuoteData, DestinationInfo, PublicData, UserData } from "./tools";
@@ -40,10 +40,23 @@ export function publicData(env: Env): PublicData {
         r.currency && r.inr_per_unit && r.rate_date ? [{ currency: r.currency, inrPerUnit: Number(r.inr_per_unit), rateDate: r.rate_date }] : [],
       );
     },
-    async band() {
-      // The rate card is deferred (TODO.md). When it exists, look up the most
-      // specific band with sample_count >= 5 here.
-      return null;
+    async band(input) {
+      if (!input.destinationSlug) return null;
+      // Row level security returns only public bands (5+ samples).
+      const { data, error } = await db
+        .from("rate_card")
+        .select(RATE_CARD_COLUMNS)
+        .eq("destination_slug", input.destinationSlug)
+        .eq("nights_group", nightsGroup(input.nights));
+      if (error) throw new Error(error.message);
+      const band = pickBand((data ?? []).map(bandFromRow), {
+        destinationSlug: input.destinationSlug,
+        nights: input.nights,
+        month: input.month,
+        tier: input.tier,
+      });
+      if (!band) return null;
+      return { ...partyRange(band, input.adults), sampleCount: band.sampleCount, basis: bandBasis(band, input.adults, input.children) };
     },
   };
 }

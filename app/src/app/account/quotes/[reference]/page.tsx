@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import type { CustomerQuote } from "@/lib/customer-quote";
 import { formatDate } from "@/lib/format";
 import { loadRates } from "@/lib/fx";
+import { typicalPriceFor } from "@/lib/rate-card";
 import { acceptQuote } from "./actions";
 
 export const metadata = { title: "Your quote" };
@@ -46,6 +47,13 @@ export default async function QuotePage({
   const expired = q.status === "sent" && q.is_expired;
   const travelDocs = q.documents.filter((d) => d.type !== "ota_screenshot");
 
+  // While the desk prices it, a typical range from past quotes, if there is one.
+  let typical = null;
+  if (q.status === "queued" || q.status === "pricing") {
+    const { data: own } = await supabase.from("quote_requests").select("destination_slug").eq("reference", q.reference).maybeSingle();
+    typical = await typicalPriceFor(supabase, { ...q, destination_slug: own?.destination_slug ?? null });
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <Link href="/account" className="text-sm text-udan-gray hover:text-udan-orange">← All my quotes</Link>
@@ -63,6 +71,15 @@ export default async function QuotePage({
         <p className="mt-4 rounded-lg bg-udan-lightGray p-4 text-sm">
           <strong>{status.label}.</strong> {status.detail}
         </p>
+        {typical && (
+          <div className="mt-3 rounded-lg border border-udan-orange/30 p-4 text-sm">
+            <p>
+              <strong>Typical price:</strong> similar trips have cost <Money inr={typical.low} currency={currency} rates={rates} /> to{" "}
+              <Money inr={typical.high} currency={currency} rates={rates} />.
+            </p>
+            <p className="mt-1 text-xs text-udan-gray">{typical.basis} Your quote is priced for your own dates.</p>
+          </div>
+        )}
       </section>
 
       {q.messages.length > 0 && (

@@ -16,6 +16,7 @@ export default async function DeskLayout({ children }: { children: React.ReactNo
             ["/desk/new", "New request"],
             ["/desk/metrics", "Metrics"],
             ["/desk/markup", "Markup rules"],
+            ["/desk/rate-card", "Rate card"],
           ].map(([href, label]) => (
             <Link key={href} href={href!} className="rounded-full bg-white px-3 py-1.5 font-medium text-udan-charcoal shadow-sm hover:text-udan-orange">
               {label}

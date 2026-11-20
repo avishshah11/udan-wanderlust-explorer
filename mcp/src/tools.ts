@@ -35,10 +35,12 @@ export interface DestinationInfo {
   typicalInclusions: string[];
 }
 
+/** A rate-card band for the whole party (per-adult prices times adults). */
 export interface PriceBand {
   low: number;
   high: number;
   sampleCount: number;
+  /** What the range is based on and covers (core bandBasis()). */
   basis: string;
 }
 
@@ -74,8 +76,15 @@ export interface CustomerQuoteData {
 export interface PublicData {
   findDestination(name: string): Promise<DestinationInfo | null>;
   rates(): Promise<FxRate[]>;
-  /** Rate-card band. Always null until the rate card is built (TODO.md). */
-  band(input: { destinationSlug: string | null; month: number | null; tier: string | null; nights: number; adults: number }): Promise<PriceBand | null>;
+  /** The most specific public rate-card band for the trip, or null (fewer than 5 matching quotes). */
+  band(input: {
+    destinationSlug: string | null;
+    month: number | null;
+    tier: HotelTier | null;
+    nights: number;
+    adults: number;
+    children: number;
+  }): Promise<PriceBand | null>;
 }
 
 export interface UserData {
@@ -98,7 +107,7 @@ export interface ToolContext {
   /** Fire-and-forget work after the response (emails). */
   background(task: Promise<unknown>): void;
   notify: {
-    requestReceived(user: SignedInUser, reference: string, summary: string): Promise<unknown>;
+    requestReceived(user: SignedInUser, reference: string, summary: string, typical: PriceBand | null): Promise<unknown>;
     accepted(user: SignedInUser, reference: string, totalInr: number | null): Promise<unknown>;
     staff(event: "new_request" | "accepted" | "recheck", user: SignedInUser, reference: string, summary: string): Promise<unknown>;
   };
@@ -219,6 +228,7 @@ export const requestQuoteOutput = {
   status: z.string(),
   account_url: z.string(),
   confirmation_emailed_to: z.string(),
+  typical_band: bandOut,
 };
 
 export const quoteOutput = {
@@ -257,7 +267,7 @@ export const TOOL_DEFINITIONS = {
   get_indicative_price: {
     title: "Typical price for a trip",
     description:
-      "Returns a typical price range in INR for a trip, based on Udan Tours and Travels' own past quotes for the same destination, hotel category, number of nights and month, with the number of quotes it is based on. A range is returned only when at least five past quotes match; otherwise the response says that no range is available. Use it when someone wants an approximate cost before asking for a firm quote. Does not require sign-in.",
+      "Returns a typical price range in INR for a holiday at a destination, based on Udan Tours and Travels' own past quotes for the same hotel category and a similar number of nights, using the travel month's own range when there are enough quotes for it. The range covers hotel, transfers, sightseeing and meals for the adults (per adult on twin sharing); flights, visa, insurance and children are priced in the firm quote. It states how many quotes it is based on, and is returned only when at least five past quotes match; otherwise the response says that no range is available. Use it when someone wants an approximate cost before asking for a firm quote. Does not require sign-in.",
     inputSchema: indicativeInput,
     outputSchema: indicativeOutput,
     annotations: { title: "Typical price for a trip", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -265,7 +275,7 @@ export const TOOL_DEFINITIONS = {
   compare_price: {
     title: "Compare a booking-site price",
     description:
-      "Compares a price found on a booking site with Udan Tours and Travels' typical prices for the same trip. Returns the booking-site price in INR, Udan's typical range where one exists, and the difference. Use it when someone shares a hotel or package price from another site and asks whether Udan can offer it for less. Does not require sign-in.",
+      "Compares a price found on a booking site with Udan Tours and Travels' typical prices for a similar trip. Returns the booking-site price in INR, Udan's typical range where one exists (hotel, transfers, sightseeing and meals; no flights), and the difference. Use it when someone shares a hotel or package price from another site and asks whether Udan can offer it for less. Does not require sign-in.",
     inputSchema: compareInput,
     outputSchema: compareOutput,
     annotations: { title: "Compare a booking-site price", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -332,6 +342,7 @@ export async function getIndicativePrice(ctx: ToolContext, args: Input<typeof in
     tier: args.hotel_tier ?? null,
     nights: args.nights,
     adults: args.adults,
+    children: args.children,
   });
   const party = partyText(args.adults, args.children);
   const name = dest?.name ?? args.destination;
@@ -339,7 +350,7 @@ export async function getIndicativePrice(ctx: ToolContext, args: Input<typeof in
   const inclusions = dest?.typicalInclusions ?? [];
 
   const note = band
-    ? `Typical range from ${band.sampleCount} past Udan quotes (${band.basis}). A firm quote for exact dates is priced by Udan's team and delivered by email and in the user's Udan account.`
+    ? `${band.basis} A firm quote for exact dates is priced by Udan's team and delivered by email and in the user's Udan account.`
     : `Udan does not yet have enough past quotes for ${name} to give a typical range (it needs at least five similar quotes). A firm quote can be requested with request_quote; it is priced by Udan's team against supplier rates and delivered by email and in the user's Udan account.`;
 
   const lines = [
@@ -379,6 +390,7 @@ export async function comparePrice(ctx: ToolContext, args: Input<typeof compareI
           tier: null,
           nights,
           adults: args.adults,
+          children: args.children,
         })
       : null;
   const delta = band && otaInr != null ? Math.round(otaInr - (band.low + band.high) / 2) : null;
@@ -390,7 +402,7 @@ export async function comparePrice(ctx: ToolContext, args: Input<typeof compareI
   const lines = [
     `${args.ota_name}: ${args.product_name}${args.room_type ? `, ${args.room_type}` : ""}, ${args.currency} ${args.ota_price.toLocaleString("en-IN")}${otaInr != null && args.currency !== "INR" ? ` (about ${formatInr(otaInr)} at an approximate rate)` : ""}.`,
     band
-      ? `Udan's typical range for a similar trip is ${formatInr(band.low)} to ${formatInr(band.high)} (${band.sampleCount} past quotes); the difference is about ${formatInr(Math.abs(delta ?? 0))} ${delta != null && delta >= 0 ? "in Udan's favour" : "above this price"}.`
+      ? `Udan's typical range for a similar trip is ${formatInr(band.low)} to ${formatInr(band.high)} (${band.basis}) The difference is about ${formatInr(Math.abs(delta ?? 0))} ${delta != null && delta >= 0 ? "in Udan's favour" : "above this price"}.`
       : "Udan does not have a typical range for this trip yet, so the comparison needs a firm quote.",
     commitment,
     nextStep,
@@ -447,19 +459,35 @@ export async function requestQuote(ctx: ToolContext, args: Input<typeof requestQ
     ...parsed.data,
     travel_month: parsed.data.travel_month ? `${parsed.data.travel_month}-01` : undefined,
   });
-  ctx.background(ctx.notify.requestReceived(user, result.reference, summary));
+  const band =
+    parsed.data.request_type === "package" && parsed.data.nights
+      ? await ctx.publicData.band({
+          destinationSlug: dest?.slug ?? null,
+          month: parsed.data.travel_month ? Number(parsed.data.travel_month.slice(5, 7)) : parsed.data.start_date ? Number(parsed.data.start_date.slice(5, 7)) : null,
+          tier: parsed.data.hotel_tier ?? null,
+          nights: parsed.data.nights,
+          adults: parsed.data.adults,
+          children: parsed.data.children,
+        })
+      : null;
+  ctx.background(ctx.notify.requestReceived(user, result.reference, summary, band));
   ctx.background(ctx.notify.staff("new_request", user, result.reference, summary));
 
   const accountUrl = `${ctx.appUrl}/account/quotes/${result.reference}`;
   const status = customerStatus({ status: "queued" });
-  return ok(
-    [
-      `Quote request ${result.reference} is with Udan's pricing desk (${summary}).`,
-      `Status: ${status.label}. ${inAccount(status.detail)}`,
-      `A confirmation has been emailed to ${user.email}. The request is in the user's Udan account: ${accountUrl}`,
-    ].join("\n"),
-    { reference: result.reference, status: "queued", account_url: accountUrl, confirmation_emailed_to: user.email },
-  );
+  const lines = [
+    `Quote request ${result.reference} is with Udan's pricing desk (${summary}).`,
+    `Status: ${status.label}. ${inAccount(status.detail)}`,
+  ];
+  if (band) lines.push(`Similar trips have typically cost ${formatInr(band.low)} to ${formatInr(band.high)}. ${band.basis}`);
+  lines.push(`A confirmation has been emailed to ${user.email}. The request is in the user's Udan account: ${accountUrl}`);
+  return ok(lines.join("\n"), {
+    reference: result.reference,
+    status: "queued",
+    account_url: accountUrl,
+    confirmation_emailed_to: user.email,
+    typical_band: band ? { low_inr: band.low, high_inr: band.high, sample_count: band.sampleCount, basis: band.basis } : null,
+  });
 }
 
 export async function getQuote(ctx: ToolContext, args: Input<typeof referenceInput>): Promise<CallToolResult> {
