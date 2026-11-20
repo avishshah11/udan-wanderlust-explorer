@@ -2,9 +2,11 @@
 import { getCollection } from "astro:content";
 import DestinationCard from "../components/DestinationCard.astro";
 import Base from "../layouts/Base.astro";
+import { cardPrice, loadRateCard } from "../lib/rate-card";
 
+const rateCard = await loadRateCard();
 const all = (await getCollection("destinations")).sort((a, b) => a.data.order - b.data.order);
-const card = (d: (typeof all)[number]) => ({ slug: d.id, ...d.data });
+const card = (d: (typeof all)[number]) => ({ slug: d.id, ...d.data, price: cardPrice(rateCard, d.id) });
 const india = all.filter((d) => d.data.domestic).map(card);
 const abroad = all.filter((d) => !d.data.domestic).map(card);
 ---

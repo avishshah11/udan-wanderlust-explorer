@@ -52,6 +52,17 @@ including sign-in errors, validation, re-check of expired quotes, and the
 Worker's HTTP behaviour (metadata, 401 challenge, invalid token, stateless
 GET, bad JSON, `AUTH_MODE=all`).
 
+### Rate card, local run (20 Nov 2026)
+
+`get_indicative_price` Bali, 5 nights, 2 adults, 4-star, June 2027, against
+the local stack with the dev seed's fake samples: June has only 2 samples, so
+the all-months band answered: "Typical price for Bali, 5 nights, 2 adults:
+₹62,400 to ₹67,600. From 6 past Udan quotes for 4-star, 5 to 6 nights, any
+month. Per adult on twin sharing (shown for 2 adults); covers hotel,
+transfers, sightseeing and meals as quoted; flights, visa and insurance are
+priced separately." Structured content valid (`band.sample_count` 6). Rows 2
+and 3 above predate the rate card.
+
 ## Still to do before submission
 
 - [ ] Deploy the Worker on a public HTTPS URL (mcp.udantravelsbdq.com) with

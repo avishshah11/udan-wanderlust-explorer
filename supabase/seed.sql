@@ -49,14 +49,7 @@ insert into public.customers (email, name, phone, country, time_zone, source)
 values ('meera@example.com', 'Meera Example', '+91 90000 00000', 'IN', 'Asia/Kolkata', 'staff');
 
 -- ---------------------------------------------------------------------------
--- Destinations (dev catalogue)
--- ---------------------------------------------------------------------------
-insert into public.destinations (slug, name, country, destination_group, is_domestic, best_months, typical_inclusions, published) values
-  ('kerala',    'Kerala',    'India',     'domestic',        true,  '{10,11,12,1,2,3}', '{"Hotel or houseboat stays","Private car with driver","Breakfast"}', true),
-  ('rajasthan', 'Rajasthan', 'India',     'domestic',        true,  '{10,11,12,1,2,3}', '{"Heritage hotels","Private car with driver","Breakfast"}', true),
-  ('goa',       'Goa',       'India',     'domestic',        true,  '{11,12,1,2}',      '{"Beach resort","Airport transfers","Breakfast"}', true),
-  ('bali',      'Bali',      'Indonesia', 'south-east-asia', false, '{4,5,6,7,8,9}',    '{"Hotel or villa","Airport transfers","Sightseeing tours","Breakfast"}', true),
-  ('dubai',     'Dubai',     'UAE',       'middle-east',     false, '{11,12,1,2,3}',    '{"Hotel","Airport transfers","Desert safari","City tour"}', true);
+-- Destinations come from migration 20261120000200 (the real catalogue).
 
 -- ---------------------------------------------------------------------------
 -- Markup rules: DEV PLACEHOLDERS, not real margins
@@ -130,3 +123,24 @@ begin
   insert into public.payments (request_id, kind, amount, method, status, note)
   values (v_req, 'advance', 30000, 'bank', 'awaiting', 'Bank details sent from template');
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Rate card: DEV FAKE samples so the desk, website and connector show bands
+-- locally. Obviously not Udan's prices: round steps of ₹1,000 per adult. A
+-- hosted project never runs this seed.
+-- ---------------------------------------------------------------------------
+insert into public.rate_samples (source, import_key, destination_slug, travel_month, hotel_tier, nights, adults, land_total_inr, quoted_on, note)
+select 'import', format('dev-fake-%s-%s-%s-%s', d.slug, d.tier, d.nights, i), d.slug,
+       d.months[1 + (i % array_length(d.months, 1))], d.tier::public.hotel_tier, d.nights, 2,
+       (d.base + i * 1000) * 2, current_date - i * 30, 'DEV FAKE SAMPLE, not a real quote'
+  from (values
+    ('bali',      '4_star', 5, 30000, '{5,6,7}'::smallint[]),
+    ('bali',      '3_star', 5, 20000, '{5,6,7}'::smallint[]),
+    ('dubai',     '4_star', 4, 35000, '{12,1,2}'::smallint[]),
+    ('goa',       '4_star', 3, 12000, '{12}'::smallint[]),
+    ('kerala',    '4_star', 5, 18000, '{11,12,1}'::smallint[]),
+    ('rajasthan', '3_star', 6, 15000, '{10,11,12}'::smallint[])
+  ) as d(slug, tier, nights, base, months)
+ cross join generate_series(0, 5) as i;
+
+select private.refresh_rate_card();

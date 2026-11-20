@@ -42,8 +42,8 @@ on 18 Nov 2026, to where it is met. Status: **met** (in code, tested),
 | Public documentation page | `web/src/pages/connector.astro`, live at https://udantravelsbdq.com/connector after the website cutover | ready |
 | Privacy policy URL covering collection, use, storage, sharing, retention, contact | `web/src/pages/privacy.astro` (sections 2–5 and 9; names Supabase, Resend, Vercel, Cloudflare, GitHub, Google and Anthropic) | ready, owner to review |
 | Support contact | udantravels.bdq@gmail.com, +91 93762 14442 (on `/connector`) | ready |
-| Icon | Udan logo (`web/public/images/udan-logo.jpg`); the portal may need a square version | to do |
-| Listing copy (name ≤100, one-liner ≤200, description ≤2,000, categories) | Name "Udan Tours and Travels"; one-liner from the PRD: "Hotel, flight and holiday package quotes from a Vadodara travel agency established 1997, for domestic and international trips from India, priced against agent rates and delivered to your inbox." (193 characters) | ready |
+| Icon | `web/public/images/udan-icon-512.png`: 512×512, the Udan logo on white | ready |
+| Listing copy (name ≤100, one-liner ≤200, description ≤2,000, categories) | Name "Udan Tours and Travels"; one-liner from the PRD: "Hotel, flight and holiday package quotes from a Vadodara travel agency established 1997, for domestic and international trips from India, priced against agent rates and delivered to your inbox." (193 characters); description below (under 2,000 characters); category Travel | ready |
 | Data handling | Own API (Udan's Supabase project); no health data; no sponsored content | ready |
 | Test access for review | Reviewers sign in with their own email (magic link) or Google. Then run `supabase/scripts/test-account.sql` with their email to fill the account with a queued request, a sent quote ready to accept and a paid booking. No credentials go in the portal | ready |
 | Paid Claude plan for the submitting account | Owner's account | to do |
@@ -56,3 +56,16 @@ on 18 Nov 2026, to where it is met. Status: **met** (in code, tested),
 | No turnaround time in tool responses | `findTurnaroundLanguage` asserted on every response in `mcp/test/tools.test.ts` |
 | No supplier net rates | Tools read quotes only through `quote_for_customer()`, which returns sell prices; `quote_lines` is staff-only under row level security |
 | Firm prices only to signed-in users in their own session | `get_quote`/`confirm_booking` need a verified token; the database returns only the caller's quotes (Inspector call 9) |
+
+## Listing description
+
+Paste into the portal's description field (about 1,100 characters):
+
+> Udan Tours and Travels is a family travel agency in Vadodara, Gujarat, established 1997. This connector lets you plan a trip in Claude and have it priced by Udan's team.
+>
+> - Typical prices: ask what a holiday at a destination usually costs and get the range from Udan's own past quotes for the same hotel category and length of stay, with the number of quotes behind it. Ranges cover hotel, transfers, sightseeing and meals; flights, visa and insurance are priced in the firm quote.
+> - Compare a booking-site price: share a hotel or package price you found online and see how it compares with Udan's typical prices.
+> - Request a firm quote: send a holiday package, flights or a hotel stay to Udan's pricing desk after a one-step email or Google sign-in. A member of the family prices it against agent rates, and the quote arrives by email and in your Udan account.
+> - Read and accept quotes: see a quote's status, price, inclusions and validity, read messages from Udan's team, and accept when you are ready. No payment happens in Claude; payment details follow by email.
+>
+> Domestic and international trips from India. Prices are in INR, with your currency shown alongside.

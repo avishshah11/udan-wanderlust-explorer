@@ -10,6 +10,7 @@ export interface CarouselDestination {
   summary: string;
   image: string;
   imageAlt: string;
+  price?: { text: string; detail: string } | null;
 }
 
 // React island: rendered to HTML at build (so every card is in the page for
@@ -52,6 +53,12 @@ export default function DestinationCarousel({ destinations }: { destinations: Ca
                   <p className="text-xs uppercase tracking-wide text-udan-gray">{d.country}</p>
                   <h3 className="text-lg font-semibold text-udan-charcoal">{d.name}</h3>
                   <p className="mt-2 line-clamp-3 text-sm text-udan-gray">{d.summary}</p>
+                  {d.price && (
+                    <p className="mt-3 text-sm">
+                      <span className="font-semibold text-udan-charcoal">{d.price.text}</span>
+                      <span className="block text-xs text-udan-gray">{d.price.detail}</span>
+                    </p>
+                  )}
                 </div>
               </a>
             </CarouselItem>

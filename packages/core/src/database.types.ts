@@ -197,6 +197,52 @@ isOneToOne: false
       referencedColumns: ["slug"]
     }
                   ]
+                },"rate_card": {
+                  Row: {
+                    "destination_slug": string,"hotel_tier": Database["public"]['Enums']["hotel_tier"],"month": number | null,"nights_group": Database["public"]['Enums']["nights_group"],"pax_basis": string,"price_high": number,"price_low": number,"sample_count": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "destination_slug": string,"hotel_tier": Database["public"]['Enums']["hotel_tier"],"month"?: number | null,"nights_group": Database["public"]['Enums']["nights_group"],"pax_basis"?: string,"price_high": number,"price_low": number,"sample_count": number,"updated_at"?: string
+                  }
+                  Update: {
+                    "destination_slug"?: string,"hotel_tier"?: Database["public"]['Enums']["hotel_tier"],"month"?: number | null,"nights_group"?: Database["public"]['Enums']["nights_group"],"pax_basis"?: string,"price_high"?: number,"price_low"?: number,"sample_count"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "rate_card_destination_slug_fkey"
+      columns: ["destination_slug"]
+isOneToOne: false
+      referencedRelation: "destinations"
+      referencedColumns: ["slug"]
+    }
+                  ]
+                },"rate_samples": {
+                  Row: {
+                    "adults": number,"children": number,"created_at": string,"created_by": string | null,"destination_slug": string,"hotel_tier": Database["public"]['Enums']["hotel_tier"],"id": string,"import_batch": string | null,"import_key": string | null,"land_total_inr": number,"nights": number,"note": string | null,"quoted_on": string | null,"request_id": string | null,"source": string,"travel_month": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "adults": number,"children"?: number,"created_at"?: string,"created_by"?: string | null,"destination_slug": string,"hotel_tier": Database["public"]['Enums']["hotel_tier"],"id"?: string,"import_batch"?: string | null,"import_key"?: string | null,"land_total_inr": number,"nights": number,"note"?: string | null,"quoted_on"?: string | null,"request_id"?: string | null,"source": string,"travel_month": number,"updated_at"?: string
+                  }
+                  Update: {
+                    "adults"?: number,"children"?: number,"created_at"?: string,"created_by"?: string | null,"destination_slug"?: string,"hotel_tier"?: Database["public"]['Enums']["hotel_tier"],"id"?: string,"import_batch"?: string | null,"import_key"?: string | null,"land_total_inr"?: number,"nights"?: number,"note"?: string | null,"quoted_on"?: string | null,"request_id"?: string | null,"source"?: string,"travel_month"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "rate_samples_destination_slug_fkey"
+      columns: ["destination_slug"]
+isOneToOne: false
+      referencedRelation: "destinations"
+      referencedColumns: ["slug"]
+    },{
+      foreignKeyName: "rate_samples_request_id_fkey"
+      columns: ["request_id"]
+isOneToOne: true
+      referencedRelation: "quote_requests"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"request_messages": {
                   Row: {
                     "body": string,"created_at": string,"id": string,"request_id": string,"sent_by": string | null
@@ -248,6 +294,28 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"rate_import_batches": {
+                  Row: {
+                    "import_batch": string | null,"imported_at": string | null,"imported_by": string | null,"samples": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                },"rate_sample_summary": {
+                  Row: {
+                    "banded_samples": number | null,"desk_samples": number | null,"destination_slug": string,"imported_samples": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "rate_samples_destination_slug_fkey"
+      columns: ["destination_slug"]
+isOneToOne: false
+      referencedRelation: "destinations"
+      referencedColumns: ["slug"]
+    }
+                  ]
                 }
           }
           Functions: {
@@ -271,8 +339,14 @@ isOneToOne: false
 "my_customer_id":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"nights_group":
+{ Args: { "p_nights": number }; Returns: Database["public"]['Enums']["nights_group"]
+                           },
 "quote_for_customer":
 { Args: { "p_reference": string }; Returns: Json
+                           },
+"refresh_rate_card":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "send_quote":
 { Args: { "p_exclusions": string,"p_inclusions": string,"p_request_id": string,"p_valid_until": string }; Returns: Json
@@ -284,7 +358,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "cabin_class": "economy"|"premium_economy"|"business"|"first","document_type": "voucher"|"ticket"|"visa"|"insurance"|"invoice"|"itinerary"|"ota_screenshot"|"other","flexibility": "fixed"|"few_days"|"flexible","hotel_tier": "3_star"|"4_star"|"5_star","line_type": "hotel"|"flight"|"transfer"|"activity"|"visa"|"insurance"|"package"|"other","payment_kind": "advance"|"balance","payment_method": "bank"|"upi"|"card_link"|"cash","payment_status": "awaiting"|"received","request_channel": "claude"|"web"|"email"|"staff","request_status": "queued"|"pricing"|"sent"|"awaiting_payment"|"advance_received"|"balance_received"|"cancelled","request_type": "package"|"flights"|"hotels","staff_role": "owner"|"pricer"
+            "cabin_class": "economy"|"premium_economy"|"business"|"first","document_type": "voucher"|"ticket"|"visa"|"insurance"|"invoice"|"itinerary"|"ota_screenshot"|"other","flexibility": "fixed"|"few_days"|"flexible","hotel_tier": "3_star"|"4_star"|"5_star","line_type": "hotel"|"flight"|"transfer"|"activity"|"visa"|"insurance"|"package"|"other","nights_group": "1-2"|"3-4"|"5-6"|"7-9"|"10+","payment_kind": "advance"|"balance","payment_method": "bank"|"upi"|"card_link"|"cash","payment_status": "awaiting"|"received","request_channel": "claude"|"web"|"email"|"staff","request_status": "queued"|"pricing"|"sent"|"awaiting_payment"|"advance_received"|"balance_received"|"cancelled","request_type": "package"|"flights"|"hotels","staff_role": "owner"|"pricer"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -404,7 +478,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "cabin_class": ["economy", "premium_economy", "business", "first"],"document_type": ["voucher", "ticket", "visa", "insurance", "invoice", "itinerary", "ota_screenshot", "other"],"flexibility": ["fixed", "few_days", "flexible"],"hotel_tier": ["3_star", "4_star", "5_star"],"line_type": ["hotel", "flight", "transfer", "activity", "visa", "insurance", "package", "other"],"payment_kind": ["advance", "balance"],"payment_method": ["bank", "upi", "card_link", "cash"],"payment_status": ["awaiting", "received"],"request_channel": ["claude", "web", "email", "staff"],"request_status": ["queued", "pricing", "sent", "awaiting_payment", "advance_received", "balance_received", "cancelled"],"request_type": ["package", "flights", "hotels"],"staff_role": ["owner", "pricer"]
+            "cabin_class": ["economy", "premium_economy", "business", "first"],"document_type": ["voucher", "ticket", "visa", "insurance", "invoice", "itinerary", "ota_screenshot", "other"],"flexibility": ["fixed", "few_days", "flexible"],"hotel_tier": ["3_star", "4_star", "5_star"],"line_type": ["hotel", "flight", "transfer", "activity", "visa", "insurance", "package", "other"],"nights_group": ["1-2", "3-4", "5-6", "7-9", "10+"],"payment_kind": ["advance", "balance"],"payment_method": ["bank", "upi", "card_link", "cash"],"payment_status": ["awaiting", "received"],"request_channel": ["claude", "web", "email", "staff"],"request_status": ["queued", "pricing", "sent", "awaiting_payment", "advance_received", "balance_received", "cancelled"],"request_type": ["package", "flights", "hotels"],"staff_role": ["owner", "pricer"]
           }
         }
 } as const

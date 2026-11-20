@@ -92,6 +92,40 @@ What the schema enforces:
   customer they belong to, and never edited. Each is emailed to the customer
   (replies go to `EMAIL_REPLY_TO`) and shown in their account and in Claude's
   `get_quote`.
+- The rate card (below): `rate_samples` are staff-only; `rate_card` shows the
+  public only bands with 5 or more samples.
+- The destination catalogue (seven destinations) ships with the migrations,
+  so a hosted project has it. Exchange rates for display are fetched daily
+  (ECB reference rates via frankfurter.dev, by pg_cron at 16:30 UTC; AED from
+  the USD peg) and always labelled approximate.
+
+### Rate card
+
+Typical price ranges from Udan's own past quotes, built to the owner's
+decisions of 20 Nov 2026:
+
+- **Per adult on twin sharing.** A sample's land total is divided by its
+  adults; only adults-only trips of two or more adults count. Children are
+  priced in the firm quote.
+- **Land only.** Every quoted line except flights, visa and insurance.
+- **Grouping.** Nights 1-2 / 3-4 / 5-6 / 7-9 / 10+, by hotel category; one
+  band per month and one across all months. Callers show the month's band when
+  it has 5+ samples, otherwise the all-months band (`pickBand()` in
+  `packages/core/src/rate-card.ts`). A band's range is the middle half of its
+  prices (25th to 75th percentile), rounded out to ₹100.
+
+Samples come from two places. Sending a holiday-package quote on the desk
+records one (the land total of its lines; a revision replaces it), and the
+desk's **Rate card** page imports past quotes from a CSV (columns documented
+on the page and in `packages/core/src/rate-import.ts`; a file with any bad line
+imports nothing, re-importing the same file adds nothing, and an import can be
+removed as a whole). Bands are rebuilt by pg_cron every night at 02:00 IST,
+after each import, and from the desk's "Rebuild ranges now" button.
+
+Where bands appear: destination pages and cards on the website (read at build
+time), `get_indicative_price`, `compare_price` and `request_quote` in Claude,
+the request-received email, and the customer's request page while it is being
+priced. The dev seed adds obviously fake samples for five destinations.
 
 ### Shared core (`packages/core`)
 
@@ -197,7 +231,12 @@ appear there only once filled in as `REGISTRATIONS` and `PAYEE_NAME` in
 carry the same check-before-you-pay note.
 
 Destination pages come from `web/src/content/destinations/*.md`; the file
-name must match the slug in the desk's `destinations` table.
+name must match the slug in the desk's `destinations` table. Price ranges on
+destination pages and cards come from the rate card at build time when
+`PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_PUBLISHABLE_KEY` are set
+(`web/.env.example`); without them the site builds with no prices, and with
+them a failed read fails the build. The visitor's currency is added next to
+INR in the browser, marked approx.
 
 The old SPA lives in `web/legacy` until cutover:
 `pnpm --filter @udan/web legacy:build` rebuilds the live `docs/`.
@@ -214,6 +253,7 @@ Secrets are never committed. Each package documents its own variables in an
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `app/` | public |
 | `SUPABASE_SECRET_KEY` | `app/` (server only) | bypasses RLS: website form intake, staff alert lookup, notification log |
 | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL` | `app/` | https://app.udantravelsbdq.com and https://udantravelsbdq.com in production |
+| `PUBLIC_APP_URL`, `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `web/` build | public; in GitHub Actions they are repository variables read by **Deploy website** |
 | `QUOTE_FORM_ORIGINS` | `app/` | origins allowed to post the Get a quote form |
 | `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO` | `app/` | without a key, emails are logged, not sent |
 | `STAFF_ALERT_EMAIL` | `app/` | fallback when no staff member has alerts on |
@@ -251,8 +291,8 @@ then commit the updated `docs/` and push to `main`. The build also writes
 
 5. Rollback, if anything is wrong: set the Pages source back to
    **Deploy from a branch**, `main`, `/docs`.
-6. Once it has been stable for a few days: add the push trigger to
-   `deploy-web.yml`, delete `web/legacy`, `vite.legacy.config.ts` and the
+6. Once it has been stable for a few days: add the push trigger and a nightly
+   `schedule` (so new rate-card bands reach the site) to `deploy-web.yml`, delete `web/legacy`, `vite.legacy.config.ts` and the
    built files in `docs/`, and move documentation (runbooks, MCP test log,
    review checklist) into `docs/`.
 
@@ -343,8 +383,10 @@ psql "$DATABASE_URL" -v email=reviewer@example.com -f supabase/scripts/test-acco
 
 1. No turnaround time is ever shown to a customer (`findTurnaroundLanguage()`
    in `packages/core` checks customer copy in tests).
-2. No supplier net rates anywhere public. Public price bands come only from
-   the rate card, which is deferred (see `TODO.md`).
+2. No supplier net rates anywhere public. Public prices are only rate-card
+   bands built from Udan's own quotes, labelled typical with their quote
+   counts; a band with fewer than 5 quotes is never public (row level
+   security on `rate_card`).
 3. Firm prices only to signed-in customers in their own account or Claude
    session.
 4. Every customer action gets an immediate response and a visible status.

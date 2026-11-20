@@ -32,6 +32,10 @@ jobs:
         run: pnpm --filter @udan/web build
         env:
           PUBLIC_APP_URL: https://app.udantravelsbdq.com
+          # Repository variables (public values): the hosted Supabase project,
+          # for rate-card price ranges. Unset, the site builds without prices.
+          PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
       - name: Every route is 200 HTML, readable without JavaScript
         run: pnpm --filter @udan/web verify
       - uses: actions/upload-pages-artifact@v4

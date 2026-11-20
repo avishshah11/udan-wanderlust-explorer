@@ -2,11 +2,21 @@
 import { getCollection } from "astro:content";
 import DestinationCarousel from "../components/DestinationCarousel";
 import Base from "../layouts/Base.astro";
+import { cardPrice, loadRateCard } from "../lib/rate-card";
 import { SITE, yearsInBusiness } from "../lib/site";
 
+const rateCard = await loadRateCard();
 const destinations = (await getCollection("destinations"))
   .sort((a, b) => a.data.order - b.data.order)
-  .map((d) => ({ slug: d.id, name: d.data.name, country: d.data.country, summary: d.data.summary, image: d.data.image, imageAlt: d.data.imageAlt }));
+  .map((d) => ({
+    slug: d.id,
+    name: d.data.name,
+    country: d.data.country,
+    summary: d.data.summary,
+    image: d.data.image,
+    imageAlt: d.data.imageAlt,
+    price: cardPrice(rateCard, d.id),
+  }));
 
 const steps = [
   ["Tell us the trip", "Where, when, how many of you, and a budget if you have one. Or send us a price you have seen on a booking site."],

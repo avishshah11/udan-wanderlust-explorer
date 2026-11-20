@@ -1,7 +1,10 @@
 ---
 import { getCollection, render } from "astro:content";
+import { BAND_COVERS, BAND_EXCLUDES, describeBand } from "@udan/core/rate-card";
+import PriceBands from "../../components/PriceBands.astro";
 import Base from "../../layouts/Base.astro";
-import { monthRange } from "../../lib/site";
+import { bandsFor, headlineBand, loadRateCard } from "../../lib/rate-card";
+import { SITE, monthRange } from "../../lib/site";
 
 export async function getStaticPaths() {
   const all = await getCollection("destinations");
@@ -13,6 +16,23 @@ const d = entry.data;
 const { Content } = await render(entry);
 const best = monthRange(d.bestMonths);
 const quoteHref = `/quote?destination=${encodeURIComponent(d.name)}`;
+const rateCard = await loadRateCard();
+const { anyMonth, byMonth } = bandsFor(rateCard, entry.id);
+const headline = headlineBand(rateCard, entry.id);
+const trip = headline && {
+  "@context": "https://schema.org",
+  "@type": "TouristTrip",
+  name: `${d.name} holiday`,
+  provider: { "@id": `${SITE.url}/#agency` },
+  offers: {
+    "@type": "AggregateOffer",
+    priceCurrency: "INR",
+    lowPrice: headline.lowPerAdult,
+    highPrice: headline.highPerAdult,
+    offerCount: headline.sampleCount,
+    description: `Typical price per adult on twin sharing for ${describeBand(headline)}, from ${headline.sampleCount} past Udan quotes. Covers ${BAND_COVERS}; ${BAND_EXCLUDES} are priced separately.`,
+  },
+};
 const breadcrumbs = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -26,7 +46,7 @@ const breadcrumbs = {
 <Base
   title={`${d.name} holiday packages`}
   description={`${d.name} holidays from Udan Tours and Travels, Vadodara: best time to go (${best}), what a typical trip includes, a sample itinerary, and a quote priced for your dates.`}
-  jsonLd={[breadcrumbs]}
+  jsonLd={trip ? [breadcrumbs, trip] : [breadcrumbs]}
 >
   <article>
     <header class="relative">
@@ -56,10 +76,17 @@ const breadcrumbs = {
           <p class="mt-1 text-udan-gray">{best}</p>
           <h2 class="mt-6 text-lg font-semibold text-udan-charcoal">A typical Udan trip includes</h2>
           <ul class="mt-2 list-disc space-y-1 pl-5 text-udan-gray">{d.inclusions.map((i) => <li>{i}</li>)}</ul>
-          <h2 class="mt-6 text-lg font-semibold text-udan-charcoal">Price</h2>
-          <p class="mt-1 text-udan-gray">
-            We price every {d.name} trip against our supplier rates for your dates, party and hotel category. Typical price ranges from our past quotes will appear here once we have enough of them.
-          </p>
+          <h2 class="mt-6 text-lg font-semibold text-udan-charcoal">{anyMonth.length > 0 ? "Typical prices" : "Price"}</h2>
+          {
+            anyMonth.length > 0 ? (
+              <PriceBands anyMonth={anyMonth} byMonth={byMonth} rates={rateCard.rates} />
+            ) : (
+              <p class="mt-1 text-udan-gray">
+                We price every {d.name} trip against our supplier rates for your dates, party and hotel category. Typical price ranges from our past quotes will appear
+                here once we have enough of them.
+              </p>
+            )
+          }
           <a href={quoteHref} class="btn-primary mt-6 w-full">Get a {d.name} quote</a>
         </div>
         <p class="text-sm text-udan-gray">

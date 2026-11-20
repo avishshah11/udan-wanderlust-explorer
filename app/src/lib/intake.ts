@@ -2,6 +2,7 @@ import "server-only";
 import { type RequestChannel, requestReceivedEmail, staffAlertEmail, tripSummary } from "@udan/core";
 import { publicEnv } from "@/lib/env";
 import { alertStaff, deskUrl, notifyCustomerById } from "@/lib/notify";
+import { formatTypical, typicalPriceFor } from "@/lib/rate-card";
 import { createServiceClient } from "@/lib/supabase/server";
 
 /** Match a typed destination to the catalogue so markup groups apply. */
@@ -23,12 +24,15 @@ export async function sendIntakeNotifications(input: {
   const service = createServiceClient();
   const { data: r } = await service
     .from("quote_requests")
-    .select("request_type, destination, origin_city, nights, adults, children, rooms, hotel_tier, cabin_class, start_date, end_date, travel_month, customers(name, email)")
+    .select(
+      "request_type, destination, destination_slug, origin_city, nights, adults, children, rooms, hotel_tier, cabin_class, start_date, end_date, travel_month, customers(name, email)",
+    )
     .eq("id", input.requestId)
     .single();
   if (!r) return;
   const summary = tripSummary(r);
   if (input.confirmCustomer) {
+    const typical = await typicalPriceFor(service, r);
     await notifyCustomerById(
       input.customerId,
       input.requestId,
@@ -38,6 +42,7 @@ export async function sendIntakeNotifications(input: {
         reference: input.reference,
         tripSummary: summary,
         accountUrl: `${publicEnv.appUrl}/account/quotes/${input.reference}`,
+        typical: typical ? formatTypical(typical) : null,
       }),
     );
   }

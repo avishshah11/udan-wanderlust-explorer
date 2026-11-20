@@ -3,9 +3,9 @@ import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
 // One file per destination page. The slug (file name) must match the
-// destinations.slug used by the pricing desk, so markup groups and, later,
-// rate-card bands line up. No prices here: bands will come from the rate
-// card when it exists (see TODO.md).
+// destinations.slug used by the pricing desk, so markup groups and rate-card
+// bands line up. No prices here: bands come from the rate card at build time
+// (src/lib/rate-card.ts).
 const destinations = defineCollection({
   loader: glob({ pattern: "*.md", base: "./src/content/destinations" }),
   schema: z.object({
