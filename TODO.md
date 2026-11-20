@@ -40,6 +40,19 @@ grouped with a fall-back from the month's band to the all-months band (README,
       say. Confirm with the accountant how GST on packages and TCS on overseas
       packages should appear on quotes before launch.
 
+- [ ] "Why trust us" page (`/trust`): confirm its promises before cutover,
+      above all "every payment we ask for appears in your Udan account". That
+      only holds if every payment, cash included, is requested from the desk.
+- [ ] Registrations for `/trust`, exactly as printed on each certificate:
+      GSTIN, and any IATA, TAAI, TAFI, Ministry of Tourism or Gujarat Tourism
+      registration (`REGISTRATIONS` in `web/src/lib/site.ts`; hidden while
+      empty).
+- [ ] The name on the bank account customers pay into (`PAYEE_NAME`), so
+      `/trust` can say to pay only an account in that name.
+- [ ] Optional, strong trust signals: real photos of the office and the
+      family, and traveller testimonials used with their permission. None are
+      invented on the site.
+
 - [ ] Review the new website copy: privacy policy and terms (rewritten for
       accounts, sign-in and the Claude connector), the six destination pages
       (summaries, best months, sample itineraries), and pick the top 20

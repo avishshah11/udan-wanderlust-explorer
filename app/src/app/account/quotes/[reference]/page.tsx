@@ -1,4 +1,4 @@
-import { DOCUMENT_TYPE_LABELS, LINE_TYPE_LABELS, PAYMENT_METHOD_LABELS, customerStatus, displayPrice, formatInr, tripSummary } from "@udan/core";
+import { DOCUMENT_TYPE_LABELS, LINE_TYPE_LABELS, OFFICE, PAYMENT_METHOD_LABELS, customerStatus, displayPrice, formatInr, tripSummary } from "@udan/core";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Money } from "@/components/money";
@@ -12,6 +12,8 @@ import { typicalPriceFor } from "@/lib/rate-card";
 import { acceptQuote } from "./actions";
 
 export const metadata = { title: "Your quote" };
+
+const landline = OFFICE.phones.find((p) => p.label === "Office")!;
 
 const NOTICES: Record<string, string> = {
   received: "Thank you. We have your request and it is now with our pricing desk.",
@@ -174,6 +176,11 @@ export default async function QuotePage({
               </li>
             ))}
           </ul>
+          <p className="mt-3 rounded-lg bg-udan-lightGray p-3 text-xs text-udan-gray">
+            Pay only the amounts listed here. If anyone asks you to pay for this trip in another way, or for an OTP or PIN, call our office on{" "}
+            <a className="text-udan-blue underline" href={`tel:${landline.tel}`}>{landline.display}</a> first.{" "}
+            <a className="text-udan-blue underline" href={`${OFFICE.website}/trust#pay-safely`}>How to pay safely</a>
+          </p>
         </section>
       )}
 

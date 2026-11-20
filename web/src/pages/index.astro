@@ -3,7 +3,7 @@ import { getCollection } from "astro:content";
 import DestinationCarousel from "../components/DestinationCarousel";
 import Base from "../layouts/Base.astro";
 import { cardPrice, loadRateCard } from "../lib/rate-card";
-import { SITE } from "../lib/site";
+import { SITE, yearsInBusiness } from "../lib/site";
 
 const rateCard = await loadRateCard();
 const destinations = (await getCollection("destinations"))
@@ -22,6 +22,12 @@ const steps = [
   ["Tell us the trip", "Where, when, how many of you, and a budget if you have one. Or send us a price you have seen on a booking site."],
   ["We price it against our supplier rates", "A member of our family checks the agent rates we have built up with hotels and suppliers since 1997, line by line."],
   ["Your quote arrives in your inbox", "It sits in your Udan account with everything included and how long the price holds. Accept it there, and we take it from there."],
+];
+
+const trust = [
+  [`${yearsInBusiness()} years in Vadodara`, "Established 1997, with an office in Sayajiganj you can walk into and a landline you can call."],
+  ["Nothing to pay up front", "You get a written quote first. We send payment details only after you accept it."],
+  ["Every payment on record", "Each payment we ask for shows in your Udan account. If it is not there, it is not from us."],
 ];
 
 const services = [
@@ -87,6 +93,25 @@ const services = [
         }
       </ol>
       <p class="mt-8 text-center"><a href="/quote" class="btn-primary">Get a quote</a></p>
+    </div>
+  </section>
+
+  <section class="pb-16 md:pb-24" aria-labelledby="trust-heading">
+    <div class="container mx-auto px-4 md:px-6">
+      <div class="rounded-2xl bg-udan-orange/5 p-8 md:p-10">
+        <h2 id="trust-heading" class="text-2xl font-bold text-udan-charcoal md:text-3xl">Why travellers trust us</h2>
+        <ul class="mt-6 grid gap-6 md:grid-cols-3">
+          {
+            trust.map(([title, text]) => (
+              <li>
+                <h3 class="text-lg font-semibold text-udan-charcoal">{title}</h3>
+                <p class="mt-1 text-udan-gray">{text}</p>
+              </li>
+            ))
+          }
+        </ul>
+        <a href="/trust" class="mt-6 inline-block font-medium text-udan-orange underline">How we work, and how to spot someone pretending to be us</a>
+      </div>
     </div>
   </section>
 

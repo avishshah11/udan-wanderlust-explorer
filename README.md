@@ -207,7 +207,10 @@ pnpm --filter @udan/web verify
 `build` runs `astro build` and then `scripts/check-build.ts`, which fails the
 build if any page lacks a title, description, absolute `og:image`, canonical
 URL or TravelAgency data, or contains a conflicting founding claim, a
-placeholder price or turnaround language. `verify` serves `dist/` the way
+placeholder price or turnaround language. The only years claim allowed is the
+exact count since 1997 ("29 years" in 2026), which pages take from
+`yearsInBusiness()` in `web/src/lib/site.ts` and which changes on the next
+build after 1 January. `verify` serves `dist/` the way
 GitHub Pages does and checks every route (including the old SPA URLs) returns
 200 HTML with content readable without JavaScript. Set `PUBLIC_APP_URL` to
 point the Get a quote form at a local app (default
@@ -217,6 +220,15 @@ The Get a quote page (`/quote`) has three sections, one form each: holiday
 package, flights only and hotel only. Without JavaScript they stack; with it
 they become tabs. Link to one with `/quote#flights`, `/quote#hotels` or
 `?type=`, and pre-fill a destination with `?destination=`.
+
+"Why trust us" (`/trust`) says how Udan works and how to tell Udan from
+someone using its name: a written quote before any payment, every payment
+request visible in the customer's account, no OTPs or PINs, the office
+landline to check with. Each promise matches what the app does; keep them in
+step. Registrations (GSTIN, memberships) and the name on the bank account
+appear there only once filled in as `REGISTRATIONS` and `PAYEE_NAME` in
+`web/src/lib/site.ts`. The payment-details email and the customer's quote page
+carry the same check-before-you-pay note.
 
 Destination pages come from `web/src/content/destinations/*.md`; the file
 name must match the slug in the desk's `destinations` table. Price ranges on

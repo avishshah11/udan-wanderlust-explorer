@@ -7,6 +7,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { findTurnaroundLanguage } from "@udan/core/copy-guard";
+import { yearsInBusiness } from "../src/lib/site";
 import { canonical, h1Text, meta, title, visibleText } from "./html";
 
 const DIST = new URL("../dist", import.meta.url).pathname;
@@ -19,7 +20,9 @@ function htmlFiles(dir: string): string[] {
   });
 }
 
-const FOUNDING_CONFLICTS = /\b(?:\d{2}\+?\s*years|three decades|two decades|since (?:19(?:[0-8]\d|9[0-68])|20\d\d)|established (?:in )?(?:19(?:[0-8]\d|9[0-68])|20\d\d))\b/i;
+const FOUNDING_CONFLICTS = /\b(?:\d{2}\+?\s*years|three decades|two decades|since (?:19(?:[0-8]\d|9[0-68])|20\d\d)|established (?:in )?(?:19(?:[0-8]\d|9[0-68])|20\d\d))\b/gi;
+// The one years claim allowed: the exact count since 1997 ("29 years" in 2026).
+const YEARS_CLAIM = `${yearsInBusiness()} years`;
 const PLACEHOLDER_PRICE = /starting from\s*(?:₹|rs\.?|inr)/i;
 
 const files = htmlFiles(DIST);
@@ -46,7 +49,7 @@ for (const file of files) {
   if (!html.includes('"@type":"TravelAgency"')) fail("missing schema.org TravelAgency structured data");
   if ((html.match(/<h1[\s>]/gi) ?? []).length !== 1 || !h1Text(html)) fail("needs exactly one <h1> with text");
   if (!/href="\/quote"|href="\/quote\?/.test(html)) fail("no Get a quote link");
-  const founding = FOUNDING_CONFLICTS.exec(text);
+  const founding = [...text.matchAll(FOUNDING_CONFLICTS)].find((m) => m[0].toLowerCase() !== YEARS_CLAIM);
   if (founding) fail(`conflicting founding claim "${founding[0]}" (use: established 1997)`);
   const price = PLACEHOLDER_PRICE.exec(text);
   if (price) fail(`placeholder price "${price[0]}"`);

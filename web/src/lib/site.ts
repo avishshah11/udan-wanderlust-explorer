@@ -7,7 +7,7 @@ export const SITE = {
   founded: 1997,
   foundedText: "Established 1997",
   travellers: "10,000+",
-  appUrl: (import.meta.env.PUBLIC_APP_URL ?? "https://app.udantravelsbdq.com").replace(/\/$/, ""),
+  appUrl: (import.meta.env?.PUBLIC_APP_URL ?? "https://app.udantravelsbdq.com").replace(/\/$/, ""),
   mcpUrl: "https://mcp.udantravelsbdq.com/mcp",
   email: "udantravels.bdq@gmail.com",
   phones: [
@@ -36,7 +36,27 @@ export const SITE = {
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3691.1866736885286!2d73.18702840000002!3d22.30877880000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395fc89428d49e59%3A0x8f3010e90a528a89!2sUdan%20Tours%20And%20Travels!5e0!3m2!1sen!2sin!4v1746263644302!5m2!1sen!2sin",
   ogImage: "https://udantravelsbdq.com/images/og-default.jpg",
   logo: "https://udantravelsbdq.com/images/udan-logo.jpg",
+  /** Google search for the business: opens the Maps listing with its reviews. */
+  googleListing: "https://www.google.com/maps/search/?api=1&query=Udan+Tours+And+Travels+Sayajiganj+Vadodara",
 } as const;
+
+/** Whole years since the founding year, counted from the build date: 29 in 2026, 30 in 2027. */
+export function yearsInBusiness(now = new Date()): number {
+  return now.getFullYear() - SITE.founded;
+}
+
+/**
+ * Registrations and memberships shown on /trust, exactly as printed on the
+ * certificate, e.g. { label: "GSTIN", value: "…" }. Only the owner can supply
+ * these; the section stays hidden while the list is empty.
+ */
+export const REGISTRATIONS: readonly { label: string; value: string }[] = [];
+
+/**
+ * The name on the bank account customers pay into. When the owner confirms
+ * it, /trust tells customers to pay only an account in this name.
+ */
+export const PAYEE_NAME: string | null = null;
 
 export const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
