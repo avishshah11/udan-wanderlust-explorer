@@ -278,9 +278,10 @@ The old SPA lives in `web/legacy` until cutover:
 
 Secrets are never committed. Each package documents its own variables in an
 `.env.example` next to it (`app/.dev.vars.example` for the app on the local
-Cloudflare runtime). In production, `NEXT_PUBLIC_*` and `PUBLIC_*` values
-come from GitHub repository variables at build time, plain settings from each
-`wrangler.jsonc`, and secrets from `wrangler secret put` ("Deploying").
+Cloudflare runtime). In production everything comes from the git-ignored
+`.env.cloudflare` through `scripts/deploy.mjs`: public values at build time,
+secrets as Worker secrets; plain settings are in each `wrangler.jsonc`
+("Deploying").
 
 | Variable | Used by | Notes |
 | --- | --- | --- |
@@ -289,7 +290,7 @@ come from GitHub repository variables at build time, plain settings from each
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `app/` | public |
 | `SUPABASE_SECRET_KEY` | `app/` (server only) | bypasses RLS: website form intake, staff alert lookup, notification log |
 | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL` | `app/` | https://app.udantravelsbdq.com and https://udantravelsbdq.com in production |
-| `PUBLIC_APP_URL`, `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `web/` build | public; in GitHub Actions they are repository variables read by **Deploy to Cloudflare** |
+| `PUBLIC_APP_URL`, `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `web/` build | public; set by `scripts/deploy.mjs` from `.env.cloudflare` |
 | `QUOTE_FORM_ORIGINS` | `app/` | origins allowed to post the Get a quote form |
 | `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO` | `app/` | without a key, emails are logged, not sent |
 | `STAFF_ALERT_EMAIL` | `app/` | fallback when no staff member has alerts on |
@@ -306,49 +307,59 @@ Workers on one account, with Supabase for the database:
 | `udan-mcp` | Claude connector, mcp.udantravelsbdq.com | `mcp/wrangler.jsonc` |
 | `udan-website` | Public website (static files from `web/dist`), udantravelsbdq.com from the cutover | `web/wrangler.jsonc` |
 
-Deploys run from GitHub Actions: **Actions > Deploy to Cloudflare > Run
-workflow**, then pick `app`, `connector` or `website`
-(`.github/workflows/deploy.yml`). Each run installs, builds and deploys one
-Worker; the website run also checks every page first. They are manual until
-the website cutover.
+The owner deploys from their Mac (21 Nov 2026), with every deploy value and
+secret in the git-ignored `.env.cloudflare` at the repo root (names in
+`.env.cloudflare.example`; never commit it or paste it into chat):
+
+```bash
+node scripts/deploy.mjs connector
+```
+
+```bash
+node scripts/deploy.mjs app
+```
+
+```bash
+node scripts/deploy.mjs website
+```
+
+`scripts/deploy.mjs` passes each tool only the values it needs and never
+prints them. For the app it moves this repo's `.env*` files and
+`app/.dev.vars` aside while it builds and deploys, because OpenNext bakes any
+`.env`, `.env.local` or `.env.production` it finds (repo root and `app/`) into
+the uploaded bundle; `cf:deploy` then refuses to upload a bundle carrying
+anything but `NEXT_PUBLIC_*` values or pointing at localhost
+(`app/scripts/check-worker-env.mjs`). That is also why the deploy values are
+not in `.env`. Secrets are uploaded as Worker secrets after each deploy; empty
+ones are skipped, so filling one in and deploying again adds it. The website
+deploy runs the page rules and the route check first.
+
+`.github/workflows/deploy.yml` (**Deploy to Cloudflare**, manual) does the
+same from GitHub Actions if a `CLOUDFLARE_API_TOKEN` secret and the public
+values as repository variables are ever added; it is unused today.
 
 ### One-time Cloudflare setup
 
-1. A Cloudflare account on the **Workers Paid** plan: the app does more work
-   per request than the free plan's CPU limit allows.
-2. **Add the site** udantravelsbdq.com to Cloudflare and keep every DNS
-   record it imports (GitHub Pages' records keep the old site up; check
-   nothing for email or site verification is lost), then change the
-   nameservers at the domain registrar to the two Cloudflare shows. Visitors
-   notice nothing.
+1. A Cloudflare account. The domain and the Workers are on the owner's
+   account (free plan; see "Cloudflare plan" below).
+2. **Add the site** udantravelsbdq.com to Cloudflare, keep every DNS record it
+   imports, and change the nameservers at the registrar (Namecheap). Done on
+   21 Nov 2026: the email-forwarding MX and SPF records came across, and the
+   old site loads through Cloudflare.
 3. An **API token** (My Profile > API Tokens > Create token > "Edit
-   Cloudflare Workers", for this account and the udantravelsbdq.com zone),
-   saved in GitHub with the account ID and the hosted Supabase project's
-   public values:
+   Cloudflare Workers", for this account and the udantravelsbdq.com zone) in
+   `.env.cloudflare` as `CLOUDFLARE_API_TOKEN`, with the other values there.
 
-   ```bash
-   gh secret set CLOUDFLARE_API_TOKEN
-   ```
+### Cloudflare plan
 
-   ```bash
-   gh variable set CLOUDFLARE_ACCOUNT_ID
-   ```
-
-   ```bash
-   gh variable set PUBLIC_SUPABASE_URL --body https://xczzvcrjarigejiekqgb.supabase.co
-   ```
-
-   ```bash
-   gh variable set PUBLIC_SUPABASE_PUBLISHABLE_KEY
-   ```
-
-   (The publishable key is under Supabase > Settings > API keys; it is public
-   by design. Each command without `--body` asks for the value.)
-4. Wrangler signed in on this Mac, for setting the Workers' secrets:
-
-   ```bash
-   pnpm --filter @udan/app exec wrangler login
-   ```
+Measured on 21 Nov 2026 with `wrangler tail` on the deployed app: the account
+redirect takes 2 to 5 ms of CPU per request; rendered pages (sign-in, the
+sign-in link page, request received, using a link) take 30 to 60 ms, and 160
+to 220 ms on the first request after a deploy. The free plan allows 10 ms per
+request (waiting on Supabase does not count) and 100,000 requests a day. No
+request failed in the test, but rendered pages are well over the documented
+limit, so move to Workers Paid before customers rely on the app: on the free
+plan an over-limit request can fail with error 1102.
 
 ### Database
 
@@ -406,23 +417,18 @@ select id, 'Owner name', email, 'owner' from auth.users where email = '<owner em
 
 ### App (`udan-app`)
 
-1. Deploy: Actions > Deploy to Cloudflare > `app`. The build takes the
-   Supabase URL and publishable key from the repository variables and builds
-   them in, with `https://app.udantravelsbdq.com` as the app's address. The
-   Worker answers on its workers.dev address.
-2. Secrets, once (each asks for the value):
-
-   ```bash
-   pnpm --filter @udan/app exec wrangler secret put SUPABASE_SECRET_KEY
-   ```
-
-   then the same for `RESEND_API_KEY`, `EMAIL_REPLY_TO`, `STAFF_ALERT_EMAIL`
-   and, if wanted, `PAYMENT_DETAILS_BANK` and `PAYMENT_DETAILS_UPI`. Plain
+1. Deploy: `node scripts/deploy.mjs app`. It builds the Supabase URL and
+   publishable key in, with `https://app.udantravelsbdq.com` as the app's
+   address, deploys, then uploads `SUPABASE_SECRET_KEY`, `RESEND_API_KEY`,
+   `EMAIL_REPLY_TO`, `STAFF_ALERT_EMAIL`, `PAYMENT_DETAILS_BANK` and
+   `PAYMENT_DETAILS_UPI` from `.env.cloudflare` as Worker secrets. Plain
    settings (`EMAIL_FROM`, `QUOTE_FORM_ORIGINS`, `NEXT_PUBLIC_SITE_URL`) are in
-   `app/wrangler.jsonc`.
-3. Custom domain: uncomment the `routes` entry in `app/wrangler.jsonc`, merge
+   `app/wrangler.jsonc`. First deployed on 21 Nov 2026 to
+   https://udan-app.avishshah1108.workers.dev; it runs in Seattle
+   (`cf-placement: remote-SEA`), next to the database.
+2. Custom domain: uncomment the `routes` entry in `app/wrangler.jsonc`, merge
    and deploy again; Cloudflare creates the `app` DNS record and certificate.
-4. In the Supabase dashboard: Authentication > SMTP: use Resend
+3. In the Supabase dashboard: Authentication > SMTP: use Resend
    (`smtp.resend.com`, user `resend`, password = the Resend API key), then
    `supabase config push` ("Database" above) for Udan's sign-in email.
    Authentication > Providers > Google: client ID and secret from a Google
@@ -450,21 +456,14 @@ after the response, invisible sign-in).
 1. The Supabase OAuth server (enabled, dynamic client registration,
    authorization path `/oauth/consent`) is set by `supabase config push`
    ("Database" above).
-2. Deploy: Actions > Deploy to Cloudflare > `connector` (it takes the
-   Supabase URL and publishable key from the repository variables).
-3. Secrets, once:
-
-   ```bash
-   pnpm --filter @udan/mcp exec wrangler secret put RESEND_API_KEY
-   ```
-
-   ```bash
-   pnpm --filter @udan/mcp exec wrangler secret put STAFF_ALERT_EMAIL
-   ```
-
-4. Custom domain: uncomment the `routes` entry in `mcp/wrangler.jsonc`,
+2. Deploy: `node scripts/deploy.mjs connector`. It passes the Supabase URL
+   and publishable key from `.env.cloudflare` and uploads `RESEND_API_KEY` and
+   `STAFF_ALERT_EMAIL` as secrets. First deployed on 21 Nov 2026 to
+   https://udan-mcp.avishshah1108.workers.dev: five tools listed, the public
+   price tool answers from the hosted database, account tools need sign-in.
+3. Custom domain: uncomment the `routes` entry in `mcp/wrangler.jsonc`,
    merge and deploy again.
-5. Repeat the Inspector run against the deployed URL, add it to Claude as a
+4. Repeat the Inspector run against the deployed URL, add it to Claude as a
    custom connector, and record the results in `docs/mcp-test-log.md` before
    submitting to the directory.
 
@@ -490,8 +489,8 @@ then commit the updated `docs/` and push to `main`. The build also writes
 
 The new website's quote form posts to the app, so the app goes live first.
 
-1. Deploy: Actions > Deploy to Cloudflare > `website`. It builds, runs the
-   page rules and the route check, and publishes `web/dist`. Check the copy on
+1. Deploy: `node scripts/deploy.mjs website`. It builds, runs the page rules
+   and the route check, and publishes `web/dist`. Check the copy on
    its workers.dev address:
 
    ```bash
@@ -519,7 +518,7 @@ The new website's quote form posts to the app, so the app goes live first.
    `gh api -X DELETE repos/avishshah11/udan-wanderlust-explorer/pages`),
    then delete `web/legacy`, `vite.legacy.config.ts`, the `legacy:*` scripts
    and the built site in `docs/` (keeping the documentation there), and add a
-   push trigger and a nightly `schedule` to `deploy.yml` for the website, so
+   nightly website deploy (from this Mac, or `deploy.yml` with a schedule) so
    new rate-card bands reach the site.
 
 ## Rules every surface follows

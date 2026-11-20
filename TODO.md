@@ -60,11 +60,18 @@ grouped with a fall-back from the month's band to the all-months band (README,
       logs it as an override.
 - [ ] Mailboxes: the site uses udantravels.bdq@gmail.com; the PRD mentions
       quotes@udantravelsbdq.com. Resend needs a verified sending domain.
-- [ ] Move the udantravelsbdq.com DNS zone to Cloudflare (add the site, then
-      change the nameservers at the registrar), keeping every existing record,
-      so GitHub Pages keeps serving the apex until the cutover. The app. and
-      mcp. custom domains are then attached by their deploys; add Resend's
-      sending-domain records there too (README, "Deploying").
+- [x] udantravelsbdq.com DNS moved to Cloudflare (21 Nov 2026); MX and SPF
+      for Namecheap email forwarding kept; GitHub Pages still serves the apex
+      through Cloudflare until the cutover.
+- [x] App and connector deployed from this Mac to workers.dev (21 Nov 2026,
+      `node scripts/deploy.mjs`; values in the git-ignored `.env.cloudflare`).
+- [ ] Attach the custom domains app.udantravelsbdq.com and
+      mcp.udantravelsbdq.com (uncomment `routes` in each `wrangler.jsonc`,
+      deploy again), then the owner signs in and becomes the first staff
+      member. Add Resend's sending-domain records in Cloudflare DNS too.
+- [ ] Workers Paid (about US$5 a month) before customers rely on the app:
+      rendered pages measured 30 to 60 ms of CPU per request against the free
+      plan's 10 ms (README, "Cloudflare plan").
 - [ ] Taxes: sell prices are treated as tax-inclusive, as the current terms
       say. Confirm with the accountant how GST on packages and TCS on overseas
       packages should appear on quotes before launch.
