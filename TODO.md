@@ -65,10 +65,13 @@ grouped with a fall-back from the month's band to the all-months band (README,
       through Cloudflare until the cutover.
 - [x] App and connector deployed from this Mac to workers.dev (21 Nov 2026,
       `node scripts/deploy.mjs`; values in the git-ignored `.env.cloudflare`).
-- [ ] Attach the custom domains app.udantravelsbdq.com and
-      mcp.udantravelsbdq.com (uncomment `routes` in each `wrangler.jsonc`,
-      deploy again), then the owner signs in and becomes the first staff
-      member. Add Resend's sending-domain records in Cloudflare DNS too.
+- [x] Custom domains attached (21 Nov 2026): app.udantravelsbdq.com and
+      mcp.udantravelsbdq.com.
+- [ ] The owner signs in once at app.udantravelsbdq.com and becomes the
+      first staff member. Resend: account, sending domain verified (its DNS
+      records in Cloudflare), key and the reply-to and alert addresses in
+      `.env.cloudflare`, then deploy again. Then one real request end to end
+      before the website cutover.
 - [ ] Workers Paid (about US$5 a month) before customers rely on the app:
       rendered pages measured 30 to 60 ms of CPU per request against the free
       plan's 10 ms (README, "Cloudflare plan").

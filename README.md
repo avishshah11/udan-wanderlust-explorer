@@ -426,8 +426,9 @@ select id, 'Owner name', email, 'owner' from auth.users where email = '<owner em
    `app/wrangler.jsonc`. First deployed on 21 Nov 2026 to
    https://udan-app.avishshah1108.workers.dev; it runs in Seattle
    (`cf-placement: remote-SEA`), next to the database.
-2. Custom domain: uncomment the `routes` entry in `app/wrangler.jsonc`, merge
-   and deploy again; Cloudflare creates the `app` DNS record and certificate.
+2. Custom domain: app.udantravelsbdq.com (the `routes` entry in
+   `app/wrangler.jsonc`; deploying creates its DNS record and certificate).
+   Attached on 21 Nov 2026.
 3. In the Supabase dashboard: Authentication > SMTP: use Resend
    (`smtp.resend.com`, user `resend`, password = the Resend API key), then
    `supabase config push` ("Database" above) for Udan's sign-in email.
@@ -461,8 +462,8 @@ after the response, invisible sign-in).
    `STAFF_ALERT_EMAIL` as secrets. First deployed on 21 Nov 2026 to
    https://udan-mcp.avishshah1108.workers.dev: five tools listed, the public
    price tool answers from the hosted database, account tools need sign-in.
-3. Custom domain: uncomment the `routes` entry in `mcp/wrangler.jsonc`,
-   merge and deploy again.
+3. Custom domain: mcp.udantravelsbdq.com (the `routes` entry in
+   `mcp/wrangler.jsonc`). Attached on 21 Nov 2026.
 4. Repeat the Inspector run against the deployed URL, add it to Claude as a
    custom connector, and record the results in `docs/mcp-test-log.md` before
    submitting to the directory.

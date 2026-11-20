@@ -11,9 +11,9 @@
   // makes several database calls, each a short hop from there.
   "placement": { "region": "aws:us-west-2" },
   "observability": { "enabled": true },
-  // Production: needs the udantravelsbdq.com zone on Cloudflare (README,
-  // "Deploying"). Until then the Worker is reachable on workers.dev.
-  // "routes": [{ "pattern": "app.udantravelsbdq.com", "custom_domain": true }],
+  // The udantravelsbdq.com zone is on Cloudflare (21 Nov 2026); deploying
+  // creates the DNS record and certificate for this custom domain.
+  "routes": [{ "pattern": "app.udantravelsbdq.com", "custom_domain": true }],
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "https://udantravelsbdq.com",
     "QUOTE_FORM_ORIGINS": "https://udantravelsbdq.com,https://www.udantravelsbdq.com",
