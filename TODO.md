@@ -3,6 +3,21 @@
 Decisions and work deliberately left out of the current build. Each item says
 what is blocked on it.
 
+## Hosted Supabase (project created 20 Nov 2026, Oregon)
+
+- [x] Project `xczzvcrjarigejiekqgb` in us-west-2 (the owner chose to keep
+      Oregon over Mumbai), CLI signed in and linked, migrations pushed.
+- [x] Data API grants made explicit (the hosted project grants nothing on
+      new tables by default; README, "Database").
+- [ ] Sign-in settings: site URL and redirect URLs, the magic-link email
+      template, the OAuth server for the Claude connector, then Google
+      sign-in and Resend SMTP once those accounts exist (README, "App" and
+      "Claude connector").
+- [ ] The owner signs in once on the deployed app, then becomes the first
+      staff member (README, "Database").
+- [ ] Before real customers: move off the free plan, which pauses a project
+      after about a week without use.
+
 ## Rate card (built 20 Nov 2026)
 
 Built to the owner's decisions: per adult on twin sharing, land only, nights

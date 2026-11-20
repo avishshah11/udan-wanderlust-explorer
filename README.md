@@ -94,6 +94,15 @@ What the schema enforces:
   `get_quote`.
 - The rate card (below): `rate_samples` are staff-only; `rate_card` shows the
   public only bands with 5 or more samples.
+- Data API privileges are granted explicitly, table by table, in
+  [`20261120000300_data_api_grants.sql`](supabase/migrations/20261120000300_data_api_grants.sql):
+  hosted Supabase projects no longer grant `anon`, `authenticated` or
+  `service_role` anything on new tables, and that migration stops the local
+  stack doing so too. A new table, view or function in `public` needs its own
+  `grant` lines (only what its policies can allow) in the migration that
+  creates it, and an entry in
+  [`supabase/tests/data_api_grants.test.sql`](supabase/tests/data_api_grants.test.sql),
+  which fails on any privilege missing or extra.
 - The destination catalogue (seven destinations) ships with the migrations,
   so a hosted project has it. Exchange rates for display are fetched daily
   (ECB reference rates via frankfurter.dev, by pg_cron at 16:30 UTC; AED from
@@ -298,15 +307,26 @@ then commit the updated `docs/` and push to `main`. The build also writes
 
 ### Database
 
-Create the hosted Supabase project, then link and push migrations (the dev
-seed is never pushed):
+The hosted project is `xczzvcrjarigejiekqgb` in AWS `us-west-2` (Oregon),
+the owner's choice on 20 Nov 2026; put the app's server functions in a US
+West region (Vercel `pdx1`) so each database query stays short. Migrations
+were first pushed on 20 Nov 2026.
+
+To push new migrations (the dev seed is never pushed): sign the CLI in once
+(`supabase login`, then paste the browser's verification code into the
+terminal), link once (asks for the database password), then preview and
+push. CLI 3.x targets the local stack unless told `--remote`:
 
 ```bash
-pnpm --filter @udan/supabase exec supabase link --workdir .. --project-ref <project-ref>
+pnpm --filter @udan/supabase exec supabase link --workdir .. --project-ref xczzvcrjarigejiekqgb
 ```
 
 ```bash
-pnpm --filter @udan/supabase exec supabase db push --workdir ..
+pnpm --filter @udan/supabase exec supabase db push --remote --dry-run --workdir ..
+```
+
+```bash
+pnpm --filter @udan/supabase exec supabase db push --remote --workdir ..
 ```
 
 In the Supabase dashboard: enable email (magic link) and Google sign-in, set
