@@ -37,6 +37,7 @@ supabase/.branches
 # Secrets: only .env.example files are committed
 .env.*
 !.env.example
+!.env.cloudflare.example
 .dev.vars
 .dev.vars.*
 !.dev.vars.example

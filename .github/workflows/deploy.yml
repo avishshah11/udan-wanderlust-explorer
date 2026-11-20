@@ -1,12 +1,15 @@
 name: Deploy to Cloudflare
 
-# Deploys one of the three Cloudflare Workers. Manual (Actions > Deploy to
-# Cloudflare > Run workflow) until the website cutover; see README,
-# "Deploying". Needs the repository secret CLOUDFLARE_API_TOKEN and the
-# repository variables CLOUDFLARE_ACCOUNT_ID, PUBLIC_SUPABASE_URL and
+# Deploys one of the three Cloudflare Workers. Not used today: the owner
+# deploys from their Mac with scripts/deploy.mjs and .env.cloudflare (README,
+# "Deploying"). To use it, add the repository secret CLOUDFLARE_API_TOKEN and
+# the repository variables CLOUDFLARE_ACCOUNT_ID, PUBLIC_SUPABASE_URL and
 # PUBLIC_SUPABASE_PUBLISHABLE_KEY (public values). Runtime secrets (Supabase
-# secret key, Resend key, ...) are set once with `wrangler secret put`, never
-# here.
+# secret key, Resend key, ...) stay Worker secrets, never here.
+#
+# The Cloudflare token is given to the deploy steps only: OpenNext bakes the
+# build's environment files into the app bundle, so nothing secret may be
+# around while the app is built (`cf:deploy` checks the bundle first).
 
 on:
   workflow_dispatch:
@@ -28,9 +31,6 @@ jobs:
   deploy:
     name: Deploy ${{ inputs.target }}
     runs-on: ubuntu-latest
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -47,11 +47,15 @@ jobs:
         run: pnpm --filter @udan/app run cf:build
         env:
           NEXT_PUBLIC_APP_URL: https://app.udantravelsbdq.com
+          NEXT_PUBLIC_SITE_URL: https://udantravelsbdq.com
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
       - name: App, deploy
         if: inputs.target == 'app'
         run: pnpm --filter @udan/app run cf:deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Connector, deploy
         if: inputs.target == 'connector'
@@ -59,6 +63,9 @@ jobs:
           pnpm --filter @udan/mcp exec wrangler deploy
           --var "SUPABASE_URL:${{ vars.PUBLIC_SUPABASE_URL }}"
           --var "SUPABASE_PUBLISHABLE_KEY:${{ vars.PUBLIC_SUPABASE_PUBLISHABLE_KEY }}"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
 
       # Public website (static). The build fails if any page breaks the
       # website rules; verify checks every route before anything is published.
@@ -75,3 +82,6 @@ jobs:
       - name: Website, deploy
         if: inputs.target == 'website'
         run: pnpm --filter @udan/web exec wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
