@@ -76,6 +76,24 @@ export const rows = (items: readonly [string, string][]): Block => ({
   text: items.map(([k, v]) => `${k}: ${v}`).join("\n"),
 });
 
+/** Days an emailed sign-in link stays valid (supabase/migrations/20261120000400_sign_in_links.sql). */
+export const SIGN_IN_LINK_DAYS = 7;
+
+/** Under every customer email whose account link signs them in. */
+export const SIGN_IN_LINK_NOTE = `The account link in this email signs you in to your Udan account, so please don't forward this email. It works once and is valid for ${SIGN_IN_LINK_DAYS} days; after that, sign in with your email address.`;
+
+const NOTE_SLOT = "<!--udan-note-->";
+const TEXT_FOOTER = "\n\n--\n";
+
+/** Adds a small note under an email's content, above the office footer. */
+export function withNote(email: RenderedEmail, note: string): RenderedEmail {
+  const html = `<p style="margin:16px 0 0;font-size:13px;line-height:1.5;color:#7A7A7A;">${escapeHtml(note)}</p>`;
+  // The footer is the last "--" line; a staff message above may contain its own.
+  const at = email.text.lastIndexOf(TEXT_FOOTER);
+  const text = at < 0 ? `${email.text}\n${note}\n` : `${email.text.slice(0, at)}\n\n${note}${email.text.slice(at)}`;
+  return { ...email, html: email.html.replace(NOTE_SLOT, html), text };
+}
+
 export function renderEmail(subject: string, greeting: string, blocks: readonly Block[]): RenderedEmail {
   const body = [para(greeting), ...blocks];
   const footerText = [
@@ -93,7 +111,7 @@ export function renderEmail(subject: string, greeting: string, blocks: readonly 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F5;padding:24px 12px;"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;padding:28px;">
 <tr><td><img src="${OFFICE.logoUrl}" alt="${OFFICE.name}" width="110" style="display:block;margin:0 0 20px;"></td></tr>
-<tr><td>${body.map((b) => b.html).join("\n")}</td></tr>
+<tr><td>${body.map((b) => b.html).join("\n")}${NOTE_SLOT}</td></tr>
 <tr><td style="padding-top:24px;border-top:1px solid #eee;font-size:13px;color:#7A7A7A;line-height:1.5;">
 ${escapeHtml(OFFICE.name)}, ${escapeHtml(OFFICE.established)}<br>
 ${OFFICE.addressLines.map(escapeHtml).join("<br>")}<br>

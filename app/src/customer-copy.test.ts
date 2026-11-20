@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 // Rule 1: no turnaround time on any customer-facing surface. Scan the source
 // of every page a customer can reach (the desk is staff-only and exempt).
-const CUSTOMER_DIRS = ["src/app/account", "src/app/login", "src/app/quote", "src/app/api/quote-requests", "src/components"];
+const CUSTOMER_DIRS = ["src/app/account", "src/app/auth", "src/app/login", "src/app/quote", "src/app/api/quote-requests", "src/components"];
 
 function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

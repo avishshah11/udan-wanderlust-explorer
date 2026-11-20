@@ -1,5 +1,4 @@
 import { describeIssues, quoteRequestSchema, toIntakePayload } from "@udan/core";
-import { createClient as createPlainClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse, after } from "next/server";
 import { formDataToRequestInput } from "@/components/request-form/parse";
 import { publicEnv, serverEnv } from "@/lib/env";
@@ -125,18 +124,8 @@ export async function POST(request: NextRequest) {
   }
 
   after(async () => {
-    // One-step sign-in: a magic link that lands on this request in their account.
-    const anon = createPlainClient(publicEnv.supabaseUrl, publicEnv.supabasePublishableKey, {
-      auth: { persistSession: false, autoRefreshToken: false, flowType: "implicit" },
-    });
-    await anon.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: true,
-        emailRedirectTo: `${publicEnv.appUrl}/auth/confirm?next=${encodeURIComponent(`/account/quotes/${created.reference}`)}`,
-        data: { source: "web", full_name: name || undefined },
-      },
-    });
+    // One email: its button signs the owner of this address in and opens the
+    // request (invisible sign-in). The account is created on that first click.
     await sendIntakeNotifications({
       requestId: created.request_id,
       reference: created.reference,

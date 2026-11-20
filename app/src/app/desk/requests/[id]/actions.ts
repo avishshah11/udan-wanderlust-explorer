@@ -27,7 +27,7 @@ import { after } from "next/server";
 import { requireStaff } from "@/lib/auth";
 import { endOfDayIst } from "@/lib/format";
 import { loadRates } from "@/lib/fx";
-import { notifyCustomerById, quoteUrl } from "@/lib/notify";
+import { notifyCustomerById, quotePath } from "@/lib/notify";
 import type { createClient } from "@/lib/supabase/server";
 
 type Supa = Awaited<ReturnType<typeof createClient>>;
@@ -179,19 +179,21 @@ export async function sendQuote(fd: FormData) {
   ]);
   if (req?.customers && req.total_sell_inr != null && req.valid_until) {
     const customer = req.customers;
-    const email = quoteReadyEmail({
-      name: customer.name,
-      reference: req.reference,
-      tripSummary: tripSummary(req),
-      lines: (lines ?? []).map((l) => ({ type: l.type, description: l.description, price: formatInr(Number(l.sell_price)) })),
-      total: displayPrice(Number(req.total_sell_inr), customer.display_currency, rates),
-      validUntil: req.valid_until,
-      inclusions: req.inclusions,
-      exclusions: req.exclusions,
-      quoteUrl: quoteUrl(req.reference),
-      revision: req.quote_version > 1,
-    });
-    after(() => notifyCustomerById(customer.id, id, "quote_ready", email));
+    const validUntil = req.valid_until;
+    const render = (accountUrl: string) =>
+      quoteReadyEmail({
+        name: customer.name,
+        reference: req.reference,
+        tripSummary: tripSummary(req),
+        lines: (lines ?? []).map((l) => ({ type: l.type, description: l.description, price: formatInr(Number(l.sell_price)) })),
+        total: displayPrice(Number(req.total_sell_inr), customer.display_currency, rates),
+        validUntil,
+        inclusions: req.inclusions,
+        exclusions: req.exclusions,
+        quoteUrl: accountUrl,
+        revision: req.quote_version > 1,
+      });
+    after(() => notifyCustomerById(customer.id, id, "quote_ready", quotePath(req.reference), render));
   }
   const version = (sent as { quote_version?: number } | null)?.quote_version ?? 1;
   done(id, { notice: `Quote sent (version ${version}). The customer has it in their account and inbox.` });
@@ -254,17 +256,18 @@ export async function requestPayment(fd: FormData) {
   if (error) done(id, { error: error.message });
 
   if (method !== "cash") {
-    const email = paymentDetailsEmail({
-      name: req!.customers?.name ?? null,
-      reference: req!.reference,
-      kind: kind!,
-      amount: formatInr(value!),
-      variant: method as "bank" | "upi" | "card_link",
-      instructions,
-      cardLink: method === "card_link" ? cardLink : null,
-      quoteUrl: quoteUrl(req!.reference),
-    });
-    after(() => notifyCustomerById(req!.customer_id, id, `payment_details_${method}`, email));
+    const render = (accountUrl: string) =>
+      paymentDetailsEmail({
+        name: req!.customers?.name ?? null,
+        reference: req!.reference,
+        kind: kind!,
+        amount: formatInr(value!),
+        variant: method as "bank" | "upi" | "card_link",
+        instructions,
+        cardLink: method === "card_link" ? cardLink : null,
+        quoteUrl: accountUrl,
+      });
+    after(() => notifyCustomerById(req!.customer_id, id, `payment_details_${method}`, quotePath(req!.reference), render));
   }
   done(id, { notice: method === "cash" ? "Cash payment expected; recorded as awaiting." : "Payment details sent to the customer." });
 }
@@ -285,14 +288,15 @@ export async function markPaymentReceived(fd: FormData) {
 
   const { data: req } = await supabase.from("quote_requests").select("reference, customer_id, customers(name)").eq("id", id).single();
   if (req) {
-    const email = paymentReceivedEmail({
-      name: req.customers?.name ?? null,
-      reference: req.reference,
-      kind: payment!.kind,
-      amount: formatInr(Number(payment!.amount)),
-      quoteUrl: quoteUrl(req.reference),
-    });
-    after(() => notifyCustomerById(req.customer_id, id, `${payment!.kind}_received`, email));
+    const render = (accountUrl: string) =>
+      paymentReceivedEmail({
+        name: req.customers?.name ?? null,
+        reference: req.reference,
+        kind: payment!.kind,
+        amount: formatInr(Number(payment!.amount)),
+        quoteUrl: accountUrl,
+      });
+    after(() => notifyCustomerById(req.customer_id, id, `${payment!.kind}_received`, quotePath(req.reference), render));
   }
   done(id, { notice: `${payment!.kind === "advance" ? "Advance" : "Balance"} marked received; the customer has been told.` });
 }
@@ -334,13 +338,14 @@ export async function notifyDocuments(fd: FormData) {
     supabase.from("documents").select("type, file_name").eq("request_id", id).neq("type", "ota_screenshot"),
   ]);
   if (!req || !docs || docs.length === 0) done(id, { error: "Upload at least one travel document first." });
-  const email = documentsReadyEmail({
-    name: req!.customers?.name ?? null,
-    reference: req!.reference,
-    documents: docs!.map((d) => ({ type: d.type, fileName: d.file_name })),
-    quoteUrl: quoteUrl(req!.reference),
-  });
-  after(() => notifyCustomerById(req!.customer_id, id, "documents_ready", email));
+  const render = (accountUrl: string) =>
+      documentsReadyEmail({
+      name: req!.customers?.name ?? null,
+      reference: req!.reference,
+      documents: docs!.map((d) => ({ type: d.type, fileName: d.file_name })),
+      quoteUrl: accountUrl,
+    });
+  after(() => notifyCustomerById(req!.customer_id, id, "documents_ready", quotePath(req!.reference), render));
   done(id, { notice: "Customer emailed that their documents are ready." });
 }
 
@@ -358,13 +363,14 @@ export async function sendMessage(fd: FormData) {
   const { error } = await supabase.from("request_messages").insert({ request_id: id, sent_by: user.id, body: message });
   if (error) done(id, { error: `The message was not sent: ${error.message}` });
 
-  const email = deskMessageEmail({
-    name: req!.customers?.name ?? null,
-    reference: req!.reference,
-    from: staff!.name,
-    message,
-    quoteUrl: quoteUrl(req!.reference),
-  });
-  after(() => notifyCustomerById(req!.customer_id, id, "desk_message", email));
+  const render = (accountUrl: string) =>
+      deskMessageEmail({
+      name: req!.customers?.name ?? null,
+      reference: req!.reference,
+      from: staff!.name,
+      message,
+      quoteUrl: accountUrl,
+    });
+  after(() => notifyCustomerById(req!.customer_id, id, "desk_message", quotePath(req!.reference), render));
   done(id, { notice: `Message sent to ${req!.customers?.email ?? "the customer"}. It is also in their account.` });
 }

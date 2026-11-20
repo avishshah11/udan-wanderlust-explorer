@@ -2,6 +2,13 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+/**
+ * Set for ten minutes when an emailed sign-in link has expired or was used, so
+ * the sign-in page can fill in the customer's address without putting it in
+ * the URL.
+ */
+export const LOGIN_EMAIL_COOKIE = "udan-login-email";
+
 /** Only allow same-site relative paths as post-login destinations. */
 export function safeNext(next: string | null | undefined, fallback = "/account"): string {
   if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return fallback;

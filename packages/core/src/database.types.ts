@@ -322,6 +322,9 @@ isOneToOne: false
             "accept_quote":
 { Args: { "p_reference": string }; Returns: Json
                            },
+"create_sign_in_link":
+{ Args: { "p_customer_id": string,"p_next": string }; Returns: string
+                           },
 "desk_metrics":
 { Args: { "p_since"?: string }; Returns: Json
                            },
@@ -355,6 +358,9 @@ isOneToOne: false
 { Args: { "p_channel": Database["public"]['Enums']["request_channel"],"p_request": Json }; Returns: {
               "customer_id": string,"reference": string,"request_id": string
             }[]
+                           },
+"use_sign_in_link":
+{ Args: { "p_token": string }; Returns: Json
                            }
           }
           Enums: {

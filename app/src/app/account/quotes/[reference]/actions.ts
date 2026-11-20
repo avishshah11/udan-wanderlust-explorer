@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { loadRates } from "@/lib/fx";
-import { alertStaff, deskUrl, notifyCustomerById, quoteUrl } from "@/lib/notify";
+import { alertStaff, deskUrl, notifyCustomerById, quotePath } from "@/lib/notify";
 import { createServiceClient } from "@/lib/supabase/server";
 
 /**
@@ -44,15 +44,12 @@ export async function acceptQuote(fd: FormData) {
       );
       if (result === "accepted" && r.total_sell_inr != null) {
         const rates = await loadRates(service);
-        await notifyCustomerById(
-          r.customer_id,
-          r.id,
-          "quote_accepted",
+        await notifyCustomerById(r.customer_id, r.id, "quote_accepted", quotePath(r.reference), (accountUrl) =>
           quoteAcceptedEmail({
             name: r.customers?.name ?? null,
             reference: r.reference,
             total: displayPrice(Number(r.total_sell_inr), r.customers?.display_currency ?? "INR", rates),
-            quoteUrl: quoteUrl(r.reference),
+            quoteUrl: accountUrl,
           }),
         );
       }

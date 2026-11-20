@@ -1,7 +1,6 @@
 import "server-only";
 import { type RequestChannel, requestReceivedEmail, staffAlertEmail, tripSummary } from "@udan/core";
-import { publicEnv } from "@/lib/env";
-import { alertStaff, deskUrl, notifyCustomerById } from "@/lib/notify";
+import { alertStaff, deskUrl, notifyCustomerById, quotePath } from "@/lib/notify";
 import { formatTypical, typicalPriceFor } from "@/lib/rate-card";
 import { createServiceClient } from "@/lib/supabase/server";
 
@@ -33,15 +32,13 @@ export async function sendIntakeNotifications(input: {
   const summary = tripSummary(r);
   if (input.confirmCustomer) {
     const typical = await typicalPriceFor(service, r);
-    await notifyCustomerById(
-      input.customerId,
-      input.requestId,
-      "request_received",
+    // Sent to the address on the request: its link signs that inbox's owner in.
+    await notifyCustomerById(input.customerId, input.requestId, "request_received", quotePath(input.reference), (accountUrl) =>
       requestReceivedEmail({
         name: r.customers?.name ?? null,
         reference: input.reference,
         tripSummary: summary,
-        accountUrl: `${publicEnv.appUrl}/account/quotes/${input.reference}`,
+        accountUrl,
         typical: typical ? formatTypical(typical) : null,
       }),
     );

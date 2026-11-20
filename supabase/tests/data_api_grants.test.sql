@@ -90,9 +90,11 @@ select set_eq(
       ('submit_quote_request'), ('quote_for_customer'), ('accept_quote'), ('send_quote'),
       ('desk_metrics'), ('refresh_rate_card'), ('intake_quote_request')
     )
+    , service_only(fn) as (values ('create_sign_in_link'), ('use_sign_in_link'))
     select fn, 'anon' from helpers
     union all select fn, r from helpers, (values ('authenticated'), ('service_role')) v(r)
     union all select fn, r from signed_in, (values ('authenticated'), ('service_role')) v(r)
+    union all select fn, 'service_role' from service_only
   $$,
   'each role can execute exactly the listed functions'
 );

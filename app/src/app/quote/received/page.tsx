@@ -20,7 +20,7 @@ export default async function Received({ searchParams }: { searchParams: Promise
           <strong className="text-udan-charcoal">Status: Request received.</strong> A member of our family will price your trip against our supplier rates.
         </p>
         <p>
-          We have emailed you a confirmation and a sign-in link. Open the link to see your request in your Udan account; your quote will appear
+          We have emailed you a confirmation. Its button opens your request in your Udan account, already signed in; your quote will appear
           there and in your inbox.
         </p>
       </div>
