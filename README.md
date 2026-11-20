@@ -94,6 +94,15 @@ What the schema enforces:
   `get_quote`.
 - The rate card (below): `rate_samples` are staff-only; `rate_card` shows the
   public only bands with 5 or more samples.
+- Data API privileges are granted explicitly, table by table, in
+  [`20261120000300_data_api_grants.sql`](supabase/migrations/20261120000300_data_api_grants.sql):
+  hosted Supabase projects no longer grant `anon`, `authenticated` or
+  `service_role` anything on new tables, and that migration stops the local
+  stack doing so too. A new table, view or function in `public` needs its own
+  `grant` lines (only what its policies can allow) in the migration that
+  creates it, and an entry in
+  [`supabase/tests/data_api_grants.test.sql`](supabase/tests/data_api_grants.test.sql),
+  which fails on any privilege missing or extra.
 - The destination catalogue (seven destinations) ships with the migrations,
   so a hosted project has it. Exchange rates for display are fetched daily
   (ECB reference rates via frankfurter.dev, by pg_cron at 16:30 UTC; AED from
@@ -298,19 +307,45 @@ then commit the updated `docs/` and push to `main`. The build also writes
 
 ### Database
 
-Create the hosted Supabase project, then link and push migrations (the dev
-seed is never pushed):
+The hosted project is `xczzvcrjarigejiekqgb` in AWS `us-west-2` (Oregon),
+the owner's choice on 20 Nov 2026; put the app's server functions in a US
+West region (Vercel `pdx1`) so each database query stays short. Migrations
+were first pushed on 20 Nov 2026.
+
+To push new migrations (the dev seed is never pushed): sign the CLI in once
+(`supabase login`, then paste the browser's verification code into the
+terminal), link once (asks for the database password), then preview and
+push. CLI 3.x targets the local stack unless told `--remote`:
 
 ```bash
-pnpm --filter @udan/supabase exec supabase link --workdir .. --project-ref <project-ref>
+pnpm --filter @udan/supabase exec supabase link --workdir .. --project-ref xczzvcrjarigejiekqgb
 ```
 
 ```bash
-pnpm --filter @udan/supabase exec supabase db push --workdir ..
+pnpm --filter @udan/supabase exec supabase db push --remote --dry-run --workdir ..
 ```
 
-In the Supabase dashboard: enable email (magic link) and Google sign-in, set
-the site URL to https://app.udantravelsbdq.com, and add the first staff member:
+```bash
+pnpm --filter @udan/supabase exec supabase db push --remote --workdir ..
+```
+
+Sign-in settings for the hosted project (site URL and redirect URLs, the
+sign-in email template and subjects, email confirmation and rate limit, the
+OAuth server for the Claude connector) live in the `[remotes.production]`
+block at the end of `supabase/config.toml`. Preview, then apply:
+
+```bash
+pnpm --filter @udan/supabase exec supabase config diff --workdir ..
+```
+
+```bash
+pnpm --filter @udan/supabase exec supabase config push --workdir ..
+```
+
+Until Resend is set up as SMTP (below), Supabase's built-in email sends sign-in
+links only to members of the Supabase organisation, a few an hour.
+
+Then add the first staff member:
 
 ```sql
 insert into public.staff (user_id, name, email, role)
@@ -327,13 +362,10 @@ select id, 'Owner name', email, 'owner' from auth.users where email = '<owner em
 3. Add the domain app.udantravelsbdq.com and create the DNS record Vercel
    shows (a CNAME on the `app` subdomain; the apex stays on GitHub Pages).
 
-In the Supabase dashboard for the hosted project:
+The site URL, redirect URLs and sign-in email template (the link uses a token
+hash, so it works on any device) are set by `supabase config push`
+("Database" above). In the Supabase dashboard for the hosted project:
 
-- Authentication > URL configuration: site URL
-  `https://app.udantravelsbdq.com`, redirect URLs `https://app.udantravelsbdq.com/**`.
-- Authentication > Email templates: paste `supabase/templates/magic_link.html`
-  into both **Magic Link** and **Confirm signup** (the link uses a token hash,
-  so it works on any device).
 - Authentication > SMTP: use Resend (`smtp.resend.com`, user `resend`,
   password = the Resend API key) so sign-in emails come from Udan's domain.
 - Authentication > Providers > Google: client ID and secret from a Google
@@ -345,9 +377,9 @@ Resend: verify the sending domain (DNS records shown in Resend) before setting
 
 ### Claude connector (Cloudflare Workers)
 
-1. Supabase dashboard > Authentication > OAuth Server: enable it, allow
-   dynamic client registration, authorization path `/oauth/consent` (the
-   local equivalents are in `supabase/config.toml`).
+1. The Supabase OAuth server (enabled, dynamic client registration,
+   authorization path `/oauth/consent`) is set by `supabase config push`
+   ("Database" above).
 2. In `mcp/wrangler.jsonc`, set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`
    for the hosted project, then add secrets:
 
