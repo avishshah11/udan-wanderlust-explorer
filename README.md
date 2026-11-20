@@ -162,13 +162,30 @@ recorded in `audit_log`.
 
 | Area | Routes | Who |
 | --- | --- | --- |
-| Sign-in | `/login` (magic link, Google), `/auth/confirm`, `/auth/callback` | everyone |
+| Sign-in | `/login` (magic link, Google), `/auth/confirm`, `/auth/callback`, `/auth/link` (emailed sign-in links) | everyone |
 | Customer account | `/account`, `/account/quotes/<ref>` (accept), `/account/quotes/<ref>/accepted`, `/account/new`, `/account/settings`, `/account/documents/<id>` | signed-in customers, own data only |
 | Pricing desk | `/desk` (queue by travel date then budget), `/desk/requests/<id>` (lines, send, messages to the customer, payments, documents, activity), `/desk/new`, `/desk/metrics`, `/desk/markup` | active staff |
 | Website form | `POST /api/quote-requests` (form post or JSON), `/quote/received` | public; origin allow-list, honeypot, 5 requests per email per hour |
 
 Emails go out after the response (`after()`), so accepting a quote and
 sending one are instant for the person clicking.
+
+Invisible sign-in (the owner's decision, 20 Nov 2026): the account button in
+every email to a customer signs them in as they click it, so customers rarely
+see `/login`. `notifyCustomerById()` asks the database for a one-time link
+(`create_sign_in_link()`, migration `20261120000400_sign_in_links.sql`) for
+each email: random, stored only as a SHA-256 hash, used once, valid for 7
+days, tied to the account page it opens, and never made for a staff member's
+address. The link opens `/auth/link`, which posts it straight back (so mail
+scanners that fetch links cannot use it up; a Continue button covers browsers
+without JavaScript). `/auth/link/continue` uses it once and signs the customer
+in through Supabase Auth: a magic link generated and verified on the server,
+which also creates the account on a customer's first click. A used or expired
+link opens the page if the visitor is already signed in, or the sign-in page
+with the address filled in. The email carries a line asking not to forward it.
+Links appear only in emails to the customer's own address, never on a web
+page or in a JSON response, since anyone can type any address into the quote
+form. Staff alerts and the Claude connector's own emails keep plain links.
 
 ### Claude connector (`mcp/`)
 

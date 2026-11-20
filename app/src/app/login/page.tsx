@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { safeNext } from "@/lib/auth";
+import { LOGIN_EMAIL_COOKIE, safeNext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { signInWithGoogle } from "./actions";
 import { LoginForm } from "./login-form";
@@ -26,6 +27,7 @@ export default async function LoginPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (user) redirect(next);
+  const email = params.email ?? (await cookies()).get(LOGIN_EMAIL_COOKIE)?.value;
 
   return (
     <div className="mx-auto max-w-md">
@@ -42,7 +44,7 @@ export default async function LoginPage({
               {ERRORS[params.error]}
             </p>
           )}
-          <LoginForm next={next} defaultEmail={params.email} />
+          <LoginForm next={next} defaultEmail={email} />
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
           </div>

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { findTurnaroundLanguage } from "../copy-guard";
 import { type DisplayPrice, displayPrice } from "../currency";
-import { escapeHtml } from "./layout";
+import { SIGN_IN_LINK_NOTE, escapeHtml, withNote } from "./layout";
 import { notifyCustomer, sendEmail } from "./send";
 import {
   deskMessageEmail,
@@ -144,5 +144,33 @@ describe("deskMessageEmail", () => {
     expect(email.html).toContain("Line one &lt;b&gt;bold?&lt;/b&gt;<br>Line two");
     expect(email.text).toContain("Meera from Udan Tours and Travels has written to you about UDN-2611-K7QMX:");
     expect(email.text).toContain("Line one <b>bold?</b>\nLine two");
+  });
+});
+
+describe("sign-in link note", () => {
+  it("goes under the content and above the office footer, in both versions", () => {
+    const email = withNote(customerEmails.quoteReady, SIGN_IN_LINK_NOTE);
+    expect(email.html).toContain("please don&#39;t forward this email");
+    expect(email.html.indexOf("forward this email")).toBeLessThan(email.html.indexOf("Established 1997"));
+    expect(email.text.indexOf("forward this email")).toBeLessThan(email.text.lastIndexOf("\n--\n"));
+    expect(email.text.indexOf("forward this email")).toBeGreaterThan(email.text.indexOf("Review and accept"));
+  });
+
+  it("stays above the footer when a staff message has its own -- line", () => {
+    const message = deskMessageEmail({
+      name: "Asha",
+      reference: "UDN-2611-K7QMX",
+      from: "Meera",
+      message: "See you soon\n\n--\nMeera",
+      quoteUrl: url,
+    });
+    const text = withNote(message, SIGN_IN_LINK_NOTE).text;
+    expect(text.indexOf("forward this email")).toBeGreaterThan(text.indexOf("Meera\n"));
+    expect(text.indexOf("forward this email")).toBeLessThan(text.lastIndexOf("\n--\n"));
+  });
+
+  it("says how long the link lasts without promising a turnaround", () => {
+    expect(SIGN_IN_LINK_NOTE).toContain("valid for 7 days");
+    expect(findTurnaroundLanguage(SIGN_IN_LINK_NOTE)).toEqual([]);
   });
 });
