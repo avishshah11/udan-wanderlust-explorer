@@ -7,7 +7,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { findTurnaroundLanguage } from "@udan/core/copy-guard";
-import { yearsInBusiness } from "../src/lib/site";
+import { CF_WEB_ANALYTICS, yearsInBusiness } from "../src/lib/site";
 import { canonical, h1Text, meta, title, visibleText } from "./html";
 
 const DIST = new URL("../dist", import.meta.url).pathname;
@@ -55,7 +55,10 @@ for (const file of files) {
   if (price) fail(`placeholder price "${price[0]}"`);
   for (const t of findTurnaroundLanguage(text)) fail(`turnaround promise "${t.match}" (${t.rule})`);
   if (/gptengineer|lovable/i.test(html)) fail("Lovable artefact in page");
-  if (/<script[^>]+src="https?:\/\//i.test(html)) fail("third-party script");
+  // The only script from another site is Cloudflare Web Analytics.
+  for (const m of html.matchAll(/<script[^>]+src=["']?(https?:\/\/[^"'\s>]+)/gi)) {
+    if (m[1] !== CF_WEB_ANALYTICS.script) fail(`third-party script ${m[1]}`);
+  }
 }
 
 if (files.length === 0) problems.push("dist/ has no HTML files; did astro build run?");

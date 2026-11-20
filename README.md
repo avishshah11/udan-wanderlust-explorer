@@ -233,7 +233,8 @@ pnpm --filter @udan/web verify
 `build` runs `astro build` and then `scripts/check-build.ts`, which fails the
 build if any page lacks a title, description, absolute `og:image`, canonical
 URL or TravelAgency data, or contains a conflicting founding claim, a
-placeholder price or turnaround language. The only years claim allowed is the
+placeholder price, turnaround language or a script from another site other
+than Cloudflare Web Analytics. The only years claim allowed is the
 exact count since 1997 ("29 years" in 2026), which pages take from
 `yearsInBusiness()` in `web/src/lib/site.ts` and which changes on the next
 build after 1 January. `verify` serves `dist/` the way
@@ -241,6 +242,12 @@ Cloudflare (and GitHub Pages) does and checks every route (including the old SPA
 200 HTML with content readable without JavaScript. Set `PUBLIC_APP_URL` to
 point the Get a quote form at a local app (default
 `https://app.udantravelsbdq.com`).
+
+Cloudflare Web Analytics (no cookies, no personal data; the owner's choice on
+21 Nov 2026) is on every page of production builds (`CF_WEB_ANALYTICS` in
+`web/src/lib/site.ts`) and on the old site in `docs/` until the cutover. The
+privacy policy says so. The app has none: its URLs can carry one-time sign-in
+links and quote references.
 
 The Get a quote page (`/quote`) has three sections, one form each: holiday
 package, flights only and hotel only. Without JavaScript they stack; with it

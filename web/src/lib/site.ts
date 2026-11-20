@@ -100,3 +100,14 @@ export function travelAgencyJsonLd() {
     contactPoint: SITE.phones.map((p) => ({ "@type": "ContactPoint", telephone: p.tel, contactType: "customer service", areaServed: "Worldwide" })),
   };
 }
+
+/**
+ * Cloudflare Web Analytics (the owner's site, 21 Nov 2026): counts page views
+ * without cookies or personal data. The token is public by design (it is in
+ * every page). Production builds of this website only; never the app, whose
+ * URLs can carry sign-in links and quote references.
+ */
+export const CF_WEB_ANALYTICS = {
+  script: "https://static.cloudflareinsights.com/beacon.min.js",
+  token: "2b41893498f04071b804f09ad8d9f0a2",
+} as const;

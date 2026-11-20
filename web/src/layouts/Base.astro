@@ -3,7 +3,7 @@ import "@fontsource-variable/inter";
 import "../styles/global.css";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
-import { SITE, travelAgencyJsonLd } from "../lib/site";
+import { CF_WEB_ANALYTICS, SITE, travelAgencyJsonLd } from "../lib/site";
 
 interface Props {
   title: string; // page title without the site name
@@ -55,5 +55,10 @@ const structured = [travelAgencyJsonLd(), ...jsonLd];
       <slot />
     </main>
     <Footer />
+    {
+      import.meta.env.PROD && (
+        <script is:inline type="module" src={CF_WEB_ANALYTICS.script} data-cf-beacon={JSON.stringify({ token: CF_WEB_ANALYTICS.token })} />
+      )
+    }
   </body>
 </html>
