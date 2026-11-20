@@ -15,8 +15,8 @@ accepts in their account; staff collect payment by hand and record it.
 
 | Path | What it is | Status |
 | --- | --- | --- |
-| `web/` | Public website: static Astro site in `web/src` (ready, not yet live); the original Vite/React SPA in `web/legacy` still builds the live `docs/` until cutover | Phase 3 done, cutover pending |
-| `app/` | Next.js app at app.udantravelsbdq.com: customer account, staff pricing desk, public quote-form endpoint | done (Phase 1-2) |
+| `web/` | Public website: static Astro site in `web/src` (ready, not yet live; served by Cloudflare from the cutover); the original Vite/React SPA in `web/legacy` still builds the live `docs/` until cutover | Phase 3 done, cutover pending |
+| `app/` | Next.js app at app.udantravelsbdq.com (a Cloudflare Worker via OpenNext): customer account, staff pricing desk, public quote-form endpoint | done (Phase 1-2), not deployed |
 | `mcp/` | Remote MCP server (Cloudflare Workers) at mcp.udantravelsbdq.com: the Claude connector, OAuth via Supabase | done (Phase 4), not deployed |
 | `supabase/` | Migrations, row level security, database functions, dev seed, pgTAP tests | done (Phase 0) |
 | `packages/core` | Shared types, markup calculation, currency display, customer status copy, request schema, email templates and senders | done |
@@ -237,7 +237,7 @@ placeholder price or turnaround language. The only years claim allowed is the
 exact count since 1997 ("29 years" in 2026), which pages take from
 `yearsInBusiness()` in `web/src/lib/site.ts` and which changes on the next
 build after 1 January. `verify` serves `dist/` the way
-GitHub Pages does and checks every route (including the old SPA URLs) returns
+Cloudflare (and GitHub Pages) does and checks every route (including the old SPA URLs) returns
 200 HTML with content readable without JavaScript. Set `PUBLIC_APP_URL` to
 point the Get a quote form at a local app (default
 `https://app.udantravelsbdq.com`).
@@ -270,7 +270,10 @@ The old SPA lives in `web/legacy` until cutover:
 ## Environment variables
 
 Secrets are never committed. Each package documents its own variables in an
-`.env.example` next to it.
+`.env.example` next to it (`app/.dev.vars.example` for the app on the local
+Cloudflare runtime). In production, `NEXT_PUBLIC_*` and `PUBLIC_*` values
+come from GitHub repository variables at build time, plain settings from each
+`wrangler.jsonc`, and secrets from `wrangler secret put` ("Deploying").
 
 | Variable | Used by | Notes |
 | --- | --- | --- |
@@ -279,7 +282,7 @@ Secrets are never committed. Each package documents its own variables in an
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `app/` | public |
 | `SUPABASE_SECRET_KEY` | `app/` (server only) | bypasses RLS: website form intake, staff alert lookup, notification log |
 | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL` | `app/` | https://app.udantravelsbdq.com and https://udantravelsbdq.com in production |
-| `PUBLIC_APP_URL`, `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `web/` build | public; in GitHub Actions they are repository variables read by **Deploy website** |
+| `PUBLIC_APP_URL`, `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `web/` build | public; in GitHub Actions they are repository variables read by **Deploy to Cloudflare** |
 | `QUOTE_FORM_ORIGINS` | `app/` | origins allowed to post the Get a quote form |
 | `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO` | `app/` | without a key, emails are logged, not sent |
 | `STAFF_ALERT_EMAIL` | `app/` | fallback when no staff member has alerts on |
@@ -287,47 +290,66 @@ Secrets are never committed. Each package documents its own variables in an
 
 ## Deploying
 
-### Website (today: legacy SPA)
+Everything runs on Cloudflare (the owner's decision, 21 Nov 2026), as three
+Workers on one account, with Supabase for the database:
 
-GitHub Pages serves `main:/docs` (legacy Pages build, custom domain
-udantravelsbdq.com). To publish a change to the old site before cutover:
+| Worker | What | Config |
+| --- | --- | --- |
+| `udan-app` | Customer account and pricing desk (Next.js via OpenNext), app.udantravelsbdq.com | `app/wrangler.jsonc`, `app/open-next.config.ts` |
+| `udan-mcp` | Claude connector, mcp.udantravelsbdq.com | `mcp/wrangler.jsonc` |
+| `udan-website` | Public website (static files from `web/dist`), udantravelsbdq.com from the cutover | `web/wrangler.jsonc` |
 
-```bash
-pnpm --filter @udan/web legacy:build
-```
+Deploys run from GitHub Actions: **Actions > Deploy to Cloudflare > Run
+workflow**, then pick `app`, `connector` or `website`
+(`.github/workflows/deploy.yml`). Each run installs, builds and deploys one
+Worker; the website run also checks every page first. They are manual until
+the website cutover.
 
-then commit the updated `docs/` and push to `main`. The build also writes
-`docs/404.html` (so deep links render) and keeps `docs/CNAME`.
+### One-time Cloudflare setup
 
-### Website cutover (Astro, needs the owner's go-ahead)
-
-1. Merge this work into `main` and push. Pages still serves `main:/docs`,
-   so the live site stays the old SPA, rebuilt with the carousel-arrow fix;
-   `docs/_config.yml` keeps the Markdown docs in that folder off the site.
-2. Repository Settings > Pages > Source: **GitHub Actions** (or
-   `gh api -X PUT repos/avishshah11/udan-wanderlust-explorer/pages -f build_type=workflow`).
-   The custom domain and HTTPS certificate stay as they are.
-3. Actions > **Deploy website** > Run workflow. It builds, runs the page
-   rules and the static verification, and publishes `web/dist`.
-4. Check the live site:
+1. A Cloudflare account on the **Workers Paid** plan: the app does more work
+   per request than the free plan's CPU limit allows.
+2. **Add the site** udantravelsbdq.com to Cloudflare and keep every DNS
+   record it imports (GitHub Pages' records keep the old site up; check
+   nothing for email or site verification is lost), then change the
+   nameservers at the domain registrar to the two Cloudflare shows. Visitors
+   notice nothing.
+3. An **API token** (My Profile > API Tokens > Create token > "Edit
+   Cloudflare Workers", for this account and the udantravelsbdq.com zone),
+   saved in GitHub with the account ID and the hosted Supabase project's
+   public values:
 
    ```bash
-   pnpm --filter @udan/web verify https://udantravelsbdq.com
+   gh secret set CLOUDFLARE_API_TOKEN
    ```
 
-5. Rollback, if anything is wrong: set the Pages source back to
-   **Deploy from a branch**, `main`, `/docs`.
-6. Once it has been stable for a few days: add the push trigger and a nightly
-   `schedule` (so new rate-card bands reach the site) to `deploy-web.yml`, delete `web/legacy`, `vite.legacy.config.ts` and the
-   built files in `docs/`, and move documentation (runbooks, MCP test log,
-   review checklist) into `docs/`.
+   ```bash
+   gh variable set CLOUDFLARE_ACCOUNT_ID
+   ```
+
+   ```bash
+   gh variable set PUBLIC_SUPABASE_URL --body https://xczzvcrjarigejiekqgb.supabase.co
+   ```
+
+   ```bash
+   gh variable set PUBLIC_SUPABASE_PUBLISHABLE_KEY
+   ```
+
+   (The publishable key is under Supabase > Settings > API keys; it is public
+   by design. Each command without `--body` asks for the value.)
+4. Wrangler signed in on this Mac, for setting the Workers' secrets:
+
+   ```bash
+   pnpm --filter @udan/app exec wrangler login
+   ```
 
 ### Database
 
 The hosted project is `xczzvcrjarigejiekqgb` in AWS `us-west-2` (Oregon),
-the owner's choice on 20 Nov 2026; put the app's server functions in a US
-West region (Vercel `pdx1`) so each database query stays short. Migrations
-were first pushed on 20 Nov 2026.
+the owner's choice on 20 Nov 2026. The app and connector Workers are placed
+next to it (`"placement": { "region": "aws:us-west-2" }` in their
+`wrangler.jsonc`), so each database query is a short hop. Migrations were
+first pushed on 20 Nov 2026.
 
 To push new migrations (the dev seed is never pushed): sign the CLI in once
 (`supabase login`, then paste the browser's verification code into the
@@ -375,34 +397,55 @@ select id, 'Owner name', email, 'owner' from auth.users where email = '<owner em
 
 (The owner signs in once first so the auth user exists.)
 
-### App (Vercel)
+### App (`udan-app`)
 
-1. Create a Vercel project from this repository with **Root Directory** `app`
-   (Vercel detects the pnpm workspace and installs from the root).
-2. Set the environment variables above for Production.
-3. Add the domain app.udantravelsbdq.com and create the DNS record Vercel
-   shows (a CNAME on the `app` subdomain; the apex stays on GitHub Pages).
+1. Deploy: Actions > Deploy to Cloudflare > `app`. The build takes the
+   Supabase URL and publishable key from the repository variables and builds
+   them in, with `https://app.udantravelsbdq.com` as the app's address. The
+   Worker answers on its workers.dev address.
+2. Secrets, once (each asks for the value):
 
-The site URL, redirect URLs and sign-in email template (the link uses a token
-hash, so it works on any device) are set by `supabase config push`
-("Database" above). In the Supabase dashboard for the hosted project:
+   ```bash
+   pnpm --filter @udan/app exec wrangler secret put SUPABASE_SECRET_KEY
+   ```
 
-- Authentication > SMTP: use Resend (`smtp.resend.com`, user `resend`,
-  password = the Resend API key) so sign-in emails come from Udan's domain.
-- Authentication > Providers > Google: client ID and secret from a Google
-  Cloud OAuth client whose redirect URI is
-  `https://<project-ref>.supabase.co/auth/v1/callback`.
+   then the same for `RESEND_API_KEY`, `EMAIL_REPLY_TO`, `STAFF_ALERT_EMAIL`
+   and, if wanted, `PAYMENT_DETAILS_BANK` and `PAYMENT_DETAILS_UPI`. Plain
+   settings (`EMAIL_FROM`, `QUOTE_FORM_ORIGINS`, `NEXT_PUBLIC_SITE_URL`) are in
+   `app/wrangler.jsonc`.
+3. Custom domain: uncomment the `routes` entry in `app/wrangler.jsonc`, merge
+   and deploy again; Cloudflare creates the `app` DNS record and certificate.
+4. In the Supabase dashboard: Authentication > SMTP: use Resend
+   (`smtp.resend.com`, user `resend`, password = the Resend API key), then
+   `supabase config push` ("Database" above) for Udan's sign-in email.
+   Authentication > Providers > Google: client ID and secret from a Google
+   Cloud OAuth client whose redirect URI is
+   `https://xczzvcrjarigejiekqgb.supabase.co/auth/v1/callback`.
 
-Resend: verify the sending domain (DNS records shown in Resend) before setting
-`EMAIL_FROM` to an address on it.
+Resend: verify the sending domain (add the records Resend shows in
+Cloudflare DNS) before setting `EMAIL_FROM` to an address on it.
 
-### Claude connector (Cloudflare Workers)
+To run the app on Cloudflare's runtime locally, against the local Supabase
+stack: copy `app/.dev.vars.example` to `app/.dev.vars` and fill it in, then
+
+```bash
+pnpm --filter @udan/app run cf:preview
+```
+
+CI builds the app the same way (`build:check` is the OpenNext build).
+OpenNext's support for Next.js 16's `proxy.ts` (it keeps sign-in sessions
+fresh) is marked experimental; it was checked on the local Cloudflare runtime
+on 21 Nov 2026 (sign-in, desk and account pages, desk actions, emails sent
+after the response, invisible sign-in).
+
+### Claude connector (`udan-mcp`)
 
 1. The Supabase OAuth server (enabled, dynamic client registration,
    authorization path `/oauth/consent`) is set by `supabase config push`
    ("Database" above).
-2. In `mcp/wrangler.jsonc`, set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`
-   for the hosted project, then add secrets:
+2. Deploy: Actions > Deploy to Cloudflare > `connector` (it takes the
+   Supabase URL and publishable key from the repository variables).
+3. Secrets, once:
 
    ```bash
    pnpm --filter @udan/mcp exec wrangler secret put RESEND_API_KEY
@@ -412,16 +455,8 @@ Resend: verify the sending domain (DNS records shown in Resend) before setting
    pnpm --filter @udan/mcp exec wrangler secret put STAFF_ALERT_EMAIL
    ```
 
-3. Deploy:
-
-   ```bash
-   pnpm --filter @udan/mcp deploy
-   ```
-
-4. Custom domain: a Worker can serve `mcp.udantravelsbdq.com` only if the
-   `udantravelsbdq.com` DNS zone is on Cloudflare (nameserver change; the
-   apex records keep pointing at GitHub Pages). Then uncomment the `routes`
-   entry in `wrangler.jsonc` and deploy again.
+4. Custom domain: uncomment the `routes` entry in `mcp/wrangler.jsonc`,
+   merge and deploy again.
 5. Repeat the Inspector run against the deployed URL, add it to Claude as a
    custom connector, and record the results in `docs/mcp-test-log.md` before
    submitting to the directory.
@@ -431,6 +466,54 @@ For the directory reviewer, after they sign in once:
 ```bash
 psql "$DATABASE_URL" -v email=reviewer@example.com -f supabase/scripts/test-account.sql
 ```
+
+### Website (today: legacy SPA)
+
+GitHub Pages serves `main:/docs` (legacy Pages build, custom domain
+udantravelsbdq.com). To publish a change to the old site before cutover:
+
+```bash
+pnpm --filter @udan/web legacy:build
+```
+
+then commit the updated `docs/` and push to `main`. The build also writes
+`docs/404.html` (so deep links render) and keeps `docs/CNAME`.
+
+### Website cutover (after the app is live; needs the owner's go-ahead)
+
+The new website's quote form posts to the app, so the app goes live first.
+
+1. Deploy: Actions > Deploy to Cloudflare > `website`. It builds, runs the
+   page rules and the route check, and publishes `web/dist`. Check the copy on
+   its workers.dev address:
+
+   ```bash
+   pnpm --filter @udan/web verify https://udan-website.<account>.workers.dev
+   ```
+
+2. Note the apex records GitHub Pages uses (Cloudflare DNS: the `A` records
+   for udantravelsbdq.com, 185.199.108.153 to 185.199.111.153, and any
+   `AAAA`), delete them, uncomment the `routes` entry in `web/wrangler.jsonc`,
+   merge and deploy the website again. Cloudflare points the domain at the
+   Worker (a minute or two between the two steps).
+3. www: make `www` a proxied record and add Rules > Redirect Rules >
+   "Redirect from WWW to root", so www.udantravelsbdq.com goes to the apex.
+4. Check the live site:
+
+   ```bash
+   pnpm --filter @udan/web verify https://udantravelsbdq.com
+   ```
+
+5. Rollback, if anything is wrong: remove the custom domain from the Worker
+   (Workers > udan-website > Settings > Domains) and recreate the GitHub
+   Pages records from step 2. GitHub Pages is still on until step 6.
+6. After a few stable days, switch GitHub Pages off (Settings > Pages >
+   Unpublish, or
+   `gh api -X DELETE repos/avishshah11/udan-wanderlust-explorer/pages`),
+   then delete `web/legacy`, `vite.legacy.config.ts`, the `legacy:*` scripts
+   and the built site in `docs/` (keeping the documentation there), and add a
+   push trigger and a nightly `schedule` to `deploy.yml` for the website, so
+   new rate-card bands reach the site.
 
 ## Rules every surface follows
 

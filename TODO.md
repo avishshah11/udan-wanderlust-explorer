@@ -60,9 +60,11 @@ grouped with a fall-back from the month's band to the all-months band (README,
       logs it as an override.
 - [ ] Mailboxes: the site uses udantravels.bdq@gmail.com; the PRD mentions
       quotes@udantravelsbdq.com. Resend needs a verified sending domain.
-- [ ] DNS records for app.udantravelsbdq.com (Vercel), mcp.udantravelsbdq.com
-      (Cloudflare) and the Resend sending domain. The apex stays on GitHub
-      Pages.
+- [ ] Move the udantravelsbdq.com DNS zone to Cloudflare (add the site, then
+      change the nameservers at the registrar), keeping every existing record,
+      so GitHub Pages keeps serving the apex until the cutover. The app. and
+      mcp. custom domains are then attached by their deploys; add Resend's
+      sending-domain records there too (README, "Deploying").
 - [ ] Taxes: sell prices are treated as tax-inclusive, as the current terms
       say. Confirm with the accountant how GST on packages and TCS on overseas
       packages should appear on quotes before launch.

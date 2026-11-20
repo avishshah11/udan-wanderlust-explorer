@@ -28,7 +28,7 @@ dist-ssr
 .next
 .astro
 .wrangler
-.vercel
+.open-next
 coverage
 *.tsbuildinfo
 supabase/.temp
@@ -38,4 +38,6 @@ supabase/.branches
 .env.*
 !.env.example
 .dev.vars
+.dev.vars.*
+!.dev.vars.example
 web/legacy-dist
