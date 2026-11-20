@@ -9,12 +9,20 @@ what is blocked on it.
       Oregon over Mumbai), CLI signed in and linked, migrations pushed.
 - [x] Data API grants made explicit (the hosted project grants nothing on
       new tables by default; README, "Database").
-- [ ] Apply the sign-in settings in `[remotes.production]` of
-      `supabase/config.toml` (site URL and redirect URLs, the sign-in email,
-      the OAuth server for the Claude connector) with `supabase config push`.
-- [ ] Resend as SMTP and Google sign-in, once those accounts exist (README,
-      "App"). Until then Supabase's built-in email reaches only members of
-      the Supabase organisation.
+- [x] Sign-in settings pushed from `[remotes.production]` in
+      `supabase/config.toml`: site URL and redirect URLs on
+      app.udantravelsbdq.com, and the OAuth server for the Claude connector
+      (dynamic client registration, consent at `/oauth/consent`). Today's ECB
+      exchange rates fetched; the daily job runs at 16:30 UTC.
+- [ ] Resend as SMTP (dashboard > Authentication > SMTP), then run
+      `supabase config push` again to apply Udan's sign-in email subject and
+      design. The free plan refuses email template changes while Supabase's
+      built-in email is used, so they were left out on 20 Nov; `supabase
+      config diff` lists those two templates as the only difference. Until
+      then sign-in emails are Supabase's standard ones: they reach only
+      members of the Supabase organisation, a few an hour, and the link works
+      only in the browser that asked for it.
+- [ ] Google sign-in, once a Google Cloud OAuth client exists (README, "App").
 - [ ] The owner signs in once on the deployed app, then becomes the first
       staff member (README, "Database").
 - [ ] Before real customers: move off the free plan, which pauses a project
@@ -29,8 +37,10 @@ grouped with a fall-back from the month's band to the all-months band (README,
 - [ ] Export past quotes (the PRD asks for the last 12 to 24 months) into the
       template on desk > Rate card and import them. Bands appear on the
       website, in Claude and in confirmation emails once 5 quotes back them.
-- [ ] Set the repository variables `PUBLIC_SUPABASE_URL` and
-      `PUBLIC_SUPABASE_PUBLISHABLE_KEY` (hosted project) so the website build
+- [ ] Set the repository variables `PUBLIC_SUPABASE_URL`
+      (`https://xczzvcrjarigejiekqgb.supabase.co`) and
+      `PUBLIC_SUPABASE_PUBLISHABLE_KEY` (dashboard > Settings > API keys; it
+      is public by design) so the website build
       reads the bands, and rebuild the site after imports (Actions > Deploy
       website) until the nightly schedule is added at cutover.
 - [ ] Add destinations beyond the seven in the catalogue (SQL insert into
