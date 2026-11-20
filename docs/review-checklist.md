@@ -40,7 +40,7 @@ on 18 Nov 2026, to where it is met. Status: **met** (in code, tested),
 | Tested in MCP Inspector | Local run in `docs/mcp-test-log.md` | met locally; repeat on the deployed URL |
 | Tested as a custom connector in Claude | Needs the deployed URL | to do |
 | Public documentation page | `web/src/pages/connector.astro`, live at https://udantravelsbdq.com/connector after the website cutover | ready |
-| Privacy policy URL covering collection, use, storage, sharing, retention, contact | `web/src/pages/privacy.astro` (sections 2–5 and 9; names Supabase, Resend, Vercel, Cloudflare, GitHub, Google and Anthropic) | ready, owner to review |
+| Privacy policy URL covering collection, use, storage, sharing, retention, contact | `web/src/pages/privacy.astro` (sections 2–5 and 9; names Supabase, Resend, Cloudflare, Google and Anthropic) | ready, owner to review |
 | Support contact | udantravels.bdq@gmail.com, +91 93762 14442 (on `/connector`) | ready |
 | Icon | `web/public/images/udan-icon-512.png`: 512×512, the Udan logo on white | ready |
 | Listing copy (name ≤100, one-liner ≤200, description ≤2,000, categories) | Name "Udan Tours and Travels"; one-liner from the PRD: "Hotel, flight and holiday package quotes from a Vadodara travel agency established 1997, for domestic and international trips from India, priced against agent rates and delivered to your inbox." (193 characters); description below (under 2,000 characters); category Travel | ready |

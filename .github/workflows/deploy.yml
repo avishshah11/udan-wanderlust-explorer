@@ -1,0 +1,77 @@
+name: Deploy to Cloudflare
+
+# Deploys one of the three Cloudflare Workers. Manual (Actions > Deploy to
+# Cloudflare > Run workflow) until the website cutover; see README,
+# "Deploying". Needs the repository secret CLOUDFLARE_API_TOKEN and the
+# repository variables CLOUDFLARE_ACCOUNT_ID, PUBLIC_SUPABASE_URL and
+# PUBLIC_SUPABASE_PUBLISHABLE_KEY (public values). Runtime secrets (Supabase
+# secret key, Resend key, ...) are set once with `wrangler secret put`, never
+# here.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: What to deploy
+        type: choice
+        options: [app, connector, website]
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.target }}
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Customer account and pricing desk (Next.js via OpenNext). Values built
+      # into the app are set here; its secrets live on the Worker.
+      - name: App, build for Workers
+        if: inputs.target == 'app'
+        run: pnpm --filter @udan/app run cf:build
+        env:
+          NEXT_PUBLIC_APP_URL: https://app.udantravelsbdq.com
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      - name: App, deploy
+        if: inputs.target == 'app'
+        run: pnpm --filter @udan/app run cf:deploy
+
+      - name: Connector, deploy
+        if: inputs.target == 'connector'
+        run: >-
+          pnpm --filter @udan/mcp exec wrangler deploy
+          --var "SUPABASE_URL:${{ vars.PUBLIC_SUPABASE_URL }}"
+          --var "SUPABASE_PUBLISHABLE_KEY:${{ vars.PUBLIC_SUPABASE_PUBLISHABLE_KEY }}"
+
+      # Public website (static). The build fails if any page breaks the
+      # website rules; verify checks every route before anything is published.
+      - name: Website, build
+        if: inputs.target == 'website'
+        run: pnpm --filter @udan/web build
+        env:
+          PUBLIC_APP_URL: https://app.udantravelsbdq.com
+          PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      - name: Website, every route is 200 HTML, readable without JavaScript
+        if: inputs.target == 'website'
+        run: pnpm --filter @udan/web verify
+      - name: Website, deploy
+        if: inputs.target == 'website'
+        run: pnpm --filter @udan/web exec wrangler deploy

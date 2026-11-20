@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The public website: Astro's static output in dist/, served by Cloudflare
+  // (`pnpm --filter @udan/web build`, then `wrangler deploy`). No server code.
+  "name": "udan-website",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    // Astro writes /about as about.html (trailingSlash "never", format
+    // "file"): /about serves it and /about/ redirects to /about.
+    "html_handling": "drop-trailing-slash",
+    // Unknown paths get dist/404.html with status 404.
+    "not_found_handling": "404-page"
+  }
+  // Production, at the cutover only (README, "Website cutover"): needs the
+  // udantravelsbdq.com zone on Cloudflare, and replaces GitHub Pages there.
+  // "routes": [{ "pattern": "udantravelsbdq.com", "custom_domain": true }]
+}

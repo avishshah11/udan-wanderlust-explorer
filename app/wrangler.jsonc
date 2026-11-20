@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The customer account and pricing desk, built by OpenNext
+  // (`pnpm --filter @udan/app run cf:build`).
+  "name": "udan-app",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  // Run next to the hosted Supabase project (AWS us-west-2, Oregon): a page
+  // makes several database calls, each a short hop from there.
+  "placement": { "region": "aws:us-west-2" },
+  "observability": { "enabled": true },
+  // Production: needs the udantravelsbdq.com zone on Cloudflare (README,
+  // "Deploying"). Until then the Worker is reachable on workers.dev.
+  // "routes": [{ "pattern": "app.udantravelsbdq.com", "custom_domain": true }],
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://udantravelsbdq.com",
+    "QUOTE_FORM_ORIGINS": "https://udantravelsbdq.com,https://www.udantravelsbdq.com",
+    "EMAIL_FROM": "Udan Tours and Travels <quotes@udantravelsbdq.com>"
+  }
+  // NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY and
+  // NEXT_PUBLIC_APP_URL are built into the app, so they are set when it is
+  // built (the deploy workflow takes them from repository variables).
+  // Secrets (wrangler secret put): SUPABASE_SECRET_KEY, RESEND_API_KEY,
+  // EMAIL_REPLY_TO, STAFF_ALERT_EMAIL, PAYMENT_DETAILS_BANK, PAYMENT_DETAILS_UPI
+}

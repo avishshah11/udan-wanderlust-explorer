@@ -1,0 +1,14 @@
+# app/.dev.vars for `pnpm --filter @udan/app run cf:preview` (the app on
+# Cloudflare's local runtime, against the local Supabase stack). Never commit
+# real values. Values built into the app (NEXT_PUBLIC_*) come from
+# app/.env.local at build time, as for `next dev`.
+
+SUPABASE_SECRET_KEY=
+NEXT_PUBLIC_SITE_URL=https://udantravelsbdq.com
+QUOTE_FORM_ORIGINS=http://localhost:4321
+RESEND_API_KEY=
+EMAIL_FROM=Udan Tours and Travels <quotes@udantravelsbdq.com>
+EMAIL_REPLY_TO=
+STAFF_ALERT_EMAIL=
+PAYMENT_DETAILS_BANK=
+PAYMENT_DETAILS_UPI=

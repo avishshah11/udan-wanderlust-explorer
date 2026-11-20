@@ -14,6 +14,7 @@ export default tseslint.config(
       "**/.next/**",
       "**/.astro/**",
       "**/.wrangler/**",
+      "**/.open-next/**",
       "**/next-env.d.ts",
       "**/database.types.ts",
       "**/__fixtures__/**",

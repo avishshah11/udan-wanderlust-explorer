@@ -3,7 +3,7 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig } from "astro/config";
 
-// Static site for GitHub Pages: one real HTML file per route (about.html is
+// Static site, served by Cloudflare (web/wrangler.jsonc): one real HTML file per route (about.html is
 // served at /about with a 200, no redirect), canonical URLs without a
 // trailing slash.
 export default defineConfig({

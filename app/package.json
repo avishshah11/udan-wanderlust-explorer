@@ -5,13 +5,17 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:check": "next build",
+    "build:check": "opennextjs-cloudflare build",
     "start": "next start",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare deploy",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.17",
     "@types/node": "24",
     "@types/react": "19",
     "@types/react-dom": "19",
@@ -22,7 +26,8 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.9.3",
     "vite": "^7",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "wrangler": "^4.163.0"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.17",

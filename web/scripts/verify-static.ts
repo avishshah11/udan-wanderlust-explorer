@@ -1,7 +1,7 @@
-// Verify every route the way GitHub Pages and a crawler see it: HTTP 200,
+// Verify every route the way Cloudflare, GitHub Pages and a crawler see it: HTTP 200,
 // text/html, real content in the HTML (no JavaScript), og:image reachable.
 //
-//   pnpm --filter @udan/web verify                      serve dist/ like GitHub Pages and check it
+//   pnpm --filter @udan/web verify                      serve dist/ like Cloudflare and GitHub Pages, and check it
 //   pnpm --filter @udan/web verify https://udantravelsbdq.com   check the live site after cutover
 
 import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
@@ -15,7 +15,7 @@ const DIST = new URL("../dist", import.meta.url).pathname;
 const LEGACY_ROUTES = ["/", "/about", "/packages", "/visa", "/contact", "/privacy", "/terms"];
 const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".jpg": "image/jpeg", ".png": "image/png", ".xml": "application/xml", ".txt": "text/plain", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".woff2": "font/woff2" };
 
-/** Serve dist/ with GitHub Pages rules: file, dir/index.html, name.html, else 404.html with 404. */
+/** Serve dist/ as Cloudflare (web/wrangler.jsonc) and GitHub Pages do: file, dir/index.html, name.html, else 404.html with 404. */
 function serveLikePages(): Promise<{ base: string; close: () => void }> {
   const server = createServer((req, res) => {
     const path = normalize(decodeURIComponent((req.url ?? "/").split("?")[0]!)).replace(/^(\.\.[/\\])+/, "");
