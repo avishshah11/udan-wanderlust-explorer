@@ -342,8 +342,12 @@ pnpm --filter @udan/supabase exec supabase config diff --workdir ..
 pnpm --filter @udan/supabase exec supabase config push --workdir ..
 ```
 
-Until Resend is set up as SMTP (below), Supabase's built-in email sends sign-in
-links only to members of the Supabase organisation, a few an hour.
+On the free plan Supabase refuses email template changes while its built-in
+email is used, and refuses the whole push with them. Set up Resend as SMTP
+first ("App" below), then push. (On 20 Nov 2026 everything except the two
+email templates was pushed; `config diff` shows only those until then.) Until
+Resend is set up, Supabase's built-in email sends its standard sign-in links
+only to members of the Supabase organisation, a few an hour.
 
 Then add the first staff member:
 
