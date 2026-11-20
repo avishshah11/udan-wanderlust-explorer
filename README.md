@@ -329,8 +329,23 @@ pnpm --filter @udan/supabase exec supabase db push --remote --dry-run --workdir 
 pnpm --filter @udan/supabase exec supabase db push --remote --workdir ..
 ```
 
-In the Supabase dashboard: enable email (magic link) and Google sign-in, set
-the site URL to https://app.udantravelsbdq.com, and add the first staff member:
+Sign-in settings for the hosted project (site URL and redirect URLs, the
+sign-in email template and subjects, email confirmation and rate limit, the
+OAuth server for the Claude connector) live in the `[remotes.production]`
+block at the end of `supabase/config.toml`. Preview, then apply:
+
+```bash
+pnpm --filter @udan/supabase exec supabase config diff --workdir ..
+```
+
+```bash
+pnpm --filter @udan/supabase exec supabase config push --workdir ..
+```
+
+Until Resend is set up as SMTP (below), Supabase's built-in email sends sign-in
+links only to members of the Supabase organisation, a few an hour.
+
+Then add the first staff member:
 
 ```sql
 insert into public.staff (user_id, name, email, role)
@@ -347,13 +362,10 @@ select id, 'Owner name', email, 'owner' from auth.users where email = '<owner em
 3. Add the domain app.udantravelsbdq.com and create the DNS record Vercel
    shows (a CNAME on the `app` subdomain; the apex stays on GitHub Pages).
 
-In the Supabase dashboard for the hosted project:
+The site URL, redirect URLs and sign-in email template (the link uses a token
+hash, so it works on any device) are set by `supabase config push`
+("Database" above). In the Supabase dashboard for the hosted project:
 
-- Authentication > URL configuration: site URL
-  `https://app.udantravelsbdq.com`, redirect URLs `https://app.udantravelsbdq.com/**`.
-- Authentication > Email templates: paste `supabase/templates/magic_link.html`
-  into both **Magic Link** and **Confirm signup** (the link uses a token hash,
-  so it works on any device).
 - Authentication > SMTP: use Resend (`smtp.resend.com`, user `resend`,
   password = the Resend API key) so sign-in emails come from Udan's domain.
 - Authentication > Providers > Google: client ID and secret from a Google
@@ -365,9 +377,9 @@ Resend: verify the sending domain (DNS records shown in Resend) before setting
 
 ### Claude connector (Cloudflare Workers)
 
-1. Supabase dashboard > Authentication > OAuth Server: enable it, allow
-   dynamic client registration, authorization path `/oauth/consent` (the
-   local equivalents are in `supabase/config.toml`).
+1. The Supabase OAuth server (enabled, dynamic client registration,
+   authorization path `/oauth/consent`) is set by `supabase config push`
+   ("Database" above).
 2. In `mcp/wrangler.jsonc`, set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`
    for the hosted project, then add secrets:
 

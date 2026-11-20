@@ -449,3 +449,39 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# ---------------------------------------------------------------------------
+# Hosted project (production). Everything above is for the local stack; these
+# values replace it when the CLI targets the hosted project. Preview with
+# `supabase config diff`, apply with `supabase config push` (README,
+# "Database"). Secrets (SMTP, Google) are set in the dashboard, never here.
+# ---------------------------------------------------------------------------
+[remotes.production]
+project_id = "xczzvcrjarigejiekqgb"
+
+[remotes.production.auth]
+site_url = "https://app.udantravelsbdq.com"
+additional_redirect_urls = ["https://app.udantravelsbdq.com/**"]
+
+# Keep Supabase's production defaults where the local stack relaxes them for
+# testing: new email addresses confirm by link (the same sign-in email), and
+# at most one email a minute per address.
+[remotes.production.auth.email]
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
+
+# Unchanged hosted defaults, restated so a push leaves them alone.
+[remotes.production.auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[remotes.production.auth.sms]
+enable_confirmations = true
+
+[remotes.production.db.pooler]
+default_pool_size = 15
+max_client_conn = 200
+
+[remotes.production.storage.vector]
+enabled = false
