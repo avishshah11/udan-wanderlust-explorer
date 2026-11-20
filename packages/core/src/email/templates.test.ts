@@ -66,6 +66,15 @@ describe("customer emails", () => {
     ).toThrow(/payment link/);
   });
 
+  it("payment details tell the customer to check the account before paying", () => {
+    for (const email of [customerEmails.paymentBank, customerEmails.paymentUpi, customerEmails.paymentCard]) {
+      expect(email.text).toContain("This payment is also shown in your Udan account under UDN-2611-K7QMX.");
+      expect(email.text).toContain("call our office on 0265 400 8999 before paying");
+      expect(email.text).toContain("We never ask for an OTP or a PIN.");
+      expect(email.html).toContain(url);
+    }
+  });
+
   it("escapes anything people typed", () => {
     const email = paymentDetailsEmail({
       name: "<script>x</script>",
