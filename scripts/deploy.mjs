@@ -24,6 +24,11 @@ const APP_URL = "https://app.udantravelsbdq.com";
 const SITE_URL = "https://udantravelsbdq.com";
 const TARGETS = ["connector", "app", "website", "auth"];
 
+// IndexNow: tells Bing (which ChatGPT search and Copilot use), Yandex and
+// others which pages exist, after each website deploy. The key is public by
+// design: web/public/<key>.txt proves the site is ours.
+const INDEXNOW_KEY = "dc1e3adfd8b565f5e86932a675560fdc";
+
 class DeployError extends Error {}
 const fail = (message) => {
   throw new DeployError(message);
@@ -35,7 +40,7 @@ function readValues() {
   return parseEnv(readFileSync(file, "utf8"));
 }
 
-function main(target, values) {
+async function main(target, values) {
   const need = (name) => values[name] || fail(`${name} is empty in .env.cloudflare`);
   // Child processes never inherit this shell's environment beyond the basics.
   const base = { PATH: process.env.PATH, HOME: process.env.HOME, LANG: process.env.LANG ?? "en_US.UTF-8", TERM: process.env.TERM ?? "dumb" };
@@ -106,6 +111,7 @@ function main(target, values) {
     });
     pnpm(["--filter", "@udan/web", "verify"]);
     pnpm(["--filter", "@udan/web", "exec", "wrangler", "deploy"], { env: cloudflare });
+    await indexNow();
   }
 
   if (target === "auth") {
@@ -120,10 +126,22 @@ function main(target, values) {
   console.log(`deploy: ${target} done`);
 }
 
+async function indexNow() {
+  const sitemap = await (await fetch(`${SITE_URL}/sitemap-0.xml`)).text();
+  const urlList = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  const res = await fetch("https://api.indexnow.org/indexnow", {
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+    body: JSON.stringify({ host: new URL(SITE_URL).host, key: INDEXNOW_KEY, keyLocation: `${SITE_URL}/${INDEXNOW_KEY}.txt`, urlList }),
+  });
+  // 200 and 202 both mean accepted; anything else is reported, not fatal.
+  console.log(`indexnow: ${urlList.length} pages sent, answer ${res.status}`);
+}
+
 const target = process.argv[2];
 try {
   if (!TARGETS.includes(target)) fail(`usage: node scripts/deploy.mjs ${TARGETS.join("|")}`);
-  main(target, readValues());
+  await main(target, readValues());
 } catch (error) {
   if (!(error instanceof DeployError)) throw error;
   console.error(`deploy: ${error.message}`);

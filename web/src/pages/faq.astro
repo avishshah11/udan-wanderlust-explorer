@@ -1,0 +1,108 @@
+---
+// Questions people ask Google and AI assistants about travel agents in
+// Vadodara, answered plainly with Udan's real details. Each answer is in the
+// page and in FAQPage structured data, so search engines and answer engines
+// can quote it. Every fact here comes from src/lib/site.ts or from what the
+// app does; keep them in step. No promises about timing (rule 1).
+import Base from "../layouts/Base.astro";
+import { PROMISE, SITE, experienceText } from "../lib/site";
+
+const mobile = SITE.phones[0];
+const office = SITE.phones[1];
+const hours = SITE.hours.map((h) => `${h.days} ${h.opens} to ${h.closes}`).join("; ");
+const address = `${SITE.address.street}, ${SITE.address.locality} ${SITE.address.postalCode}`;
+
+// [question, answer as plain text (for structured data), optional link]
+const faqs: { q: string; a: string; link?: [string, string] }[] = [
+  {
+    q: "Which travel agency in Vadodara can I trust for a holiday package?",
+    a: `Udan Tours and Travels is a family-run travel agency in Sayajiganj, Vadodara, established in 1997: ${experienceText()} of arranging holidays in India and abroad, hotels, flights, visas and travel insurance. Tell us your trip and a member of our family prices it at the agent rates we have with hotels, airlines and suppliers. You get a written quote listing everything it includes. Our promise: ${PROMISE.short.charAt(0).toLowerCase()}${PROMISE.short.slice(1)}`,
+    link: ["/quote", "Get a free quote"],
+  },
+  {
+    q: "Where is Udan's office, and when is it open?",
+    a: `${address}. Open ${hours} (IST). Call ${mobile.display} or ${office.display}, or WhatsApp ${mobile.display}.`,
+    link: ["/contact", "Contact and map"],
+  },
+  {
+    q: "How can I get agent rates on hotels instead of booking-site prices?",
+    a: "Travel agents buy from hotels and suppliers at agent rates that booking sites do not show. Ask an agent to price your exact dates and room. Udan has built these rates since 1997: send us the hotel and dates, or a price you have seen online, and we price the same stay.",
+    link: ["/quote#hotels", "Ask for a hotel price"],
+  },
+  {
+    q: "Can Udan beat a price I found on MakeMyTrip or another booking site?",
+    a: "Send it to us with a screenshot or the details. We price the same trip (same dates, the same or an equal hotel) at our rates and show our price next to theirs. For many trips we can offer the same thing for less, and if we cannot, we tell you.",
+    link: ["/beat-my-price", "Beat my price"],
+  },
+  {
+    q: "Can Udan book cheap flights from Vadodara?",
+    a: "Yes. Ask for flights only with your route, dates, number of travellers and cabin class, from Vadodara, Ahmedabad, Mumbai or wherever you start. We send you the fares for your dates, and you decide.",
+    link: ["/quote#flights", "Ask for flight fares"],
+  },
+  {
+    q: "Does Udan help with visas, including Schengen?",
+    a: "Yes: tourist, business, student and work visas for the countries Indian travellers visit most, including the Schengen area, the United Kingdom, the United States, Canada, Australia, Singapore, the UAE and Japan. We tell you which visa you need, give you a document checklist, check your documents, help with the forms and book the appointment. The decision is always the embassy's.",
+    link: ["/visa", "Visa services"],
+  },
+  {
+    q: "What does a holiday package from Udan include?",
+    a: "Whatever you ask for: usually hotels, airport and local transfers, sightseeing and some meals, with flights, visa and travel insurance if you want them. Your quote lists every item, what is not included, and the date the price holds until.",
+    link: ["/packages", "Destinations"],
+  },
+  {
+    q: "Do I have to pay to get a quote?",
+    a: "No. Quotes are free. You pay only after you accept a quote; we then email you how to pay, by bank transfer, UPI, or a card payment link if you are paying from outside India. Every payment we ask for appears in your Udan account.",
+    link: ["/quote", "Get a free quote"],
+  },
+  {
+    q: "How do I know a payment request is really from Udan?",
+    a: `Every payment we ask for appears in your Udan account with its amount. We never ask for an OTP or a PIN. If a payment request looks wrong, call our office on ${office.display} before paying.`,
+    link: ["/trust", "Why you can trust us"],
+  },
+  {
+    q: "How long has Udan Tours and Travels been in business?",
+    a: `Since 1997: ${experienceText()}, from the same office in Sayajiganj, Vadodara, for more than ${SITE.travellers.replace("+", "")} travellers.`,
+    link: ["/about", "About us"],
+  },
+];
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  },
+];
+---
+
+<Base
+  title="Questions and answers: travel agency in Vadodara"
+  description="Answers about Udan Tours and Travels, a travel agency in Vadodara since 1997: agent rates on hotels, beating booking-site prices, flights, visas, payments and our office."
+  jsonLd={jsonLd}
+>
+  <section class="py-12 md:py-16">
+    <div class="container mx-auto max-w-3xl px-4 md:px-6">
+      <h1 class="text-3xl font-bold text-udan-charcoal md:text-4xl">Questions and answers</h1>
+      <p class="mt-4 text-lg text-udan-gray">
+        What travellers ask us most about booking with a travel agency in Vadodara. Not answered here? Call{" "}
+        <a class="font-semibold text-udan-charcoal underline" href={`tel:${mobile.tel}`}>{mobile.display}</a> or{" "}
+        <a class="font-semibold text-udan-charcoal underline" href="/quote">ask for a quote</a>.
+      </p>
+      <div class="mt-10 space-y-8">
+        {
+          faqs.map((f) => (
+            <section class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+              <h2 class="text-xl font-bold text-udan-charcoal">{f.q}</h2>
+              <p class="mt-3 text-lg leading-relaxed text-udan-gray">{f.a}</p>
+              {f.link && (
+                <a class="mt-4 inline-block font-semibold text-udan-orange underline" href={f.link[0]}>
+                  {f.link[1]}
+                </a>
+              )}
+            </section>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</Base>

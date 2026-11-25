@@ -263,6 +263,15 @@ appear there only once filled in as `REGISTRATIONS` and `PAYEE_NAME` in
 `web/src/lib/site.ts`. The payment-details email and the customer's quote page
 carry the same check-before-you-pay note.
 
+Answer pages for search engines and AI assistants (added 26 Nov 2026):
+`/faq` and `/booking-site-vs-travel-agent` answer the questions people ask
+about travel agents in Vadodara, with FAQPage structured data, and
+`/llms.txt` summarises Udan for AI assistants. Their facts come from
+`web/src/lib/site.ts`; keep them in step. After each website deploy,
+`scripts/deploy.mjs` sends the sitemap's pages to IndexNow (Bing, which
+ChatGPT search and Copilot use, and others); the key file is
+`web/public/<key>.txt`.
+
 Destination pages come from `web/src/content/destinations/*.md`; the file
 name must match the slug in the desk's `destinations` table. Price ranges on
 destination pages and cards come from the rate card at build time when

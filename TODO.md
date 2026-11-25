@@ -53,6 +53,17 @@ The owner's message, now on the website: nearly 30 years in travel (since
       drafted for review (best months, sample itinerary, what is included).
 - [ ] Know which channel brings each client: links in posts carry
       `utm_source`, and the quote form records it on the request.
+- [x] Answer pages and AI basics (26 Nov 2026): `/faq` and
+      `/booking-site-vs-travel-agent` with FAQPage data, `/llms.txt`, and an
+      IndexNow ping after each website deploy. Baseline AI visibility check
+      (Citemark, 25 Nov): Udan named in 0 of 10 ChatGPT and Claude answers;
+      named instead: Explera, Travel Talk, Flamingo Transworld, Mansuri
+      Travels; cited: their sites, gujaratipedia.com, bestvisaagencies.com,
+      schengen-visa.in and YouTube. Re-check in a few weeks.
+- [ ] Listings that AI answers read: Google Business Profile, Justdial,
+      TripAdvisor, gujaratipedia.com, bestvisaagencies.com; the same name,
+      address and phone everywhere. A YouTube channel with the Instagram
+      reels (answers cited YouTube).
 
 ## Rate card (built 20 Nov 2026)
 
