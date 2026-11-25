@@ -32,23 +32,19 @@ export function Tip({ id, title = "Tip", children }: { id: string; title?: strin
   };
 
   return (
-    <aside
-      aria-label={title}
-      className="flex flex-col gap-3 rounded-xl border-2 border-udan-blue/25 bg-blue-50 p-4 text-base leading-relaxed text-blue-950 sm:flex-row sm:items-start sm:justify-between"
-    >
-      <div className="flex gap-3">
-        <Lightbulb aria-hidden className="mt-1 size-6 shrink-0 text-udan-blue" />
-        <div className="space-y-1">
-          <p className="font-semibold">{title}</p>
-          {children}
-        </div>
+    <aside aria-label={title} className="flex items-start gap-3 rounded-xl border-l-4 border-udan-blue bg-blue-50/70 px-4 py-3 text-base leading-relaxed text-blue-950">
+      <Lightbulb aria-hidden className="mt-1 size-5 shrink-0 text-udan-blue" />
+      <div className="min-w-0 flex-1 space-y-1">
+        <p className="font-semibold">{title}</p>
+        {children}
       </div>
       <button
         type="button"
         onClick={hide}
-        className="shrink-0 self-start rounded-md border-2 border-blue-900/20 bg-white px-4 py-2 font-semibold text-blue-950 hover:bg-blue-100"
+        aria-label={`Hide the tip: ${title}`}
+        className="-mr-1 shrink-0 rounded-md px-2 py-1 text-sm font-semibold text-blue-900 underline underline-offset-4 hover:bg-blue-100"
       >
-        Got it, hide this tip
+        Hide tip
       </button>
     </aside>
   );

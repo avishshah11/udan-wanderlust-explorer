@@ -5,6 +5,7 @@ import { loadRates } from "@/lib/fx";
 import { createClient } from "@/lib/supabase/server";
 import { DeskStatus } from "./desk-status";
 import { Tip } from "@/components/tip";
+import { Button } from "@/components/ui/button";
 
 const TYPE_BADGE: Record<RequestType, string> = { package: "Package", flights: "Flights", hotels: "Hotel" };
 
@@ -53,7 +54,7 @@ export default async function DeskQueue({ searchParams }: { searchParams: Promis
     <div className="space-y-5">
       <Tip id="desk-queue" title="How the desk works">
         <p>
-          New requests from customers wait under <strong>To price</strong>. Press a reference to open it and start pricing.{" "}
+          New requests from customers wait under <strong>To price</strong>. Press <strong>Open</strong> on a request to see it and start pricing.{" "}
           <strong>All requests</strong> lists every customer&apos;s request at any stage; the other tabs show quotes waiting for the customer and accepted
           trips that need payments or documents.
         </p>
@@ -66,8 +67,8 @@ export default async function DeskQueue({ searchParams }: { searchParams: Promis
           <p className="py-8 text-center text-base text-udan-gray">Nothing here right now.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[960px] text-left text-sm">
-              <thead className="border-b text-xs uppercase text-udan-gray">
+            <table className="w-full min-w-[1000px] text-left text-base">
+              <thead className="border-b text-sm font-semibold text-udan-gray">
                 <tr>
                   <th className="py-2 pr-3">Reference</th>
                   <th className="py-2 pr-3">Customer</th>
@@ -76,7 +77,8 @@ export default async function DeskQueue({ searchParams }: { searchParams: Promis
                   <th className="py-2 pr-3">Budget</th>
                   <th className="py-2 pr-3">Channel</th>
                   <th className="py-2 pr-3">Age</th>
-                  <th className="py-2">Status</th>
+                  <th className="py-2 pr-3">Status</th>
+                  <th className="py-2"><span className="sr-only">Open</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -84,19 +86,19 @@ export default async function DeskQueue({ searchParams }: { searchParams: Promis
                   const local = localTimeIn(r.customers?.time_zone);
                   const binr = budgetInr(r);
                   return (
-                    <tr key={r.id} className="border-b last:border-0 hover:bg-udan-lightGray/60">
-                      <td className="py-2.5 pr-3 font-mono text-xs">
+                    <tr key={r.id} className="border-b align-top last:border-0 hover:bg-udan-lightGray/60">
+                      <td className="whitespace-nowrap py-3 pr-3 font-mono text-sm">
                         <Link className="text-udan-blue hover:underline" href={`/desk/requests/${r.id}`}>
                           {r.reference}
                         </Link>
                       </td>
-                      <td className="py-2.5 pr-3">
+                      <td className="py-3 pr-3">
                         <div className="font-medium">{r.customers?.name ?? r.customers?.email}</div>
                         <div className="text-xs text-udan-gray">
                           {local ? `${local} · ${r.customers?.time_zone}` : "time zone unknown"}
                         </div>
                       </td>
-                      <td className="py-2.5 pr-3">
+                      <td className="py-3 pr-3">
                         <div>
                           <span className="mr-1.5 rounded bg-udan-lightGray px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-udan-gray">
                             {TYPE_BADGE[r.request_type]}
@@ -115,8 +117,8 @@ export default async function DeskQueue({ searchParams }: { searchParams: Promis
                             .join(" · ")}
                         </div>
                       </td>
-                      <td className="py-2.5 pr-3 whitespace-nowrap">{travelWhen(r)}</td>
-                      <td className="py-2.5 pr-3 whitespace-nowrap">
+                      <td className="py-3 pr-3 whitespace-nowrap">{travelWhen(r)}</td>
+                      <td className="py-3 pr-3 whitespace-nowrap">
                         {binr != null ? formatInr(binr) : <span className="text-udan-gray">not given</span>}
                         {r.budget_currency !== "INR" && r.budget_max != null && (
                           <div className="text-xs text-udan-gray">
@@ -124,10 +126,17 @@ export default async function DeskQueue({ searchParams }: { searchParams: Promis
                           </div>
                         )}
                       </td>
-                      <td className="py-2.5 pr-3 capitalize">{r.channel}</td>
-                      <td className="py-2.5 pr-3">{ageText(r.created_at)}</td>
-                      <td className="py-2.5">
+                      <td className="py-3 pr-3 capitalize">{r.channel}</td>
+                      <td className="py-3 pr-3">{ageText(r.created_at)}</td>
+                      <td className="py-3 pr-3">
                         <DeskStatus status={r.status} acceptRequestedAt={r.accept_requested_at} acceptedAt={r.accepted_at} />
+                      </td>
+                      <td className="py-2 text-right">
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/desk/requests/${r.id}`} aria-label={`Open ${r.reference}`}>
+                            Open
+                          </Link>
+                        </Button>
                       </td>
                     </tr>
                   );

@@ -15,17 +15,20 @@ import {
   REQUEST_TYPE_LABELS,
   CABIN_CLASS_LABELS,
 } from "@udan/core";
+import { ArrowDown } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SubmitButton } from "@/components/submit-button";
-import { Tip } from "@/components/tip";
+import { ProgressSteps } from "@/components/progress-steps";
+import { Button } from "@/components/ui/button";
 import { requireStaff } from "@/lib/auth";
 import { serverEnv } from "@/lib/env";
 import { ageText, defaultValidUntilInput, formatDateTime, localTimeIn } from "@/lib/format";
 import { loadRates } from "@/lib/fx";
 import { DeskStatus } from "../../desk-status";
+import { PaymentFields } from "./payment-fields";
 import {
   addLine,
   cancelRequest,
@@ -45,9 +48,9 @@ export const metadata = { title: "Request" };
 
 const select = "h-11 w-full rounded-md border border-udan-charcoal/30 bg-white px-3 text-base";
 
-function Panel({ title, children, aside, id }: { title: string; children: React.ReactNode; aside?: React.ReactNode; id?: string }) {
+function Panel({ title, children, aside, id, className }: { title: string; children: React.ReactNode; aside?: React.ReactNode; id?: string; className?: string }) {
   return (
-    <section id={id} className="scroll-mt-4 rounded-xl bg-white p-5 shadow-sm">
+    <section id={id} className={`scroll-mt-4 rounded-2xl bg-white p-5 shadow-sm sm:p-6 ${className ?? ""}`}>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-udan-charcoal">{title}</h2>
         {aside}
@@ -71,68 +74,75 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
  * environment (bank first), pre-filled with those details, so a UPI ID is
  * never sent under "Bank transfer".
  */
-/** The next step on this request, for someone new to the desk. */
-function DeskStepTip({ status }: { status: string }) {
+const DESK_STEPS = ["Price it", "Send the quote", "Customer accepts", "Collect payment", "Send documents"] as const;
+
+function deskStep(status: string, hasLines: boolean): number {
   switch (status) {
     case "queued":
-      return (
-        <Tip id="desk-step-queued" title="Step 1: start pricing">
-          <p>
-            Press <strong>Start pricing</strong> at the top. The customer&apos;s page then shows &ldquo;Being priced&rdquo;. Next, add each item under{" "}
-            <a className="font-semibold underline" href="#lines">Priced lines</a>.
-          </p>
-        </Tip>
-      );
+      return 0;
     case "pricing":
-      return (
-        <Tip id="desk-step-pricing" title="Step 2: price it and send the quote">
-          <p>
-            Under <a className="font-semibold underline" href="#lines">Priced lines</a>, add each item (hotel, transfers, sightseeing and so on) with the supplier&apos;s net cost. The margin from
-            Markup rules is added for you; where no rule fits, type a markup %. Customers only ever see selling prices.
-          </p>
-          <p>
-            When the lines are right, press <strong>Send quote</strong>: the customer gets an email, and the quote appears on their page.
-          </p>
-        </Tip>
-      );
+      return hasLines ? 1 : 0;
     case "sent":
-      return (
-        <Tip id="desk-step-sent" title="Step 3: waiting for the customer">
-          <p>
-            The quote is with the customer. When they accept, you get an email and the request moves to <strong>Payments and documents</strong>. To change
-            the quote before then, edit the lines and send it again; it keeps the same reference.
-          </p>
-        </Tip>
-      );
+      return 2;
     case "awaiting_payment":
-      return (
-        <Tip id="desk-step-payment" title="Step 4: send the payment details">
-          <p>
-            Under <a className="font-semibold underline" href="#payments">Payments</a>: choose Advance or Balance, type the amount in rupees, check the payment details, then press{" "}
-            <strong>Email payment details</strong>. The customer&apos;s page changes to &ldquo;Payment details sent&rdquo;.
-          </p>
-          <p>
-            When the money arrives, type the UTR (transaction reference) next to that payment and press <strong>Mark received</strong>.
-          </p>
-        </Tip>
-      );
+      return 3;
     case "advance_received":
-      return (
-        <Tip id="desk-step-documents" title="Step 5: book and send documents">
-          <p>
-            Make the bookings, then upload vouchers and tickets under <a className="font-semibold underline" href="#documents">Documents</a> and press <strong>Email: documents ready</strong>. Ask for
-            the balance under Payments when it is due.
-          </p>
-        </Tip>
-      );
+      return 4;
     default:
-      return null;
+      return DESK_STEPS.length;
   }
 }
 
-function paymentDefaults(bank: string | undefined, upi: string | undefined) {
-  if (!bank && upi) return { method: "upi", instructions: upi };
-  return { method: "bank", instructions: bank ?? "" };
+function JumpButton({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Button asChild size="lg">
+      <a href={href}>
+        {children} <ArrowDown aria-hidden />
+      </a>
+    </Button>
+  );
+}
+
+const STATUS_WORDS: Record<string, string> = {
+  queued: "Queued",
+  pricing: "Being priced",
+  sent: "Quote sent",
+  awaiting_payment: "Accepted, awaiting payment",
+  advance_received: "Advance received",
+  balance_received: "Fully paid",
+  cancelled: "Cancelled",
+};
+const EMAIL_WORDS: Record<string, string> = {
+  request_received: "Confirmation emailed to the customer",
+  staff_new_request: "New-request alert emailed to the team",
+  quote_ready: "Quote emailed to the customer",
+  quote_accepted: "Acceptance confirmation emailed to the customer",
+  staff_accepted: "Acceptance alert emailed to the team",
+  desk_message: "Message emailed to the customer",
+  documents_ready: "Documents-ready email sent to the customer",
+  payment_details_bank: "Bank payment details emailed to the customer",
+  payment_details_upi: "UPI payment details emailed to the customer",
+  payment_details_card_link: "Card payment link emailed to the customer",
+};
+
+/** One activity entry as a sentence, instead of raw data. */
+function activityText(action: string, raw: unknown): string {
+  const d = (raw ?? {}) as Record<string, unknown>;
+  const words = (v: unknown) => STATUS_WORDS[String(v)] ?? String(v ?? "").replace(/_/g, " ");
+  if (action === "status_change") return d.from ? `${words(d.from)} → ${words(d.to)}` : `Request received (${words(d.to)})`;
+  if (action === "payment_recorded") {
+    const what = `${String(d.kind ?? "payment")} of ${formatInr(Number(d.amount ?? 0))} by ${PAYMENT_METHOD_LABELS[d.method as keyof typeof PAYMENT_METHOD_LABELS] ?? String(d.method ?? "")}`;
+    return d.status === "received" ? `Received: ${what}` : `Asked for: ${what}`;
+  }
+  if (action === "markup_override") return `Markup set by hand to ${String(d.markup_pct ?? "?")}% on a ${String(d.type ?? "")} line`;
+  if (action === "notification") {
+    const kind = String(d.kind ?? "");
+    const results = Array.isArray(d.results) ? (d.results as { ok?: boolean; skipped?: boolean }[]) : [];
+    const failed = results.length > 0 && results.every((r) => !r.ok);
+    const label = EMAIL_WORDS[kind] ?? `Email: ${kind.replace(/_/g, " ")}`;
+    return failed ? `${label}: NOT sent` : label;
+  }
+  return action.replace(/_/g, " ");
 }
 
 export default async function DeskRequest({
@@ -176,7 +186,6 @@ export default async function DeskRequest({
   const applicableRules = (rules ?? []).filter((x) => x.destination_group === null || x.destination_group === group);
   const priced = (lines ?? []).map((l) => ({ netCost: Number(l.net_cost), sellPrice: Number(l.sell_price) }));
   const margin = quoteMargin(priced);
-  const payDefaults = paymentDefaults(serverEnv.paymentDetailsBank, serverEnv.paymentDetailsUpi);
   const frozen = r.accepted_at !== null;
   const ota = r.ota_comparison as { ota_name?: string; product_name?: string; room_type?: string; price?: number; currency?: string } | null;
   const otaRate = ota?.currency ? findRate(rates, ota.currency) : null;
@@ -184,13 +193,79 @@ export default async function DeskRequest({
   const requested = (Array.isArray(r.requested_items) ? r.requested_items : []) as { type?: string; description?: string; city?: string; nights?: number }[];
   const local = localTimeIn(c.time_zone);
   const defaultInclusions = r.inclusions ?? (r.destinations?.typical_inclusions ?? []).join("\n");
+  const hasLines = (lines ?? []).length > 0;
+  const waiting = (payments ?? []).filter((p) => p.status === "awaiting").at(-1);
+  const recheck = r.status === "pricing" && r.accept_requested_at && !r.accepted_at;
+
+  // The one thing to do next on this request, with the button that does it.
+  let next: { title: string; text: React.ReactNode; action?: React.ReactNode };
+  if (r.status === "cancelled") {
+    next = { title: "Cancelled", text: "This request was cancelled. There is nothing more to do." };
+  } else if (r.status === "queued") {
+    next = {
+      title: "Start pricing this request",
+      text: "Press Start pricing so the customer's page shows “Being priced”. Then add the items with your net costs.",
+      action: (
+        <form action={startPricing}>
+          <input type="hidden" name="id" value={id} />
+          <SubmitButton size="lg">Start pricing</SubmitButton>
+        </form>
+      ),
+    };
+  } else if (r.status === "pricing" && !hasLines) {
+    next = {
+      title: recheck ? "Re-check the prices: the customer still wants this" : "Add the items with your net costs",
+      text: "Under Priced lines, add each item (hotel, transfers, sightseeing and so on) with the supplier's net cost. Your markup is added for you; customers only ever see selling prices.",
+      action: <JumpButton href="#lines">Go to Priced lines</JumpButton>,
+    };
+  } else if (r.status === "pricing") {
+    next = {
+      title: `${recheck ? "Re-checked? " : ""}Send the quote: ${formatInr(margin.sell)}`,
+      text: "Check the lines, what is included and the validity date, then press Send quote. The customer gets an email and sees the quote on their page.",
+      action: <JumpButton href="#send">Go to Send the quote</JumpButton>,
+    };
+  } else if (r.status === "sent") {
+    next = {
+      title: "Waiting for the customer to accept",
+      text: `Sent ${formatDateTime(r.sent_at)}, valid until ${formatDateTime(r.valid_until)}, total ${formatInr(Number(r.total_sell_inr))}. You get an email when they accept. To change it, edit the lines and send it again; it keeps the same reference.`,
+      action: <JumpButton href="#messages">Write to the customer</JumpButton>,
+    };
+  } else if (r.status === "awaiting_payment" && !waiting) {
+    next = {
+      title: "Send the payment details",
+      text: "The customer has accepted. Choose advance or balance, type the amount, check the details and press Email payment details. Their page then shows “Payment details sent”.",
+      action: <JumpButton href="#payments">Go to Payments</JumpButton>,
+    };
+  } else if (waiting) {
+    next = {
+      title: `Waiting for the ${waiting.kind}: ${formatInr(Number(waiting.amount))}`,
+      text: `Payment details were emailed on ${formatDateTime(waiting.requested_at)}. When the money arrives, type the UTR (transaction reference) next to the payment and press Mark received.`,
+      action: <JumpButton href="#payments">Go to Payments</JumpButton>,
+    };
+  } else if (r.status === "advance_received") {
+    next = {
+      title: "Book the trip and send the documents",
+      text: "Upload the vouchers and tickets under Documents, then press Email: documents ready. Ask for the balance under Payments when it is due.",
+      action: <JumpButton href="#documents">Go to Documents</JumpButton>,
+    };
+  } else {
+    next = {
+      title: "Fully paid",
+      text: "Make sure every voucher and ticket is uploaded under Documents and the customer has been emailed.",
+      action: <JumpButton href="#documents">Go to Documents</JumpButton>,
+    };
+  }
+  // The panels for the current step come first.
+  const paymentsOrder = r.status === "awaiting_payment" ? "order-1" : frozen ? "order-2" : "order-3";
+  const documentsOrder = r.status === "advance_received" || r.status === "balance_received" ? "order-1" : frozen ? "order-2" : "order-4";
 
   return (
-    <div className="space-y-5">
-      {notice && <p role="status" className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">{notice}</p>}
-      {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-900">{error}</p>}
+    <div className="flex flex-col gap-5">
+      {notice && <p role="status" className="rounded-xl bg-emerald-50 p-4 text-base font-medium text-emerald-900">{notice}</p>}
+      {error && <p role="alert" className="rounded-xl bg-red-50 p-4 text-base font-medium text-red-900">{error}</p>}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-5 shadow-sm">
+      <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="font-mono text-sm text-udan-gray">{r.reference}</p>
           <p className="text-xl font-semibold">{tripSummary(r)}</p>
@@ -202,12 +277,6 @@ export default async function DeskRequest({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <DeskStatus status={r.status} acceptRequestedAt={r.accept_requested_at} acceptedAt={r.accepted_at} />
-          {r.status === "queued" && (
-            <form action={startPricing}>
-              <input type="hidden" name="id" value={id} />
-              <SubmitButton size="sm">Start pricing</SubmitButton>
-            </form>
-          )}
           {!["cancelled", "advance_received", "balance_received"].includes(r.status) && (
             <form action={cancelRequest}>
               <input type="hidden" name="id" value={id} />
@@ -217,9 +286,21 @@ export default async function DeskRequest({
         </div>
       </div>
 
-      <DeskStepTip status={r.status} />
+      {r.status !== "cancelled" && (
+        <div className="mt-6">
+          <ProgressSteps steps={DESK_STEPS} current={deskStep(r.status, hasLines)} label="Where this request is" />
+        </div>
+      )}
+      </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <section aria-labelledby="desk-next" className="rounded-2xl border-l-8 border-primary bg-orange-50 p-5 shadow-sm sm:p-6">
+        <p className="text-sm font-semibold uppercase tracking-wide text-udan-gray">Next step</p>
+        <h2 id="desk-next" className="mt-1 text-2xl font-bold text-udan-charcoal">{next.title}</h2>
+        <p className="mt-2 max-w-3xl text-lg text-udan-charcoal">{next.text}</p>
+        {next.action && <div className="mt-4">{next.action}</div>}
+      </section>
+
+      <div className="order-3 grid gap-5 lg:grid-cols-2">
         <Panel title="Customer">
           <Field label="Name">{c.name ?? "not given"}</Field>
           <Field label="Email">
@@ -291,7 +372,7 @@ export default async function DeskRequest({
         </Panel>
       </div>
 
-      <Panel title="Messages to the customer">
+      <Panel id="messages" className="order-4" title="Messages to the customer">
         {(messages ?? []).length > 0 ? (
           <ul className="mb-4 space-y-2">
             {messages!.map((m) => (
@@ -329,6 +410,7 @@ export default async function DeskRequest({
 
       <Panel
         id="lines"
+        className="order-3"
         title="Priced lines"
         aside={frozen ? <span className="text-sm text-udan-gray">Accepted {formatDateTime(r.accepted_at)}: lines are frozen</span> : null}
       >
@@ -439,7 +521,7 @@ export default async function DeskRequest({
       </Panel>
 
       {!frozen && r.status !== "cancelled" && (
-        <Panel title={r.quote_version > 0 ? "Send a revised quote" : "Send the quote"}>
+        <Panel id="send" className="order-3" title={r.quote_version > 0 ? "Send a revised quote" : "Send the quote"}>
           <form action={sendQuote} className="grid gap-4 md:grid-cols-2">
             <input type="hidden" name="id" value={id} />
             <div className="space-y-1 md:col-span-2 md:max-w-xs">
@@ -466,15 +548,10 @@ export default async function DeskRequest({
         </Panel>
       )}
 
-      {r.status === "sent" && (
-        <p className="rounded-lg bg-blue-50 p-3 text-sm text-blue-900">
-          Sent {formatDateTime(r.sent_at)} · valid until {formatDateTime(r.valid_until)} · total {formatInr(Number(r.total_sell_inr))}. Changing lines and sending again creates a revision under the same reference.
-        </p>
-      )}
-
       {frozen && (
         <Panel
           id="payments"
+          className={paymentsOrder}
           title="Payments"
           aside={
             r.status === "awaiting_payment" ? (
@@ -486,72 +563,50 @@ export default async function DeskRequest({
           }
         >
           {(payments ?? []).length > 0 && (
-            <table className="mb-4 w-full text-left text-sm">
-              <thead className="border-b text-xs uppercase text-udan-gray">
-                <tr><th className="py-2">Kind</th><th>Amount</th><th>Method</th><th>Status</th><th>Note</th><th /></tr>
-              </thead>
-              <tbody>
-                {payments!.map((p) => (
-                  <tr key={p.id} className="border-b align-top">
-                    <td className="py-2 capitalize">{p.kind}</td>
-                    <td>{formatInr(Number(p.amount))}</td>
-                    <td>{PAYMENT_METHOD_LABELS[p.method]}</td>
-                    <td>{p.status === "received" ? `Received ${formatDateTime(p.received_at)}` : `Awaiting since ${formatDateTime(p.requested_at)}`}</td>
-                    <td className="text-udan-gray">{p.note}</td>
-                    <td className="py-2">
-                      {p.status === "awaiting" && (
-                        <form action={markPaymentReceived} className="flex gap-2">
-                          <input type="hidden" name="id" value={id} />
-                          <input type="hidden" name="payment_id" value={p.id} />
-                          <Input name="note" placeholder="UTR / reference" className="h-9 w-36" />
-                          <SubmitButton size="sm">Mark received</SubmitButton>
-                        </form>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ul className="mb-5 space-y-3">
+              {payments!.map((p) => (
+                <li key={p.id} className="flex flex-col gap-3 rounded-xl border p-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <p className="text-lg font-bold">
+                      {formatInr(Number(p.amount))} <span className="font-normal capitalize text-udan-gray">· {p.kind} · {PAYMENT_METHOD_LABELS[p.method]}</span>
+                    </p>
+                    <p className={p.status === "received" ? "text-base font-medium text-emerald-700" : "text-base font-medium text-orange-700"}>
+                      {p.status === "received" ? `Received ${formatDateTime(p.received_at)}` : `Waiting since ${formatDateTime(p.requested_at)}`}
+                      {p.note ? <span className="font-normal text-udan-gray"> · {p.note}</span> : null}
+                    </p>
+                  </div>
+                  {p.status === "awaiting" && (
+                    <form action={markPaymentReceived} className="flex flex-wrap items-end gap-2">
+                      <input type="hidden" name="id" value={id} />
+                      <input type="hidden" name="payment_id" value={p.id} />
+                      <div className="space-y-1">
+                        <Label htmlFor={`note-${p.id}`}>UTR or reference</Label>
+                        <Input id={`note-${p.id}`} name="note" className="w-52" />
+                      </div>
+                      <SubmitButton pendingText="Saving…">Mark received</SubmitButton>
+                    </form>
+                  )}
+                </li>
+              ))}
+            </ul>
           )}
-          <form action={requestPayment} className="grid gap-3 rounded-lg bg-udan-lightGray p-4 md:grid-cols-4">
+          <form action={requestPayment} className="grid gap-4 rounded-xl bg-udan-lightGray p-4 sm:grid-cols-3 sm:p-5">
             <input type="hidden" name="id" value={id} />
-            <p className="text-sm font-medium md:col-span-4">Send payment details</p>
-            <div className="space-y-1">
+            <p className="text-lg font-bold text-udan-charcoal sm:col-span-3">Send payment details</p>
+            <div className="space-y-1.5">
               <Label htmlFor="kind">For</Label>
               <select id="kind" name="kind" className={select} defaultValue={(payments ?? []).some((p) => p.kind === "advance") ? "balance" : "advance"}>
                 <option value="advance">Advance</option>
                 <option value="balance">Balance</option>
               </select>
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="amount">Amount ₹</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="amount">Amount in rupees</Label>
               <Input id="amount" name="amount" inputMode="decimal" required />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="method">Method</Label>
-              <select id="method" name="method" className={select} defaultValue={payDefaults.method}>
-                <option value="bank">Bank transfer</option>
-                <option value="upi">UPI</option>
-                <option value="card_link">Card link (Razorpay dashboard)</option>
-                <option value="cash">Cash at office (no email)</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="card_link">Card link (for card)</Label>
-              <Input id="card_link" name="card_link" type="url" placeholder="https://rzp.io/…" />
-            </div>
-            <div className="space-y-1 md:col-span-4">
-              <Label htmlFor="instructions">Bank or UPI details shown to the customer</Label>
-              <Textarea
-                id="instructions"
-                name="instructions"
-                rows={4}
-                defaultValue={payDefaults.instructions}
-                placeholder={"Account name:\nBank and branch:\nAccount number:\nIFSC:"}
-              />
-            </div>
-            <div className="md:col-span-4">
-              <SubmitButton>Email payment details</SubmitButton>
+            <PaymentFields bank={serverEnv.paymentDetailsBank} upi={serverEnv.paymentDetailsUpi} />
+            <div className="sm:col-span-3">
+              <SubmitButton size="lg" pendingText="Sending…">Email payment details</SubmitButton>
             </div>
           </form>
         </Panel>
@@ -559,6 +614,7 @@ export default async function DeskRequest({
 
       <Panel
         id="documents"
+        className={documentsOrder}
         title="Documents"
         aside={
           (documents ?? []).some((d) => d.type !== "ota_screenshot") ? (
@@ -602,15 +658,12 @@ export default async function DeskRequest({
         </form>
       </Panel>
 
-      <Panel title="Activity">
-        <ul className="space-y-1 text-sm">
+      <Panel id="activity" className="order-5" title="History">
+        <ul className="divide-y text-base">
           {(activity ?? []).map((a, i) => (
-            <li key={i} className="flex gap-3">
-              <span className="w-28 shrink-0 text-udan-gray">{formatDateTime(a.at)}</span>
-              <span>
-                {a.action.replace(/_/g, " ")}
-                <span className="ml-2 font-mono text-xs text-udan-gray">{JSON.stringify(a.detail).slice(0, 160)}</span>
-              </span>
+            <li key={i} className="flex flex-col gap-0.5 py-2 sm:flex-row sm:gap-4">
+              <span className="shrink-0 text-sm text-udan-gray sm:w-36">{formatDateTime(a.at)}</span>
+              <span>{activityText(a.action, a.detail)}</span>
             </li>
           ))}
         </ul>

@@ -15,17 +15,17 @@ export default async function NewRequest({ searchParams }: { searchParams: Promi
     supabase.from("customers").select("display_currency").eq("user_id", user.id).maybeSingle(),
   ]);
   return (
-    <div className="mx-auto max-w-3xl rounded-xl bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-bold text-udan-charcoal">Get a quote</h1>
-      <p className="mb-6 mt-1 text-sm text-udan-gray">
-        Tell us what you have in mind. A member of our family prices every trip against our supplier rates, and your quote will appear in your account and your inbox.
-      </p>
-      <div className="mb-6">
-        <Tip id="new-request" title="Filling in this form">
-          <p>Fill in what you know. If you are not sure of exact dates, choose the month. Anything you cannot fit in a box can go in &ldquo;Anything else we should know&rdquo; at the end.</p>
-          <p>Nothing is booked or paid when you send this. You can change anything later by replying to our email.</p>
-        </Tip>
+    <div className="mx-auto max-w-3xl space-y-5">
+      <div>
+        <h1 className="text-3xl font-bold text-udan-charcoal">Get a quote</h1>
+        <p className="mt-2 text-lg text-udan-gray">
+          Answer a few questions. A member of our family prices every trip against our supplier rates, and your quote will appear in your account and
+          your inbox.
+        </p>
       </div>
+      <Tip id="new-request" title="Not sure about something?">
+        <p>Fill in what you know and leave the rest. You can change anything later by replying to our email.</p>
+      </Tip>
       <RequestForm
         action={submitCustomerRequest}
         mode="customer"

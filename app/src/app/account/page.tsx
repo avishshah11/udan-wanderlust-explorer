@@ -1,9 +1,11 @@
 import { formatInr, tripSummary } from "@udan/core";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { StatusBadge } from "@/components/status-badge";
 import { Tip } from "@/components/tip";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth";
+import { nextStepLine } from "@/lib/customer-next";
 import { publicEnv } from "@/lib/env";
 import { formatDate } from "@/lib/format";
 
@@ -53,31 +55,38 @@ export default async function AccountHome({ searchParams }: { searchParams: Prom
       </Tip>
 
       {(requests ?? []).length === 0 ? (
-        <div className="rounded-xl bg-white p-8 text-center shadow-sm">
-          <p className="font-medium">No quote requests yet.</p>
-          <p className="mt-1 text-sm text-udan-gray">
+        <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+          <p className="text-xl font-bold">No quote requests yet</p>
+          <p className="mx-auto mt-2 max-w-md text-base text-udan-gray">
             Tell us where you want to go and we will price it against our supplier rates. You can also{" "}
             <a className="underline" href={`${publicEnv.siteUrl}/beat-my-price`}>send us a price you have seen elsewhere</a>.
           </p>
+          <Button asChild size="lg" className="mt-5">
+            <Link href="/account/new">Get a new quote</Link>
+          </Button>
         </div>
       ) : (
         <ul className="space-y-3">
           {requests!.map((r) => (
             <li key={r.reference}>
-              <Link href={`/account/quotes/${r.reference}`} className="block rounded-xl bg-white p-5 shadow-sm transition hover:shadow-md">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="font-mono text-xs text-udan-gray">{r.reference}</p>
-                    <p className="font-semibold text-udan-charcoal">{tripSummary(r)}</p>
-                    <p className="mt-1 text-xs text-udan-gray">Requested {formatDate(r.created_at)}</p>
-                  </div>
-                  <div className="text-right">
+              <Link
+                href={`/account/quotes/${r.reference}`}
+                className="flex items-center gap-4 rounded-2xl border-2 border-transparent bg-white p-5 shadow-sm transition hover:border-primary/40 hover:shadow-md"
+              >
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                     <StatusBadge status={r.status} acceptRequestedAt={r.accept_requested_at} acceptedAt={r.accepted_at} payments={r.payments} />
                     {r.total_sell_inr != null && !["queued", "pricing", "cancelled"].includes(r.status) && (
-                      <p className="mt-2 font-semibold">{formatInr(Number(r.total_sell_inr))}</p>
+                      <span className="text-lg font-bold text-udan-charcoal">{formatInr(Number(r.total_sell_inr))}</span>
                     )}
                   </div>
+                  <p className="text-lg font-bold leading-snug text-udan-charcoal">{tripSummary(r)}</p>
+                  <p className="text-base font-medium text-primary">{nextStepLine(r)}</p>
+                  <p className="text-sm text-udan-gray">
+                    {r.reference} · requested {formatDate(r.created_at)}
+                  </p>
                 </div>
+                <ChevronRight aria-hidden className="size-7 shrink-0 text-udan-gray" />
               </Link>
             </li>
           ))}
