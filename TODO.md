@@ -14,17 +14,13 @@ what is blocked on it.
       app.udantravelsbdq.com, and the OAuth server for the Claude connector
       (dynamic client registration, consent at `/oauth/consent`). Today's ECB
       exchange rates fetched; the daily job runs at 16:30 UTC.
-- [ ] Resend as SMTP (dashboard > Authentication > SMTP), then run
-      `supabase config push` again to apply Udan's sign-in email subject and
-      design. The free plan refuses email template changes while Supabase's
-      built-in email is used, so they were left out on 20 Nov; `supabase
-      config diff` lists those two templates as the only difference. Until
-      then sign-in emails are Supabase's standard ones: they reach only
-      members of the Supabase organisation, a few an hour, and the link works
-      only in the browser that asked for it.
+- [x] Resend as SMTP (25 Nov 2026): udantravelsbdq.com verified in Resend,
+      sign-in emails in Udan's design from quotes@udantravelsbdq.com, 30 an
+      hour, pushed with `node scripts/deploy.mjs auth` (README, "Email").
 - [ ] Google sign-in, once a Google Cloud OAuth client exists (README, "App").
-- [ ] The owner signs in once on the deployed app, then becomes the first
-      staff member (README, "Database").
+- [x] First staff member: avishshah1108@gmail.com as owner, shown to
+      customers as Avish Shah (21 Nov 2026). Add udantravels.bdq@gmail.com
+      the same way once Resend sends sign-in emails (README, "Database").
 - [ ] Before real customers: move off the free plan, which pauses a project
       after about a week without use.
 
@@ -58,8 +54,10 @@ grouped with a fall-back from the month's band to the all-months band (README,
       seeded; until the owner fills the table (desk > Markup rules), the desk
       asks the pricer for a markup % on any line with no matching rule, and
       logs it as an override.
-- [ ] Mailboxes: the site uses udantravels.bdq@gmail.com; the PRD mentions
-      quotes@udantravelsbdq.com. Resend needs a verified sending domain.
+- [x] Mailboxes: emails go out from quotes@udantravelsbdq.com (verified in
+      Resend, 25 Nov 2026); replies go to `EMAIL_REPLY_TO`. Optional: forward
+      quotes@ to the Gmail inbox in Namecheap's email forwarding, and add a
+      `_dmarc` TXT record (`v=DMARC1; p=none;`) in Cloudflare.
 - [x] udantravelsbdq.com DNS moved to Cloudflare (21 Nov 2026); MX and SPF
       for Namecheap email forwarding kept; GitHub Pages still serves the apex
       through Cloudflare until the cutover.
@@ -67,11 +65,10 @@ grouped with a fall-back from the month's band to the all-months band (README,
       `node scripts/deploy.mjs`; values in the git-ignored `.env.cloudflare`).
 - [x] Custom domains attached (21 Nov 2026): app.udantravelsbdq.com and
       mcp.udantravelsbdq.com.
-- [ ] The owner signs in once at app.udantravelsbdq.com and becomes the
-      first staff member. Resend: account, sending domain verified (its DNS
-      records in Cloudflare), key and the reply-to and alert addresses in
-      `.env.cloudflare`, then deploy again. Then one real request end to end
-      before the website cutover.
+- [x] Owner on the desk (21 Nov 2026) and Resend set up, app and connector
+      redeployed with its key and addresses (25 Nov 2026).
+- [ ] One real request end to end before the website cutover: sign-in email,
+      request, staff alert, quote email with its sign-in button, accept.
 - [ ] Workers Paid (about US$5 a month) before customers rely on the app:
       rendered pages measured 30 to 60 ms of CPU per request against the free
       plan's 10 ms (README, "Cloudflare plan").

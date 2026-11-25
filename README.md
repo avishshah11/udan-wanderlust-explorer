@@ -387,24 +387,27 @@ pnpm --filter @udan/supabase exec supabase db push --remote --workdir ..
 ```
 
 Sign-in settings for the hosted project (site URL and redirect URLs, the
-sign-in email template and subjects, email confirmation and rate limit, the
-OAuth server for the Claude connector) live in the `[remotes.production]`
-block at the end of `supabase/config.toml`. Preview, then apply:
+sign-in email template and subjects, email confirmation and rate limit, SMTP
+through Resend, the OAuth server for the Claude connector) live in the
+`[remotes.production]` block at the end of `supabase/config.toml`. Preview,
+then apply:
 
 ```bash
 pnpm --filter @udan/supabase exec supabase config diff --workdir ..
 ```
 
 ```bash
-pnpm --filter @udan/supabase exec supabase config push --workdir ..
+node scripts/deploy.mjs auth
 ```
 
-On the free plan Supabase refuses email template changes while its built-in
-email is used, and refuses the whole push with them. Set up Resend as SMTP
-first ("App" below), then push. (On 20 Nov 2026 everything except the two
-email templates was pushed; `config diff` shows only those until then.) Until
-Resend is set up, Supabase's built-in email sends its standard sign-in links
-only to members of the Supabase organisation, a few an hour.
+Apply them only this way, never with a bare `supabase config push`: the SMTP
+password is the Resend API key, which the script reads from `.env.cloudflare`
+(a push without it would blank the password). On the free plan Supabase
+refuses email template changes while its built-in email is used, so the first
+push with templates needs Resend (the "Email" section below). Supabase's
+built-in email sends its standard sign-in links only to members of the
+Supabase organisation, 2 an hour, and its links work only in the browser that
+asked for them.
 
 Then add the first staff member:
 
@@ -429,15 +432,29 @@ select id, 'Owner name', email, 'owner' from auth.users where email = '<owner em
 2. Custom domain: app.udantravelsbdq.com (the `routes` entry in
    `app/wrangler.jsonc`; deploying creates its DNS record and certificate).
    Attached on 21 Nov 2026.
-3. In the Supabase dashboard: Authentication > SMTP: use Resend
-   (`smtp.resend.com`, user `resend`, password = the Resend API key), then
-   `supabase config push` ("Database" above) for Udan's sign-in email.
-   Authentication > Providers > Google: client ID and secret from a Google
+3. In the Supabase dashboard: Authentication > Providers > Google: client ID and secret from a Google
    Cloud OAuth client whose redirect URI is
    `https://xczzvcrjarigejiekqgb.supabase.co/auth/v1/callback`.
 
-Resend: verify the sending domain (add the records Resend shows in
-Cloudflare DNS) before setting `EMAIL_FROM` to an address on it.
+### Email (Resend)
+
+The app, the connector and Supabase's sign-in emails all send through Resend,
+from `quotes@udantravelsbdq.com` (`EMAIL_FROM` in `app/wrangler.jsonc` and
+`mcp/wrangler.jsonc`, `admin_email` in `supabase/config.toml`). Set up on
+25 Nov 2026. Alerts about new requests go to every active staff member with
+alerts on; `STAFF_ALERT_EMAIL` is used only when there is none.
+
+1. In Resend, add the domain udantravelsbdq.com and add the records it shows
+   in Cloudflare DNS: an MX and a TXT record on `send` and a TXT record on
+   `resend._domainkey`, plus `_dmarc` (`v=DMARC1; p=none;`). They leave the
+   domain's own MX and SPF records (Namecheap mail forwarding) alone.
+2. Create an API key with sending access to that domain and put it in
+   `.env.cloudflare` as `RESEND_API_KEY`, with `EMAIL_REPLY_TO` (where
+   customers' replies go) and `STAFF_ALERT_EMAIL` (who hears about new
+   requests).
+3. Once Resend shows the domain as verified: `node scripts/deploy.mjs auth`
+   (Supabase's sign-in emails), then `node scripts/deploy.mjs app` and
+   `node scripts/deploy.mjs connector` (their emails).
 
 To run the app on Cloudflare's runtime locally, against the local Supabase
 stack: copy `app/.dev.vars.example` to `app/.dev.vars` and fill it in, then
@@ -455,8 +472,8 @@ after the response, invisible sign-in).
 ### Claude connector (`udan-mcp`)
 
 1. The Supabase OAuth server (enabled, dynamic client registration,
-   authorization path `/oauth/consent`) is set by `supabase config push`
-   ("Database" above).
+   authorization path `/oauth/consent`) is set by
+   `node scripts/deploy.mjs auth` ("Database" above).
 2. Deploy: `node scripts/deploy.mjs connector`. It passes the Supabase URL
    and publishable key from `.env.cloudflare` and uploads `RESEND_API_KEY` and
    `STAFF_ALERT_EMAIL` as secrets. First deployed on 21 Nov 2026 to

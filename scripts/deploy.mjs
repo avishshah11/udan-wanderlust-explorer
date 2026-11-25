@@ -4,6 +4,7 @@
 //   node scripts/deploy.mjs connector
 //   node scripts/deploy.mjs app
 //   node scripts/deploy.mjs website
+//   node scripts/deploy.mjs auth       (hosted Supabase sign-in settings)
 //
 // Values come from the git-ignored .env.cloudflare and are never printed.
 // Each tool gets only the values it needs. The app is built with the .env
@@ -21,7 +22,7 @@ import { parseEnv } from "node:util";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const APP_URL = "https://app.udantravelsbdq.com";
 const SITE_URL = "https://udantravelsbdq.com";
-const TARGETS = ["connector", "app", "website"];
+const TARGETS = ["connector", "app", "website", "auth"];
 
 class DeployError extends Error {}
 const fail = (message) => {
@@ -105,6 +106,15 @@ function main(target, values) {
     });
     pnpm(["--filter", "@udan/web", "verify"]);
     pnpm(["--filter", "@udan/web", "exec", "wrangler", "deploy"], { env: cloudflare });
+  }
+
+  if (target === "auth") {
+    // The [remotes.production] block of supabase/config.toml. Its SMTP
+    // password is the Resend API key; a push without it would blank it, so
+    // hosted settings are pushed only from here.
+    pnpm(["--filter", "@udan/supabase", "exec", "supabase", "config", "push", "--yes", "--workdir", ".."], {
+      env: { RESEND_API_KEY: need("RESEND_API_KEY") },
+    });
   }
 
   console.log(`deploy: ${target} done`);
