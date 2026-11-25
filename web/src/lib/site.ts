@@ -15,6 +15,8 @@ export const SITE = {
     { label: "Office", display: "0265 400 8999", tel: "+912654008999" },
   ],
   whatsapp: "https://wa.me/919376214442",
+  /** Udan's own social profiles: linked in the footer and listed as sameAs for search engines. */
+  social: [{ label: "Instagram", handle: "@udantoursandtravels", url: "https://www.instagram.com/udantoursandtravels/" }],
   address: {
     lines: [
       "714, Yashkamal Building, above Havmor Restaurant",
@@ -116,6 +118,7 @@ export function travelAgencyJsonLd() {
       closes: h.closes,
     })),
     contactPoint: SITE.phones.map((p) => ({ "@type": "ContactPoint", telephone: p.tel, contactType: "customer service", areaServed: "Worldwide" })),
+    sameAs: SITE.social.map((s) => s.url),
   };
 }
 

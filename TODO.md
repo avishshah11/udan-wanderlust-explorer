@@ -34,20 +34,20 @@ The portal keeps work organised; clients come from search and social media.
 The owner's message, now on the website: nearly 30 years in travel (since
 1997) and prices lower than you imagined, with the quality you deserve.
 
-- [ ] Launch the new website at udantravelsbdq.com (README, "Website
-      cutover"). The old single-page site gives search engines almost
-      nothing to index; the new one has a real page per destination, Google
-      business data and a sitemap. Needs the owner's go-ahead and two
-      Cloudflare dashboard steps (delete the GitHub Pages A records, add the
-      www redirect), or a token with DNS edit.
+- [x] New website live at udantravelsbdq.com (26 Nov 2026, README,
+      "Website cutover"): every route, the old SPA URLs, sitemap, robots,
+      404, www redirect and the email DNS records checked. Left: "Always Use
+      HTTPS" in Cloudflare, then GitHub Pages off and the legacy site deleted
+      after a few stable days.
 - [ ] Google Business Profile: claim and verify the "Udan Tours And Travels"
       listing, add the website, hours and photos, and ask happy past clients
       for reviews (the main lever for "travel agent in Vadodara").
 - [ ] Google Search Console: verify the domain (a TXT record in Cloudflare)
       and submit https://udantravelsbdq.com/sitemap-index.xml; then Bing
       Webmaster Tools (import from Search Console).
-- [ ] Social profiles (Instagram, Facebook, YouTube): the owner sends the
-      links; they go in the footer and the structured data (`sameAs`).
+- [x] Instagram @udantoursandtravels in the footer, on Contact and in the
+      structured data (`sameAs`), 26 Nov 2026. Add Facebook, YouTube and
+      others to `SITE.social` in `web/src/lib/site.ts` when they exist.
 - [ ] More destination pages for what people search ("Dubai tour package
       from Vadodara"): the owner picks the top destinations; pages are
       drafted for review (best months, sample itinerary, what is included).
