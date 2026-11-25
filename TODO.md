@@ -28,6 +28,32 @@ what is blocked on it.
 - [ ] Before real customers: move off the free plan, which pauses a project
       after about a week without use.
 
+## Getting clients (the owner's priority, 26 Nov 2026)
+
+The portal keeps work organised; clients come from search and social media.
+The owner's message, now on the website: nearly 30 years in travel (since
+1997) and prices lower than you imagined, with the quality you deserve.
+
+- [x] New website live at udantravelsbdq.com (26 Nov 2026, README,
+      "Website cutover"): every route, the old SPA URLs, sitemap, robots,
+      404, www redirect and the email DNS records checked; "Always Use HTTPS"
+      on, so http redirects to https. Left: GitHub Pages off and the legacy
+      site deleted after a few stable days.
+- [ ] Google Business Profile: claim and verify the "Udan Tours And Travels"
+      listing, add the website, hours and photos, and ask happy past clients
+      for reviews (the main lever for "travel agent in Vadodara").
+- [ ] Google Search Console: verify the domain (a TXT record in Cloudflare)
+      and submit https://udantravelsbdq.com/sitemap-index.xml; then Bing
+      Webmaster Tools (import from Search Console).
+- [x] Instagram @udantoursandtravels in the footer, on Contact and in the
+      structured data (`sameAs`), 26 Nov 2026. Add Facebook, YouTube and
+      others to `SITE.social` in `web/src/lib/site.ts` when they exist.
+- [ ] More destination pages for what people search ("Dubai tour package
+      from Vadodara"): the owner picks the top destinations; pages are
+      drafted for review (best months, sample itinerary, what is included).
+- [ ] Know which channel brings each client: links in posts carry
+      `utm_source`, and the quote form records it on the request.
+
 ## Rate card (built 20 Nov 2026)
 
 Built to the owner's decisions: per adult on twin sharing, land only, nights

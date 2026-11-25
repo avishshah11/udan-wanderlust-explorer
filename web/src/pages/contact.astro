@@ -28,6 +28,14 @@ import { SITE } from "../lib/site";
           <dt class="text-lg font-semibold text-udan-charcoal">WhatsApp</dt>
           <dd class="text-udan-gray">If you prefer WhatsApp, <a class="text-udan-orange underline" href={SITE.whatsapp}>message us on +91 93762 14442</a>.</dd>
         </div>
+        {SITE.social.map((s) => (
+          <div>
+            <dt class="text-lg font-semibold text-udan-charcoal">{s.label}</dt>
+            <dd class="text-udan-gray">
+              Trips, offers and travellers' photos: <a class="text-udan-orange underline" href={s.url} rel="me noopener" target="_blank">{s.handle}</a>
+            </dd>
+          </div>
+        ))}
         <div>
           <dt class="text-lg font-semibold text-udan-charcoal">Email</dt>
           <dd><a class="text-udan-orange underline" href={`mailto:${SITE.email}`}>{SITE.email}</a></dd>

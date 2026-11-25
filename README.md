@@ -506,6 +506,13 @@ then commit the updated `docs/` and push to `main`. The build also writes
 
 ### Website cutover (after the app is live; needs the owner's go-ahead)
 
+Done on 26 Nov 2026: udantravelsbdq.com serves the `udan-website` Worker
+(steps 1 to 4 below; the owner deleted the four GitHub Pages A records, and
+www already redirected to the apex). Cloudflare's "Always Use HTTPS" is on
+(set the same day; GitHub Pages used to redirect http to https), so every
+http address on the zone redirects with a 301. Left: step 6 after a few
+stable days.
+
 The new website's quote form posts to the app, so the app goes live first.
 
 1. Deploy: `node scripts/deploy.mjs website`. It builds, runs the page rules

@@ -11,8 +11,8 @@
     "html_handling": "drop-trailing-slash",
     // Unknown paths get dist/404.html with status 404.
     "not_found_handling": "404-page"
-  }
-  // Production, at the cutover only (README, "Website cutover"): needs the
-  // udantravelsbdq.com zone on Cloudflare, and replaces GitHub Pages there.
-  // "routes": [{ "pattern": "udantravelsbdq.com", "custom_domain": true }]
+  },
+  // Production since the cutover on 26 Nov 2026 (README, "Website cutover"):
+  // the apex serves this Worker instead of GitHub Pages.
+  "routes": [{ "pattern": "udantravelsbdq.com", "custom_domain": true }]
 }

@@ -61,10 +61,12 @@ export default {
 				},
         // Custom colors
         udan: {
-          orange: '#FF8551',
+          // Deeper than the original #FF8551 so white button text and orange
+          // headings are readable (5.2:1 on white), as in the app.
+          orange: '#C2410C',
           blue: '#4475F2',
           charcoal: '#2D2D2D',
-          gray: '#7A7A7A',
+          gray: '#595959',
           lightGray: '#F5F5F5'
         }
 			},

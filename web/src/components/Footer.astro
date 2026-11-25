@@ -25,6 +25,8 @@ const year = new Date().getFullYear();
         <ul class="space-y-2 text-sm text-gray-300">
           {SITE.phones.map((p) => <li>{p.label}: <a class="hover:text-udan-orange" href={`tel:${p.tel}`}>{p.display}</a></li>)}
           <li>Email: <a class="hover:text-udan-orange" href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+          <li>WhatsApp: <a class="hover:text-udan-orange" href={SITE.whatsapp}>{SITE.phones[0].display}</a></li>
+          {SITE.social.map((s) => <li>{s.label}: <a class="hover:text-udan-orange" href={s.url} rel="me noopener" target="_blank">{s.handle}</a></li>)}
         </ul>
       </div>
       <div class="space-y-3">
