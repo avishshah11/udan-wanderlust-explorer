@@ -3,7 +3,7 @@ import { getCollection } from "astro:content";
 import DestinationCarousel from "../components/DestinationCarousel";
 import Base from "../layouts/Base.astro";
 import { cardPrice, loadRateCard } from "../lib/rate-card";
-import { SITE, yearsInBusiness } from "../lib/site";
+import { PROMISE, SITE, experienceText } from "../lib/site";
 
 const rateCard = await loadRateCard();
 const destinations = (await getCollection("destinations"))
@@ -25,7 +25,7 @@ const steps = [
 ];
 
 const trust = [
-  [`${yearsInBusiness()} years in Vadodara`, "Established 1997, with an office in Sayajiganj you can walk into and a landline you can call."],
+  [`${experienceText().replace(/^n/, "N")} in Vadodara`, "Established 1997, with an office in Sayajiganj you can walk into and a landline you can call."],
   ["Nothing to pay up front", "You get a written quote first. We send payment details only after you accept it."],
   ["Every payment on record", "Each payment we ask for shows in your Udan account. If it is not there, it is not from us."],
 ];
@@ -41,23 +41,25 @@ const services = [
 ---
 
 <Base
-  title="Holiday packages, hotels and flights from Vadodara"
-  description="Udan Tours and Travels, a family travel agency in Vadodara established 1997. Tell us your trip and we price it against our supplier rates; your quote arrives in your inbox."
+  title="Holiday packages, hotels and flights since 1997"
+  description={`Travel agency in Vadodara since 1997. Holiday packages, hotels, flights and visas: ${PROMISE.short.toLowerCase()} Free quotes.`}
 >
   <section class="pb-16 pt-12 md:pb-24 md:pt-20">
     <div class="container mx-auto grid items-center gap-12 px-4 md:px-6 lg:grid-cols-2">
       <div class="space-y-6">
-        <p class="text-sm font-semibold uppercase tracking-wide text-udan-orange">{SITE.foundedText} · Vadodara</p>
+        <p class="text-sm font-semibold uppercase tracking-wide text-udan-orange">Since 1997 · {experienceText()} in travel · Vadodara</p>
         <h1 class="text-4xl font-bold leading-tight text-udan-charcoal md:text-5xl lg:text-6xl">
-          Your trip, priced by our family at <span class="text-udan-orange">agent rates</span>
+          {PROMISE.headline} <span class="text-udan-orange">{PROMISE.accent}</span>
         </h1>
         <p class="max-w-lg text-lg text-udan-gray md:text-xl">
-          Tell us where you want to go. We check our supplier rates for your dates and send a firm quote to your inbox. Seen a lower price online? Send it and we will try to beat it.
+          For {experienceText()}, our family has built agent rates with hotels, airlines and suppliers in India and abroad. Tell us your trip and we price
+          it at those rates. Seen a lower price online? Send it and we will try to beat it.
         </p>
         <div class="flex flex-col gap-3 sm:flex-row">
-          <a href="/quote" class="btn-primary px-8 py-3 text-lg">Get a quote</a>
+          <a href="/quote" class="btn-primary px-8 py-3 text-lg">Get my free quote</a>
           <a href="/beat-my-price" class="btn-outline px-8 py-3 text-lg">Beat my price</a>
         </div>
+        <p class="text-sm text-udan-gray">Free quote, nothing to pay until you accept it. Or call <a class="font-semibold text-udan-charcoal underline" href={`tel:${SITE.phones[0].tel}`}>{SITE.phones[0].display}</a>.</p>
       </div>
       <div class="relative grid grid-cols-2 gap-4">
         <div class="flex flex-col gap-4">
@@ -71,7 +73,7 @@ const services = [
 
   <section class="bg-udan-lightGray py-8">
     <ul class="container mx-auto grid gap-6 px-4 text-center sm:grid-cols-2 md:px-6 lg:grid-cols-4">
-      <li><p class="text-2xl font-bold text-udan-charcoal">1997</p><p class="text-sm text-udan-gray">Established in Vadodara</p></li>
+      <li><p class="text-2xl font-bold text-udan-charcoal">Since 1997</p><p class="text-sm text-udan-gray">{experienceText().replace(/^n/, "N")} in travel</p></li>
       <li><p class="text-2xl font-bold text-udan-charcoal">{SITE.travellers}</p><p class="text-sm text-udan-gray">Travellers</p></li>
       <li><p class="text-2xl font-bold text-udan-charcoal">Sayajiganj</p><p class="text-sm text-udan-gray">Our office, opposite M.S. University</p></li>
       <li><p class="text-2xl font-bold text-udan-charcoal">India and abroad</p><p class="text-sm text-udan-gray">Domestic and international trips</p></li>

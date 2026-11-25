@@ -46,6 +46,24 @@ export function yearsInBusiness(now = new Date()): number {
 }
 
 /**
+ * Our experience in words: "nearly 30 years" in the two years before a round
+ * number (2025 and 2026), otherwise the exact count ("30 years" in 2027,
+ * "31 years" in 2028). The build check allows only this and the exact count.
+ */
+export function experienceText(now = new Date()): string {
+  const years = yearsInBusiness(now);
+  const round = Math.ceil(years / 10) * 10;
+  return round > years && round - years <= 2 ? `nearly ${round} years` : `${years} years`;
+}
+
+/** The owner's promise to new clients (November 2026). */
+export const PROMISE = {
+  headline: "Prices lower than you imagined.",
+  accent: "Quality you deserve.",
+  short: "Prices lower than you imagined, with the quality you deserve.",
+} as const;
+
+/**
  * Registrations and memberships shown on /trust, exactly as printed on the
  * certificate, e.g. { label: "GSTIN", value: "…" }. Only the owner can supply
  * these; the section stays hidden while the list is empty.

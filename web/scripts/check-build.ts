@@ -7,7 +7,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { findTurnaroundLanguage } from "@udan/core/copy-guard";
-import { CF_WEB_ANALYTICS, yearsInBusiness } from "../src/lib/site";
+import { CF_WEB_ANALYTICS, experienceText, yearsInBusiness } from "../src/lib/site";
 import { canonical, h1Text, meta, title, visibleText } from "./html";
 
 const DIST = new URL("../dist", import.meta.url).pathname;
@@ -21,8 +21,13 @@ function htmlFiles(dir: string): string[] {
 }
 
 const FOUNDING_CONFLICTS = /\b(?:\d{2}\+?\s*years|three decades|two decades|since (?:19(?:[0-8]\d|9[0-68])|20\d\d)|established (?:in )?(?:19(?:[0-8]\d|9[0-68])|20\d\d))\b/gi;
-// The one years claim allowed: the exact count since 1997 ("29 years" in 2026).
+// The years claims allowed: the exact count since 1997 ("29 years" in 2026),
+// and experienceText() when it rounds up ("nearly 30 years" in 2026).
 const YEARS_CLAIM = `${yearsInBusiness()} years`;
+const ROUND_CLAIM = experienceText().startsWith("nearly ") ? experienceText().slice("nearly ".length) : null;
+const allowedYears = (text: string, m: RegExpMatchArray) =>
+  m[0].toLowerCase() === YEARS_CLAIM ||
+  (ROUND_CLAIM !== null && m[0].toLowerCase() === ROUND_CLAIM && text.slice(Math.max(0, (m.index ?? 0) - 7), m.index).toLowerCase() === "nearly ");
 const PLACEHOLDER_PRICE = /starting from\s*(?:₹|rs\.?|inr)/i;
 
 const files = htmlFiles(DIST);
@@ -49,7 +54,7 @@ for (const file of files) {
   if (!html.includes('"@type":"TravelAgency"')) fail("missing schema.org TravelAgency structured data");
   if ((html.match(/<h1[\s>]/gi) ?? []).length !== 1 || !h1Text(html)) fail("needs exactly one <h1> with text");
   if (!/href="\/quote"|href="\/quote\?/.test(html)) fail("no Get a quote link");
-  const founding = [...text.matchAll(FOUNDING_CONFLICTS)].find((m) => m[0].toLowerCase() !== YEARS_CLAIM);
+  const founding = [...text.matchAll(FOUNDING_CONFLICTS)].find((m) => !allowedYears(text, m));
   if (founding) fail(`conflicting founding claim "${founding[0]}" (use: established 1997)`);
   const price = PLACEHOLDER_PRICE.exec(text);
   if (price) fail(`placeholder price "${price[0]}"`);

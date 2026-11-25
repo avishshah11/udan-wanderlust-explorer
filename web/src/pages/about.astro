@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
-import { SITE } from "../lib/site";
+import { PROMISE, SITE, experienceText } from "../lib/site";
 ---
 
 <Base title="About us" description="Udan Tours and Travels is a family travel agency in Sayajiganj, Vadodara, established 1997, arranging holidays, hotels, flights and visas for 10,000+ travellers.">
@@ -10,7 +10,10 @@ import { SITE } from "../lib/site";
         <h1 class="mb-6 text-3xl font-bold text-udan-charcoal md:text-4xl">About Udan</h1>
         <div class="space-y-4 text-udan-gray">
           <p>
-            Established in 1997, Udan is a family travel agency in Vadodara. From flights to hotels, tours to transfers, visas to travel insurance, we arrange the whole trip.
+            Established in 1997, Udan is a family travel agency in Vadodara: {experienceText()} of arranging the whole trip, from flights to hotels, tours to transfers, visas to travel insurance.
+          </p>
+          <p class="text-lg font-semibold text-udan-charcoal">
+            Our promise: {PROMISE.short.charAt(0).toLowerCase() + PROMISE.short.slice(1)}
           </p>
           <p>
             Our way of working is simple: you tell us what you want, and a member of our family prices it against the agent rates we have built up with hotels, airlines and ground handlers over the years. You get one firm quote with everything it includes, and one team looking after you until you are home.

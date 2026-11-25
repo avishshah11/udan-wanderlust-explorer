@@ -18,7 +18,8 @@ interface Props {
 const { title, description, noindex = false, ogImage = SITE.ogImage, ogType = "website", jsonLd = [] } = Astro.props;
 const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/index$/, "/");
 const canonical = new URL(path === "" ? "/" : path, SITE.url).href;
-const fullTitle = path === "/" ? `${SITE.name}, Vadodara · ${SITE.foundedText}` : `${title} | ${SITE.name}`;
+// The home page title carries what people search for: travel agency, Vadodara, since 1997.
+const fullTitle = path === "/" ? `${SITE.name} · Travel agency in Vadodara since 1997` : `${title} | ${SITE.name}`;
 const structured = [travelAgencyJsonLd(), ...jsonLd];
 ---
 
