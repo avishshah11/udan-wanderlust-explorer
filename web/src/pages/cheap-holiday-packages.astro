@@ -1,0 +1,138 @@
+---
+// For people anywhere asking for a cheap or low-price holiday: why the same
+// trip costs less with Udan (the owner's words: direct, no middlemen), the
+// honest limit of that promise, and how to get the lowest price. No prices
+// are invented here: ranges appear on destination pages only from the rate
+// card. No timing promises (rule 1).
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { PROMISE, SITE, experienceText, monthRange } from "../lib/site";
+
+const destinations = (await getCollection("destinations")).sort((a, b) => a.data.order - b.data.order);
+
+const savings: [string, string][] = [
+  ["Direct with hotels and airlines", "We book straight with hotels, airlines and ground handlers. No reseller or booking site in between takes a share."],
+  ["The whole trip priced together", "Hotels, transfers, tours and flights are priced as one trip, line by line, at our agent rates."],
+  [`Relationships built over ${experienceText()}`, "Since 1997 we have worked with the same suppliers, and they give us rates the big travel websites do not show."],
+];
+
+const tips: [string, string][] = [
+  ["Travel in the right month", "Each destination has months when it is cheaper and still pleasant. The best months are on every destination page below."],
+  ["Move your dates by a few days", "Tell us if your dates are flexible. Leaving on a different day can change hotel and flight prices."],
+  ["Tell us your budget", "Give us a range and we price the best hotels and tours that fit it."],
+  ["Choose where to spend", "A better room on the beach, a simpler one in the city: tell us what matters most."],
+  ["Book it as one package", "Hotels, transfers and tours priced together usually cost less than booking each one separately."],
+  ["Send us the price you found", "A screenshot from any travel website is enough. We price the same trip and show you both."],
+];
+
+const faqs: [string, string][] = [
+  [
+    "Where can I find the cheapest holiday package?",
+    `Compare the same trip in more than one place. ${PROMISE.direct} Send Udan the price you found on any travel website and we price the same trip; if we ever cannot beat it, we tell you honestly.`,
+  ],
+  [
+    "Is a travel agent cheaper than MakeMyTrip, Expedia or Booking.com?",
+    "Often, especially for holiday packages with several hotels, transfers and sightseeing. Booking sites show public prices; Udan deals directly with hotels, airlines and suppliers, with no middlemen, at agent rates those sites do not show. Compare like with like: the same dates, hotel, room, meals and transfers.",
+  ],
+  [
+    "Can I book a cheap holiday with Udan if I live outside India?",
+    "Yes. Travellers in the USA, the UK, the UAE, Canada, Australia and anywhere else can ask for a free quote online, by WhatsApp or through Claude. Your account shows prices in US dollars, pounds, euros or dirhams next to rupees (approximate), and travellers outside India pay by a card payment link.",
+  ],
+];
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+  },
+];
+---
+
+<Base
+  title="Cheap holiday packages, direct with no middlemen"
+  description="Low-price holiday packages to Bali, the Maldives, Kerala, Goa, Rajasthan, Ladakh and more, from a Vadodara travel agency that deals directly with hotels and airlines. For travellers in India and worldwide."
+  jsonLd={jsonLd}
+>
+  <section class="bg-udan-orange/5 py-12 md:py-16">
+    <div class="container mx-auto max-w-4xl px-4 md:px-6">
+      <p class="text-sm font-semibold uppercase tracking-wide text-udan-orange">Since 1997 · {experienceText()} in travel</p>
+      <h1 class="mt-2 text-3xl font-bold text-udan-charcoal md:text-5xl">Cheap holiday packages, without the middlemen</h1>
+      <p class="mt-5 max-w-3xl text-lg text-udan-gray md:text-xl">{PROMISE.direct} {PROMISE.compare}</p>
+      <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+        <a href="/quote" class="btn-primary px-8 py-3 text-lg">Get my free quote</a>
+        <a href="/beat-my-price" class="btn-outline px-8 py-3 text-lg">Send me the price you found</a>
+      </div>
+      <p class="mt-3 text-sm text-udan-gray">Free quote, nothing to pay until you accept it.</p>
+    </div>
+  </section>
+
+  <section class="py-12 md:py-16">
+    <div class="container mx-auto max-w-4xl px-4 md:px-6">
+      <h2 class="text-2xl font-bold text-udan-charcoal md:text-3xl">Where the savings come from</h2>
+      <ul class="mt-6 grid gap-5 md:grid-cols-3">
+        {
+          savings.map(([title, text]) => (
+            <li class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+              <h3 class="text-lg font-semibold text-udan-charcoal">{title}</h3>
+              <p class="mt-2 text-udan-gray">{text}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <h2 class="mt-14 text-2xl font-bold text-udan-charcoal md:text-3xl">Popular destinations, and the best months to go</h2>
+      <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+        {
+          destinations.map((d) => (
+            <li>
+              <a href={`/destinations/${d.id}`} class="block rounded-xl bg-white p-5 shadow-sm ring-1 ring-black/5 hover:ring-udan-orange">
+                <p class="text-lg font-semibold text-udan-charcoal">{d.data.name} holiday packages</p>
+                <p class="mt-1 text-udan-gray">Best months: {monthRange(d.data.bestMonths)}</p>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="mt-4 text-udan-gray">
+        Going somewhere else? <a class="font-semibold text-udan-orange underline" href="/quote">Ask for a quote</a> for any destination in India or abroad.
+      </p>
+
+      <h2 class="mt-14 text-2xl font-bold text-udan-charcoal md:text-3xl">Six ways to get the lowest price</h2>
+      <ol class="mt-6 grid gap-4 md:grid-cols-2">
+        {
+          tips.map(([title, text], i) => (
+            <li class="flex gap-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-udan-orange font-bold text-white">{i + 1}</span>
+              <div>
+                <p class="text-lg font-semibold text-udan-charcoal">{title}</p>
+                <p class="mt-1 text-udan-gray">{text}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <h2 class="mt-14 text-2xl font-bold text-udan-charcoal md:text-3xl">Questions travellers ask</h2>
+      <div class="mt-6 space-y-6">
+        {
+          faqs.map(([q, a]) => (
+            <div>
+              <h3 class="text-lg font-semibold text-udan-charcoal">{q}</h3>
+              <p class="mt-1 text-lg text-udan-gray">{a}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-14 rounded-2xl bg-udan-orange/5 p-6 md:p-8">
+        <h2 class="text-2xl font-bold text-udan-charcoal">Tell us your trip</h2>
+        <p class="mt-2 text-lg text-udan-gray">Where, when, how many of you, and a budget if you have one. Or send the price you found.</p>
+        <div class="mt-5 flex flex-col gap-3 sm:flex-row">
+          <a href="/quote" class="btn-primary px-8 py-3 text-lg">Get my free quote</a>
+          <a href={SITE.whatsapp} class="btn-outline px-8 py-3 text-lg">WhatsApp us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

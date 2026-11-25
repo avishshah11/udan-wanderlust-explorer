@@ -1,14 +1,15 @@
 ---
 import QuoteForm from "../components/QuoteForm.astro";
 import Base from "../layouts/Base.astro";
+import { PROMISE } from "../lib/site";
 ---
 
-<Base title="Beat my price" description="Found a hotel, flight or holiday price on a booking site? Send Udan Tours and Travels the screenshot. We price the same trip at our agent rates and tell you if we can beat it.">
+<Base title="Beat my price: the same trip for less" description="Found a hotel, flight or holiday price on MakeMyTrip, Booking.com, Expedia or any travel website? Send it to Udan. We deal directly, with no middlemen, and give you the same thing for less.">
   <section class="bg-udan-orange/5 py-12 md:py-16">
     <div class="container mx-auto max-w-4xl px-4 md:px-6">
-      <h1 class="text-3xl font-bold text-udan-charcoal md:text-4xl">Beat my price</h1>
+      <h1 class="text-3xl font-bold text-udan-charcoal md:text-4xl">Found it cheaper online? We give you the same for less</h1>
       <p class="mt-4 max-w-2xl text-lg text-udan-gray">
-        Found a hotel, flight or package on a booking site? Send us the price. We have been buying from hotels and suppliers at agent rates since 1997, so for many trips we can offer the same thing for less.
+        {PROMISE.direct} Send us the price you found, on MakeMyTrip, Booking.com, Expedia or any travel website, and we price the same trip. If we ever cannot beat it, we tell you honestly.
       </p>
       <ol class="mt-8 grid gap-4 md:grid-cols-3">
         <li class="rounded-xl bg-white p-5 shadow-sm"><p class="font-semibold text-udan-charcoal">1. Send the price</p><p class="mt-1 text-sm text-udan-gray">A screenshot, or the site, the hotel or package, the room and the price.</p></li>

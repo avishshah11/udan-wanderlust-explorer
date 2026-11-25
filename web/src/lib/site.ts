@@ -63,6 +63,10 @@ export const PROMISE = {
   headline: "Prices lower than you imagined.",
   accent: "Quality you deserve.",
   short: "Prices lower than you imagined, with the quality you deserve.",
+  /** Why: the owner's words (26 Nov 2026). */
+  direct: "We deal directly with hotels, airlines and suppliers, with no middlemen, so the same trip costs you less than on other travel websites.",
+  /** The promise and its honest limit, together wherever the promise is made. */
+  compare: "Seen a price on another travel website? Send it to us: we give you the same thing for less, and if we ever cannot, we tell you honestly.",
 } as const;
 
 /**
@@ -119,6 +123,9 @@ export function travelAgencyJsonLd() {
     })),
     contactPoint: SITE.phones.map((p) => ({ "@type": "ContactPoint", telephone: p.tel, contactType: "customer service", areaServed: "Worldwide" })),
     sameAs: SITE.social.map((s) => s.url),
+    slogan: PROMISE.short,
+    description: `Family-run travel agency in Vadodara, India, since 1997. ${PROMISE.direct} Holiday packages, hotels, flights and visas for travellers in India and worldwide.`,
+    areaServed: "Worldwide",
   };
 }
 
