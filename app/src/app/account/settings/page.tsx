@@ -4,55 +4,17 @@ import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
 import { ShowTipsAgain, Tip } from "@/components/tip";
 import { requireUser } from "@/lib/auth";
+import { COUNTRIES, TIME_ZONES, withSaved } from "@/lib/places";
 import { saveSettings } from "./actions";
 
 export const metadata = { title: "Settings" };
 
 const select = "h-11 w-full rounded-md border border-udan-charcoal/30 bg-white px-3 text-base";
 
-// Plain names instead of codes. A value saved earlier that is not listed
-// stays selectable, so saving never changes it by accident.
-const COUNTRIES: [string, string][] = [
-  ["IN", "India"],
-  ["AE", "United Arab Emirates"],
-  ["GB", "United Kingdom"],
-  ["US", "United States"],
-  ["CA", "Canada"],
-  ["AU", "Australia"],
-  ["NZ", "New Zealand"],
-  ["SG", "Singapore"],
-  ["SA", "Saudi Arabia"],
-  ["QA", "Qatar"],
-  ["OM", "Oman"],
-  ["KW", "Kuwait"],
-  ["BH", "Bahrain"],
-  ["KE", "Kenya"],
-];
-const TIME_ZONES: [string, string][] = [
-  ["Asia/Kolkata", "India"],
-  ["Asia/Dubai", "UAE and Oman"],
-  ["Asia/Riyadh", "Saudi Arabia, Qatar, Kuwait and Bahrain"],
-  ["Europe/London", "United Kingdom"],
-  ["Europe/Paris", "Central Europe"],
-  ["America/New_York", "US and Canada, Eastern"],
-  ["America/Chicago", "US and Canada, Central"],
-  ["America/Denver", "US and Canada, Mountain"],
-  ["America/Los_Angeles", "US and Canada, Pacific"],
-  ["Asia/Singapore", "Singapore"],
-  ["Australia/Sydney", "Australia, Sydney and Melbourne"],
-  ["Australia/Perth", "Australia, Perth"],
-  ["Pacific/Auckland", "New Zealand"],
-  ["Africa/Nairobi", "East Africa"],
-];
-
-function withSaved(options: [string, string][], saved: string | null | undefined): [string, string][] {
-  return saved && !options.some(([value]) => value === saved) ? [...options, [saved, saved]] : options;
-}
-
 const ERRORS: Record<string, string> = {
   currency: "Please choose one of the listed currencies.",
-  country: "Country should be a two-letter code, such as IN, AE or GB.",
-  timezone: "That time zone wasn't recognised. Use a name like Asia/Kolkata or Europe/London.",
+  country: "Please choose your country from the list.",
+  timezone: "Please choose your time zone from the list.",
   save: "Your settings could not be saved. Please try again.",
 };
 
