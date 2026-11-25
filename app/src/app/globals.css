@@ -8,19 +8,20 @@
     --foreground: 0 0% 18%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 18%;
-    --primary: 18 100% 66%;
+    /* Darker than the brand orange so white button text stays readable (5.3:1). */
+    --primary: 17 88% 40%;
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 18%;
     --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 40%;
+    --muted-foreground: 0 0% 32%;
     --accent: 0 0% 96%;
     --accent-foreground: 0 0% 18%;
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 90%;
     --input: 0 0% 85%;
-    --ring: 18 100% 66%;
+    --ring: 217 69% 51%;
     --radius: 0.5rem;
   }
 }
@@ -29,7 +30,18 @@
   * {
     @apply border-border;
   }
+  /* Customers range from 20 to 80: an 18px base, so every rem-based size
+     (text, buttons, fields, spacing) grows with it. */
+  html {
+    font-size: 112.5%;
+  }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased leading-relaxed;
+  }
+  /* A clear keyboard focus ring everywhere, not only on form controls. */
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    @apply rounded-sm outline-none ring-2 ring-ring ring-offset-2;
   }
 }

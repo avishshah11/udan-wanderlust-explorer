@@ -24,7 +24,7 @@ export interface RequestFormState {
   errors?: string[];
 }
 
-const select = "h-10 w-full rounded-md border border-input bg-white px-3 text-sm";
+const select = "h-11 w-full rounded-md border border-udan-charcoal/30 bg-white px-3 text-base";
 
 const TYPE_HINTS: Record<RequestType, string> = {
   package: "Hotels, transfers and sightseeing, with flights if you want them",
@@ -37,7 +37,7 @@ function F({ id, label, children, hint }: { id: string; label: string; children:
     <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-sm text-muted-foreground">{hint}</p>}
     </div>
   );
 }
@@ -91,7 +91,7 @@ function PackageFields({ destinations, defaultCurrency }: { destinations: string
   return (
     <>
       <fieldset className="grid gap-4 md:grid-cols-3">
-        <legend className="mb-2 text-sm font-semibold">Trip</legend>
+        <legend className="mb-2 text-lg font-semibold">Trip</legend>
         <F id="destination" label="Where to">
           <Input id="destination" name="destination" list="destination-list" required placeholder="Bali, Kerala, Dubai…" />
           <datalist id="destination-list">{destinations.map((d) => <option key={d} value={d} />)}</datalist>
@@ -107,11 +107,11 @@ function PackageFields({ destinations, defaultCurrency }: { destinations: string
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 text-sm font-semibold">What should we include?</legend>
+        <legend className="mb-2 text-lg font-semibold">What should we include?</legend>
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           {INCLUSIONS.map((i) => (
-            <label key={i} className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="inclusions_wanted" value={i} defaultChecked={i === "hotel" || i === "transfers"} />
+            <label key={i} className="flex items-center gap-3 text-base">
+              <input type="checkbox" className="size-5" name="inclusions_wanted" value={i} defaultChecked={i === "hotel" || i === "transfers"} />
               {INCLUSION_LABELS[i]}
             </label>
           ))}
@@ -129,17 +129,17 @@ function FlightFields({ defaultCurrency }: { defaultCurrency: string }) {
   const [tripWay, setTripWay] = useState<"return" | "one_way">("return");
   return (
     <fieldset className="grid gap-4 md:grid-cols-3">
-      <legend className="mb-2 text-sm font-semibold">Flights</legend>
+      <legend className="mb-2 text-lg font-semibold">Flights</legend>
       <F id="origin_city" label="Flying from"><Input id="origin_city" name="origin_city" required minLength={2} placeholder="Vadodara, Ahmedabad, Mumbai…" /></F>
       <F id="destination" label="Flying to"><Input id="destination" name="destination" required minLength={2} placeholder="Dubai, London, Bali…" /></F>
       <fieldset className="space-y-1.5">
-        <legend className="text-sm font-medium">Trip</legend>
-        <div className="flex h-10 items-center gap-5 text-sm">
-          <label className="flex items-center gap-2">
-            <input type="radio" name="trip_way" value="return" checked={tripWay === "return"} onChange={() => setTripWay("return")} /> Return
+        <legend className="text-base font-semibold">Trip</legend>
+        <div className="flex h-11 items-center gap-6 text-base">
+          <label className="flex items-center gap-3 text-base">
+            <input type="radio" className="size-5" name="trip_way" value="return" checked={tripWay === "return"} onChange={() => setTripWay("return")} /> Return
           </label>
-          <label className="flex items-center gap-2">
-            <input type="radio" name="trip_way" value="one_way" checked={tripWay === "one_way"} onChange={() => setTripWay("one_way")} /> One way
+          <label className="flex items-center gap-3 text-base">
+            <input type="radio" className="size-5" name="trip_way" value="one_way" checked={tripWay === "one_way"} onChange={() => setTripWay("one_way")} /> One way
           </label>
         </div>
       </fieldset>
@@ -164,7 +164,7 @@ function FlightFields({ defaultCurrency }: { defaultCurrency: string }) {
 function HotelFields({ destinations, defaultCurrency }: { destinations: string[]; defaultCurrency: string }) {
   return (
     <fieldset className="grid gap-4 md:grid-cols-3">
-      <legend className="mb-2 text-sm font-semibold">Hotel</legend>
+      <legend className="mb-2 text-lg font-semibold">Hotel</legend>
       <F id="destination" label="City or area">
         <Input id="destination" name="destination" list="destination-list" required minLength={2} placeholder="Goa, Munnar, Dubai Marina…" />
         <datalist id="destination-list">{destinations.map((d) => <option key={d} value={d} />)}</datalist>
@@ -204,7 +204,7 @@ export function RequestForm({
   return (
     <form action={formAction} className="space-y-6">
       {state.errors && state.errors.length > 0 && (
-        <div role="alert" className="rounded-lg bg-red-50 p-4 text-sm text-red-900">
+        <div role="alert" className="rounded-lg bg-red-50 p-4 text-base text-red-900">
           <p className="font-medium">Please check these and try again:</p>
           <ul className="mt-1 list-disc pl-5">
             {state.errors.map((e) => <li key={e}>{e}</li>)}
@@ -214,7 +214,7 @@ export function RequestForm({
 
       {mode === "staff" ? (
         <fieldset className="grid gap-4 md:grid-cols-3">
-          <legend className="mb-2 text-sm font-semibold">Customer</legend>
+          <legend className="mb-2 text-lg font-semibold">Customer</legend>
           <F id="email" label="Email (their account identity)"><Input id="email" name="email" type="email" required /></F>
           <F id="name" label="Name"><Input id="name" name="name" /></F>
           <F id="phone" label="Phone (optional)"><Input id="phone" name="phone" type="tel" /></F>
@@ -226,8 +226,8 @@ export function RequestForm({
               <option value="email">Email</option>
             </select>
           </F>
-          <label className="flex items-center gap-2 text-sm md:col-span-3">
-            <input type="checkbox" name="send_confirmation" defaultChecked /> Email them a confirmation with the reference
+          <label className="flex items-center gap-3 text-base md:col-span-3">
+            <input type="checkbox" className="size-5" name="send_confirmation" defaultChecked /> Email them a confirmation with the reference
           </label>
         </fieldset>
       ) : (
@@ -235,7 +235,7 @@ export function RequestForm({
       )}
 
       <fieldset>
-        <legend className="mb-2 text-sm font-semibold">{mode === "staff" ? "Type of request" : "What do you need a quote for?"}</legend>
+        <legend className="mb-2 text-lg font-semibold">{mode === "staff" ? "Type of request" : "What do you need a quote for?"}</legend>
         <input type="hidden" name="request_type" value={type} />
         <div className="grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label="Quote type">
           {REQUEST_TYPES.map((t) => (
@@ -249,8 +249,8 @@ export function RequestForm({
                 type === t ? "border-udan-blue bg-udan-blue/5 ring-1 ring-udan-blue" : "border-input bg-white hover:border-udan-blue/50"
               }`}
             >
-              <span className="block text-sm font-semibold text-udan-charcoal">{REQUEST_TYPE_LABELS[t]}</span>
-              <span className="block text-xs text-muted-foreground">{TYPE_HINTS[t]}</span>
+              <span className="block text-base font-semibold text-udan-charcoal">{REQUEST_TYPE_LABELS[t]}</span>
+              <span className="block text-sm text-muted-foreground">{TYPE_HINTS[t]}</span>
             </button>
           ))}
         </div>
@@ -261,7 +261,7 @@ export function RequestForm({
       {type === "hotels" && <HotelFields destinations={destinations} defaultCurrency={defaultCurrency} />}
 
       <fieldset className="grid gap-4 rounded-lg border border-dashed p-4 md:grid-cols-5">
-        <legend className="px-1 text-sm font-semibold">Seen a price elsewhere? (optional)</legend>
+        <legend className="px-1 text-base font-semibold">Seen a price elsewhere? (optional)</legend>
         <F id="ota_name" label="Website"><Input id="ota_name" name="ota_name" placeholder="e.g. MakeMyTrip" /></F>
         <F id="ota_product" label={type === "flights" ? "Airline or flight" : type === "hotels" ? "Hotel" : "Hotel or package"}>
           <Input id="ota_product" name="ota_product" />

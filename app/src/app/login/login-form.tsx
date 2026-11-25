@@ -11,8 +11,8 @@ export function LoginForm({ next, defaultEmail }: { next: string; defaultEmail?:
 
   if (state.sentTo) {
     return (
-      <div role="status" className="rounded-lg bg-emerald-50 p-4 text-sm text-emerald-900">
-        <p className="font-semibold">Check your inbox</p>
+      <div role="status" className="rounded-lg bg-emerald-50 p-4 text-base text-emerald-900">
+        <p className="text-lg font-semibold">Check your inbox</p>
         <p className="mt-1">
           We have sent a sign-in link to <strong>{state.sentTo}</strong>. Open it on this device or any other to see
           your quotes. If it isn&apos;t there, look in your spam folder.
@@ -29,11 +29,11 @@ export function LoginForm({ next, defaultEmail }: { next: string; defaultEmail?:
         <Input id="email" name="email" type="email" autoComplete="email" required defaultValue={defaultEmail} />
       </div>
       {state.error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-base font-medium text-destructive">
           {state.error}
         </p>
       )}
-      <SubmitButton className="w-full" pendingText="Sending…">
+      <SubmitButton size="lg" className="w-full" pendingText="Sending…">
         Email me a sign-in link
       </SubmitButton>
     </form>

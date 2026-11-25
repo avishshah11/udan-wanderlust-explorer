@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { assertNoTurnaroundLanguage, findTurnaroundLanguage } from "./copy-guard";
 import { normalizeReference } from "./reference";
-import { CUSTOMER_STATUS, RECHECK_STATUS, customerStatus } from "./status";
+import { CUSTOMER_STATUS, RECHECK_STATUS, customerStatus, paymentDetailsSentStatus } from "./status";
 
 describe("no turnaround language (rule 1)", () => {
   it.each([
@@ -32,7 +32,11 @@ describe("no turnaround language (rule 1)", () => {
   });
 
   it("every customer status string is clean", () => {
-    for (const [status, copy] of Object.entries({ ...CUSTOMER_STATUS, recheck: RECHECK_STATUS })) {
+    const sent = {
+      advance_sent: paymentDetailsSentStatus({ kind: "advance", amount: 25000, status: "awaiting" }),
+      balance_sent: paymentDetailsSentStatus({ kind: "balance", amount: 75000, status: "awaiting" }),
+    };
+    for (const [status, copy] of Object.entries({ ...CUSTOMER_STATUS, recheck: RECHECK_STATUS, ...sent })) {
       assertNoTurnaroundLanguage(`${copy.label} ${copy.detail}`, `status ${status}`);
     }
   });
@@ -43,6 +47,27 @@ describe("customer status", () => {
     expect(customerStatus({ status: "pricing", acceptRequestedAt: "2026-11-18T10:00:00Z" })).toBe(RECHECK_STATUS);
     expect(customerStatus({ status: "pricing" }).label).toBe("Being priced");
     expect(customerStatus({ status: "awaiting_payment" }).label).toBe("Accepted, awaiting payment");
+  });
+
+  it("names the payment once its details are emailed", () => {
+    const advance = { kind: "advance", amount: "25000.00", status: "awaiting" } as const;
+    const sent = customerStatus({ status: "awaiting_payment", payments: [advance] });
+    expect(sent.label).toBe("Payment details sent");
+    expect(sent.detail).toContain("₹25,000");
+    expect(sent.detail).not.toContain("on their way");
+    // A received payment does not count as waiting.
+    expect(customerStatus({ status: "awaiting_payment", payments: [{ ...advance, status: "received" }] }).label).toBe("Accepted, awaiting payment");
+  });
+
+  it("names the balance after the advance has arrived", () => {
+    const payments = [
+      { kind: "advance", amount: 25000, status: "received" },
+      { kind: "balance", amount: 75000, status: "awaiting" },
+    ] as const;
+    const status = customerStatus({ status: "advance_received", payments });
+    expect(status.label).toBe("Balance details sent");
+    expect(status.detail).toContain("₹75,000");
+    expect(customerStatus({ status: "advance_received", payments: [payments[0]] }).label).toBe("Advance received");
   });
 });
 

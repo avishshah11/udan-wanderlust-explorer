@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Money } from "@/components/money";
 import { StatusBadge } from "@/components/status-badge";
 import { SubmitButton } from "@/components/submit-button";
+import { Tip } from "@/components/tip";
 import { requireUser } from "@/lib/auth";
 import type { CustomerQuote } from "@/lib/customer-quote";
 import { formatDate } from "@/lib/format";
@@ -14,6 +15,61 @@ import { acceptQuote } from "./actions";
 export const metadata = { title: "Your quote" };
 
 const landline = OFFICE.phones.find((p) => p.label === "Office")!;
+
+/** What to do next, for someone using this page for the first time. */
+function NextStepTip({ q }: { q: CustomerQuote }) {
+  const waitingPayment = q.payments.some((p) => p.status === "awaiting");
+  if (q.status === "queued" || q.status === "pricing") {
+    return (
+      <Tip id="quote-waiting" title="What happens now">
+        <p>Nothing to do for now. We are pricing your trip, and your quote will appear on this page and in your email inbox.</p>
+      </Tip>
+    );
+  }
+  if (q.status === "sent") {
+    return (
+      <Tip id="quote-review" title="How to accept your quote">
+        <p>
+          Read the list of items, the total, and what is and is not included. If it all looks right, press <strong>Accept this quote</strong> at the
+          bottom. Accepting takes no money on this website.
+        </p>
+        <p>Want something changed? Reply to the quote email and tell us.</p>
+      </Tip>
+    );
+  }
+  if (waitingPayment) {
+    return (
+      <Tip id="quote-pay" title="How to pay">
+        <p>
+          Pay the amount listed under <strong>Payments</strong> below, using the details in our payment email. After paying, reply to that email with
+          your transaction reference (UTR) or a screenshot so we can match your payment. This page will then show it as received.
+        </p>
+      </Tip>
+    );
+  }
+  if (q.status === "awaiting_payment") {
+    return (
+      <Tip id="quote-accepted" title="What happens now">
+        <p>Look out for an email from Udan Tours and Travels telling you how to pay. Pay only the amount it shows, which will also be listed on this page.</p>
+      </Tip>
+    );
+  }
+  if (q.status === "advance_received") {
+    return (
+      <Tip id="quote-booking" title="What happens now">
+        <p>We are making your bookings. Your vouchers and tickets will appear under Travel documents on this page, and we will email you when they are ready.</p>
+      </Tip>
+    );
+  }
+  if (q.status === "balance_received") {
+    return (
+      <Tip id="quote-documents" title="Before you travel">
+        <p>Open each travel document below and keep a copy on your phone. A printed copy is handy at airports and hotels.</p>
+      </Tip>
+    );
+  }
+  return null;
+}
 
 const NOTICES: Record<string, string> = {
   received: "Thank you. We have your request and it is now with our pricing desk.",
@@ -44,7 +100,7 @@ export default async function QuotePage({
   if (!q) notFound();
 
   const currency = customer?.display_currency ?? q.preferred_currency ?? "INR";
-  const status = customerStatus({ status: q.status, acceptRequestedAt: q.accept_requested_at, acceptedAt: q.accepted_at });
+  const status = customerStatus({ status: q.status, acceptRequestedAt: q.accept_requested_at, acceptedAt: q.accepted_at, payments: q.payments });
   const canAccept = q.status === "sent" && !q.is_expired;
   const expired = q.status === "sent" && q.is_expired;
   const travelDocs = q.documents.filter((d) => d.type !== "ota_screenshot");
@@ -58,19 +114,19 @@ export default async function QuotePage({
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
-      <Link href="/account" className="text-sm text-udan-gray hover:text-udan-orange">← All my quotes</Link>
-      {notice && NOTICES[notice] && <p role="status" className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">{NOTICES[notice]}</p>}
-      {error && ERRORS[error] && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-900">{ERRORS[error]}</p>}
+      <Link href="/account" className="inline-block text-base font-medium text-udan-blue underline underline-offset-4 hover:text-udan-orange">← All my quotes</Link>
+      {notice && NOTICES[notice] && <p role="status" className="rounded-lg bg-emerald-50 p-4 text-base text-emerald-900">{NOTICES[notice]}</p>}
+      {error && ERRORS[error] && <p role="alert" className="rounded-lg bg-red-50 p-4 text-base text-red-900">{ERRORS[error]}</p>}
 
       <section className="rounded-xl bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="font-mono text-xs text-udan-gray">{q.reference}</p>
-            <h1 className="text-xl font-bold text-udan-charcoal">{tripSummary(q)}</h1>
+            <h1 className="text-2xl font-bold text-udan-charcoal">{tripSummary(q)}</h1>
           </div>
-          <StatusBadge status={q.status} acceptRequestedAt={q.accept_requested_at} acceptedAt={q.accepted_at} className="text-sm" />
+          <StatusBadge status={q.status} acceptRequestedAt={q.accept_requested_at} acceptedAt={q.accepted_at} payments={q.payments} />
         </div>
-        <p className="mt-4 rounded-lg bg-udan-lightGray p-4 text-sm">
+        <p className="mt-4 rounded-lg bg-udan-lightGray p-4 text-base">
           <strong>{status.label}.</strong> {status.detail}
         </p>
         {typical && (
@@ -83,6 +139,8 @@ export default async function QuotePage({
           </div>
         )}
       </section>
+
+      <NextStepTip q={q} />
 
       {q.messages.length > 0 && (
         <section className="rounded-xl bg-white p-6 shadow-sm">
@@ -165,13 +223,17 @@ export default async function QuotePage({
       {q.payments.length > 0 && (
         <section className="rounded-xl bg-white p-6 shadow-sm">
           <h2 className="mb-3 text-lg font-semibold">Payments</h2>
-          <ul className="space-y-2 text-sm">
+          <ul className="space-y-2 text-base">
             {q.payments.map((p, i) => (
               <li key={i} className="flex flex-wrap justify-between gap-2 border-b pb-2 last:border-0">
                 <span className="capitalize">{p.kind} · {PAYMENT_METHOD_LABELS[p.method]}</span>
                 <span>
                   {formatInr(Number(p.amount))} ·{" "}
-                  {p.status === "received" ? <span className="text-emerald-700">received {formatDate(p.received_at)}</span> : <span className="text-orange-700">awaiting payment</span>}
+                  {p.status === "received" ? (
+                    <span className="font-medium text-emerald-700">received {formatDate(p.received_at)}</span>
+                  ) : (
+                    <span className="font-medium text-orange-700">details emailed {formatDate(p.requested_at)}, waiting for your payment</span>
+                  )}
                 </span>
               </li>
             ))}

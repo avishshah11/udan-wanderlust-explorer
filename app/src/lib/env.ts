@@ -19,6 +19,10 @@ export const publicEnv = {
   get siteUrl() {
     return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://udantravelsbdq.com").replace(/\/$/, "");
   },
+  /** "Continue with Google" shows only once Google sign-in is set up in Supabase. */
+  get googleSignIn() {
+    return process.env.NEXT_PUBLIC_GOOGLE_SIGN_IN === "on";
+  },
 };
 
 export const serverEnv = {

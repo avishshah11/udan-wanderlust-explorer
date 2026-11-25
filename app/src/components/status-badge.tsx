@@ -1,4 +1,4 @@
-import { type RequestStatus, customerStatus } from "@udan/core";
+import { type PaymentAsked, type RequestStatus, customerStatus } from "@udan/core";
 import { cn } from "@/lib/utils";
 
 const tone: Record<RequestStatus, string> = {
@@ -15,11 +15,12 @@ export function StatusBadge(props: {
   status: RequestStatus;
   acceptRequestedAt?: string | null;
   acceptedAt?: string | null;
+  payments?: readonly PaymentAsked[];
   className?: string;
 }) {
   const { label } = customerStatus(props);
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium", tone[props.status], props.className)}>
+    <span className={cn("inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold", tone[props.status], props.className)}>
       {label}
     </span>
   );

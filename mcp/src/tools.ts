@@ -7,6 +7,8 @@ import {
   type CabinClass,
   type FxRate,
   type HotelTier,
+  type PaymentKind,
+  type PaymentStatus,
   REFERENCE_HELP,
   type RequestStatus,
   type RequestType,
@@ -68,7 +70,7 @@ export interface CustomerQuoteData {
   inclusions: string | null;
   exclusions: string | null;
   lines: { type: string; description: string; price_inr: number }[];
-  payments: { kind: string; amount: number; status: string }[];
+  payments: { kind: PaymentKind; amount: number; status: PaymentStatus }[];
   /** Messages from Udan's desk, oldest first. */
   messages?: { body: string; sent_at: string; from: string }[];
 }
@@ -497,7 +499,7 @@ export async function getQuote(ctx: ToolContext, args: Input<typeof referenceInp
   const q = await ctx.user.data.quote(ref);
   if (!q) return toolError(`There is no quote ${ref} in the account signed in as ${ctx.user.email}. Check the reference in the confirmation email, or sign in with the email used for the request.`);
 
-  const status = customerStatus({ status: q.status, acceptRequestedAt: q.accept_requested_at, acceptedAt: q.accepted_at });
+  const status = customerStatus({ status: q.status, acceptRequestedAt: q.accept_requested_at, acceptedAt: q.accepted_at, payments: q.payments });
   const rates = await ctx.publicData.rates();
   const display = q.total_inr != null ? displayPrice(Number(q.total_inr), q.preferred_currency, rates) : null;
   const totalDisplay = display ? (display.approxLabel ? `${display.inr} (${display.approxLabel})` : display.inr) : null;

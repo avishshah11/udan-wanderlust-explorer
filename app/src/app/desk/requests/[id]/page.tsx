@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SubmitButton } from "@/components/submit-button";
+import { Tip } from "@/components/tip";
 import { requireStaff } from "@/lib/auth";
 import { serverEnv } from "@/lib/env";
 import { ageText, defaultValidUntilInput, formatDateTime, localTimeIn } from "@/lib/format";
@@ -42,11 +43,11 @@ import {
 
 export const metadata = { title: "Request" };
 
-const select = "h-10 w-full rounded-md border border-input bg-white px-3 text-sm";
+const select = "h-11 w-full rounded-md border border-udan-charcoal/30 bg-white px-3 text-base";
 
-function Panel({ title, children, aside }: { title: string; children: React.ReactNode; aside?: React.ReactNode }) {
+function Panel({ title, children, aside, id }: { title: string; children: React.ReactNode; aside?: React.ReactNode; id?: string }) {
   return (
-    <section className="rounded-xl bg-white p-5 shadow-sm">
+    <section id={id} className="scroll-mt-4 rounded-xl bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-udan-charcoal">{title}</h2>
         {aside}
@@ -70,6 +71,65 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
  * environment (bank first), pre-filled with those details, so a UPI ID is
  * never sent under "Bank transfer".
  */
+/** The next step on this request, for someone new to the desk. */
+function DeskStepTip({ status }: { status: string }) {
+  switch (status) {
+    case "queued":
+      return (
+        <Tip id="desk-step-queued" title="Step 1: start pricing">
+          <p>
+            Press <strong>Start pricing</strong> at the top. The customer&apos;s page then shows &ldquo;Being priced&rdquo;. Next, add each item under{" "}
+            <a className="font-semibold underline" href="#lines">Priced lines</a>.
+          </p>
+        </Tip>
+      );
+    case "pricing":
+      return (
+        <Tip id="desk-step-pricing" title="Step 2: price it and send the quote">
+          <p>
+            Under <a className="font-semibold underline" href="#lines">Priced lines</a>, add each item (hotel, transfers, sightseeing and so on) with the supplier&apos;s net cost. The margin from
+            Markup rules is added for you; where no rule fits, type a markup %. Customers only ever see selling prices.
+          </p>
+          <p>
+            When the lines are right, press <strong>Send quote</strong>: the customer gets an email, and the quote appears on their page.
+          </p>
+        </Tip>
+      );
+    case "sent":
+      return (
+        <Tip id="desk-step-sent" title="Step 3: waiting for the customer">
+          <p>
+            The quote is with the customer. When they accept, you get an email and the request moves to <strong>Payments and documents</strong>. To change
+            the quote before then, edit the lines and send it again; it keeps the same reference.
+          </p>
+        </Tip>
+      );
+    case "awaiting_payment":
+      return (
+        <Tip id="desk-step-payment" title="Step 4: send the payment details">
+          <p>
+            Under <a className="font-semibold underline" href="#payments">Payments</a>: choose Advance or Balance, type the amount in rupees, check the payment details, then press{" "}
+            <strong>Email payment details</strong>. The customer&apos;s page changes to &ldquo;Payment details sent&rdquo;.
+          </p>
+          <p>
+            When the money arrives, type the UTR (transaction reference) next to that payment and press <strong>Mark received</strong>.
+          </p>
+        </Tip>
+      );
+    case "advance_received":
+      return (
+        <Tip id="desk-step-documents" title="Step 5: book and send documents">
+          <p>
+            Make the bookings, then upload vouchers and tickets under <a className="font-semibold underline" href="#documents">Documents</a> and press <strong>Email: documents ready</strong>. Ask for
+            the balance under Payments when it is due.
+          </p>
+        </Tip>
+      );
+    default:
+      return null;
+  }
+}
+
 function paymentDefaults(bank: string | undefined, upi: string | undefined) {
   if (!bank && upi) return { method: "upi", instructions: upi };
   return { method: "bank", instructions: bank ?? "" };
@@ -156,6 +216,8 @@ export default async function DeskRequest({
           )}
         </div>
       </div>
+
+      <DeskStepTip status={r.status} />
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Panel title="Customer">
@@ -266,6 +328,7 @@ export default async function DeskRequest({
       </Panel>
 
       <Panel
+        id="lines"
         title="Priced lines"
         aside={frozen ? <span className="text-sm text-udan-gray">Accepted {formatDateTime(r.accepted_at)}: lines are frozen</span> : null}
       >
@@ -411,6 +474,7 @@ export default async function DeskRequest({
 
       {frozen && (
         <Panel
+          id="payments"
           title="Payments"
           aside={
             r.status === "awaiting_payment" ? (
@@ -494,6 +558,7 @@ export default async function DeskRequest({
       )}
 
       <Panel
+        id="documents"
         title="Documents"
         aside={
           (documents ?? []).some((d) => d.type !== "ota_screenshot") ? (

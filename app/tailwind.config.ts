@@ -23,14 +23,18 @@ export default {
         card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
         udan: {
           orange: "#FF8551",
-          blue: "#4475F2",
+          // Darker than the website's blue and gray so links and secondary
+          // text pass WCAG AA contrast on white and light gray.
+          blue: "#2E5BD8",
           charcoal: "#2D2D2D",
-          gray: "#7A7A7A",
+          gray: "#595959",
           lightGray: "#F5F5F5",
         },
       },
       borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },
       fontFamily: { sans: ["var(--font-inter)", "Inter", "sans-serif"] },
+      // The smallest text is never below about 16px (with the 18px base).
+      fontSize: { xs: ["0.875rem", { lineHeight: "1.4rem" }] },
     },
   },
   plugins: [tailwindcssAnimate],

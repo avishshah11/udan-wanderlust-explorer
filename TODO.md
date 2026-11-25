@@ -18,6 +18,9 @@ what is blocked on it.
       sign-in emails in Udan's design from quotes@udantravelsbdq.com, 30 an
       hour, pushed with `node scripts/deploy.mjs auth` (README, "Email").
 - [ ] Google sign-in, once a Google Cloud OAuth client exists (README, "App").
+      The "Continue with Google" button stays hidden until then; to show it,
+      build the app with `NEXT_PUBLIC_GOOGLE_SIGN_IN=on` (add it to the app
+      build in `scripts/deploy.mjs`).
 - [x] Staff: two owners. avishshah1108@gmail.com (shown to customers as
       Avish Shah, alerts off) since 21 Nov 2026, and udantravels.bdq@gmail.com
       (shown as Udan Tours and Travels) since 26 Nov 2026. Others sign in

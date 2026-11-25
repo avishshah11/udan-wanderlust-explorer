@@ -5,9 +5,10 @@ import { SubmitButton } from "@/components/submit-button";
 import { formatDateTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { saveRule } from "./actions";
+import { Tip } from "@/components/tip";
 
 export const metadata = { title: "Markup rules" };
-const select = "h-10 w-full rounded-md border border-input bg-white px-3 text-sm";
+const select = "h-11 w-full rounded-md border border-udan-charcoal/30 bg-white px-3 text-base";
 
 export default async function MarkupRules({ searchParams }: { searchParams: Promise<{ notice?: string; error?: string }> }) {
   const { notice, error } = await searchParams;
@@ -22,6 +23,12 @@ export default async function MarkupRules({ searchParams }: { searchParams: Prom
     <section className="space-y-5 rounded-xl bg-white p-5 shadow-sm">
       {notice && <p role="status" className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">{notice}</p>}
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-900">{error}</p>}
+      <Tip id="desk-markup" title="What markup rules do">
+        <p>
+          A rule sets your margin % for a destination group and a type of item, for example 12% on hotels in Southeast Asia. When you add a line to a
+          quote, the matching rule is applied for you. With no rules, the desk asks you for a % on each line.
+        </p>
+      </Tip>
       <div>
         <h2 className="text-lg font-semibold">Markup rules</h2>
         <p className="text-sm text-udan-gray">
