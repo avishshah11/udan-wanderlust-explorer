@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { findTurnaroundLanguage } from "../copy-guard";
 import { type DisplayPrice, displayPrice } from "../currency";
 import { SIGN_IN_LINK_NOTE, escapeHtml, withNote } from "./layout";
-import { notifyCustomer, sendEmail } from "./send";
+import { alertRecipients, notifyCustomer, sendEmail } from "./send";
 import {
   deskMessageEmail,
   documentsReadyEmail,
@@ -172,5 +172,20 @@ describe("sign-in link note", () => {
   it("says how long the link lasts without promising a turnaround", () => {
     expect(SIGN_IN_LINK_NOTE).toContain("valid for 7 days");
     expect(findTurnaroundLanguage(SIGN_IN_LINK_NOTE)).toEqual([]);
+  });
+});
+
+describe("alertRecipients", () => {
+  it("always includes the business inbox, then staff with alerts on, each once", () => {
+    expect(alertRecipients("desk@udan.test", ["Owner@Udan.test", "desk@udan.test"])).toEqual(["desk@udan.test", "owner@udan.test"]);
+  });
+
+  it("splits a comma-separated inbox setting and drops blanks", () => {
+    expect(alertRecipients(" a@udan.test, ,b@udan.test ")).toEqual(["a@udan.test", "b@udan.test"]);
+  });
+
+  it("falls back to staff alone, or nobody, when no inbox is set", () => {
+    expect(alertRecipients(undefined, ["owner@udan.test"])).toEqual(["owner@udan.test"]);
+    expect(alertRecipients("", [])).toEqual([]);
   });
 });

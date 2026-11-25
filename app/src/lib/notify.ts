@@ -1,5 +1,5 @@
 import "server-only";
-import { type DeliveryResult, type EmailConfig, type RenderedEmail, SIGN_IN_LINK_NOTE, notifyCustomer, sendEmail, withNote } from "@udan/core";
+import { type DeliveryResult, type EmailConfig, type RenderedEmail, SIGN_IN_LINK_NOTE, alertRecipients, notifyCustomer, sendEmail, withNote } from "@udan/core";
 import { publicEnv, serverEnv } from "@/lib/env";
 import { createServiceClient } from "@/lib/supabase/server";
 
@@ -65,12 +65,11 @@ export async function notifyCustomerById(
   await logDelivery(requestId, kind, results);
 }
 
-/** Email every active staff member who receives alerts (or STAFF_ALERT_EMAIL). */
+/** Email the business inbox (STAFF_ALERT_EMAIL) and every active staff member who receives alerts. */
 export async function alertStaff(requestId: string | null, kind: string, email: RenderedEmail) {
   const service = createServiceClient();
   const { data } = await service.from("staff").select("email").eq("active", true).eq("receives_alerts", true);
-  const to = (data ?? []).map((s) => s.email);
-  if (to.length === 0 && serverEnv.staffAlertEmail) to.push(serverEnv.staffAlertEmail);
+  const to = alertRecipients(serverEnv.staffAlertEmail, (data ?? []).map((s) => s.email));
   if (to.length === 0) return;
   const result = await sendEmail(emailConfig(), to, email);
   await logDelivery(requestId, kind, [result]);

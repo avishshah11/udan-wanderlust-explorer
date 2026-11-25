@@ -22,5 +22,5 @@
     "EMAIL_FROM": "Udan Tours and Travels <quotes@udantravelsbdq.com>",
     "AUTH_MODE": "protected_tools"
   }
-  // Secrets (wrangler secret put): RESEND_API_KEY, STAFF_ALERT_EMAIL
+  // Secrets (wrangler secret put): RESEND_API_KEY, STAFF_ALERT_EMAIL, EMAIL_REPLY_TO
 }

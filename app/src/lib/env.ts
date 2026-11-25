@@ -34,7 +34,7 @@ export const serverEnv = {
   get emailReplyTo() {
     return process.env.EMAIL_REPLY_TO || undefined;
   },
-  /** Fallback alert address when no staff member has receives_alerts set. */
+  /** The business inbox that gets every desk alert (comma-separated for more than one). */
   get staffAlertEmail() {
     return process.env.STAFF_ALERT_EMAIL || undefined;
   },

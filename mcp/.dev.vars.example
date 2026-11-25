@@ -6,4 +6,5 @@ MCP_URL=http://localhost:8787/mcp
 APP_URL=http://localhost:3000
 DOCS_URL=http://localhost:4321/connector
 STAFF_ALERT_EMAIL=desk@udan.test
+EMAIL_REPLY_TO=desk@udan.test
 # RESEND_API_KEY=   # without it, emails are printed to the log
