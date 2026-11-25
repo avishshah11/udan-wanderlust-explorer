@@ -79,7 +79,7 @@ function main(target, values) {
       ["--filter", "@udan/mcp", "exec", "wrangler", "deploy", "--var", `SUPABASE_URL:${supabaseUrl}`, "--var", `SUPABASE_PUBLISHABLE_KEY:${publishableKey}`],
       { env: cloudflare },
     );
-    putSecrets("mcp", ["RESEND_API_KEY", "STAFF_ALERT_EMAIL"]);
+    putSecrets("mcp", ["RESEND_API_KEY", "STAFF_ALERT_EMAIL", "EMAIL_REPLY_TO"]);
   }
 
   if (target === "app") {

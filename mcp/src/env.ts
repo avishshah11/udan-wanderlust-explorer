@@ -8,6 +8,8 @@ export interface Env {
   EMAIL_FROM: string;
   /** Comma-separated desk addresses for new-request and accepted alerts. */
   STAFF_ALERT_EMAIL?: string;
+  /** Where customers' replies to the connector's emails go (the Udan inbox). */
+  EMAIL_REPLY_TO?: string;
   RESEND_API_KEY?: string;
   /**
    * "protected_tools" (default): no sign-in for the two read-only price tools;

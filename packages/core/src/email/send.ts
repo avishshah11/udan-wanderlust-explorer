@@ -19,6 +19,16 @@ export interface EmailConfig {
   fetch?: typeof fetch;
 }
 
+/**
+ * Who gets a desk alert: the business inbox (STAFF_ALERT_EMAIL, comma-separated
+ * for more than one) always, plus every staff member with alerts on, each
+ * address once.
+ */
+export function alertRecipients(inbox: string | undefined, staffEmails: readonly string[] = []): string[] {
+  const all = [...(inbox ?? "").split(","), ...staffEmails].map((s) => s.trim().toLowerCase()).filter(Boolean);
+  return [...new Set(all)];
+}
+
 export async function sendEmail(
   config: EmailConfig,
   to: string | readonly string[],

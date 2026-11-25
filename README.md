@@ -293,7 +293,7 @@ secrets as Worker secrets; plain settings are in each `wrangler.jsonc`
 | `PUBLIC_APP_URL`, `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `web/` build | public; set by `scripts/deploy.mjs` from `.env.cloudflare` |
 | `QUOTE_FORM_ORIGINS` | `app/` | origins allowed to post the Get a quote form |
 | `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO` | `app/` | without a key, emails are logged, not sent |
-| `STAFF_ALERT_EMAIL` | `app/` | fallback when no staff member has alerts on |
+| `STAFF_ALERT_EMAIL` | `app/`, `mcp/` | the business inbox: every desk alert, plus staff with alerts on |
 | `PAYMENT_DETAILS_BANK`, `PAYMENT_DETAILS_UPI` | `app/` | optional prefill for the desk's payment-details email; the owner supplies these |
 
 ## Deploying
@@ -442,7 +442,8 @@ The app, the connector and Supabase's sign-in emails all send through Resend,
 from `quotes@udantravelsbdq.com` (`EMAIL_FROM` in `app/wrangler.jsonc` and
 `mcp/wrangler.jsonc`, `admin_email` in `supabase/config.toml`). Set up on
 25 Nov 2026. Alerts about new requests go to every active staff member with
-alerts on; `STAFF_ALERT_EMAIL` is used only when there is none.
+alerts on, plus the business inbox in `STAFF_ALERT_EMAIL`, which always gets
+them (app and connector). Customers' replies go to `EMAIL_REPLY_TO`.
 
 1. In Resend, add the domain udantravelsbdq.com and add the records it shows
    in Cloudflare DNS: an MX and a TXT record on `send` and a TXT record on
@@ -475,8 +476,8 @@ after the response, invisible sign-in).
    authorization path `/oauth/consent`) is set by
    `node scripts/deploy.mjs auth` ("Database" above).
 2. Deploy: `node scripts/deploy.mjs connector`. It passes the Supabase URL
-   and publishable key from `.env.cloudflare` and uploads `RESEND_API_KEY` and
-   `STAFF_ALERT_EMAIL` as secrets. First deployed on 21 Nov 2026 to
+   and publishable key from `.env.cloudflare` and uploads `RESEND_API_KEY`,
+   `STAFF_ALERT_EMAIL` and `EMAIL_REPLY_TO` as secrets. First deployed on 21 Nov 2026 to
    https://udan-mcp.avishshah1108.workers.dev: five tools listed, the public
    price tool answers from the hosted database, account tools need sign-in.
 3. Custom domain: mcp.udantravelsbdq.com (the `routes` entry in

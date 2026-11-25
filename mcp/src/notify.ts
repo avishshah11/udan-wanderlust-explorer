@@ -1,11 +1,11 @@
-import { type EmailConfig, type FxRate, displayPrice, formatInr, quoteAcceptedEmail, requestReceivedEmail, sendEmail, staffAlertEmail } from "@udan/core";
+import { type EmailConfig, type FxRate, alertRecipients, displayPrice, formatInr, quoteAcceptedEmail, requestReceivedEmail, sendEmail, staffAlertEmail } from "@udan/core";
 import type { Env } from "./env";
 import type { PriceBand, SignedInUser, ToolContext } from "./tools";
 
 export function notifier(env: Env, rates: () => Promise<FxRate[]>): ToolContext["notify"] {
-  const config: EmailConfig = { apiKey: env.RESEND_API_KEY, from: env.EMAIL_FROM };
+  const config: EmailConfig = { apiKey: env.RESEND_API_KEY, from: env.EMAIL_FROM, replyTo: env.EMAIL_REPLY_TO || undefined };
   const quoteUrl = (ref: string) => `${env.APP_URL}/account/quotes/${ref}`;
-  const staff = (env.STAFF_ALERT_EMAIL ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  const staff = alertRecipients(env.STAFF_ALERT_EMAIL);
 
   return {
     requestReceived: (user: SignedInUser, reference: string, summary: string, typical: PriceBand | null) =>
