@@ -508,9 +508,10 @@ then commit the updated `docs/` and push to `main`. The build also writes
 
 Done on 26 Nov 2026: udantravelsbdq.com serves the `udan-website` Worker
 (steps 1 to 4 below; the owner deleted the four GitHub Pages A records, and
-www already redirected to the apex). Still to do: Cloudflare's "Always Use
-HTTPS" (SSL/TLS > Edge Certificates), since GitHub Pages used to redirect
-http to https, and step 6 after a few stable days.
+www already redirected to the apex). Cloudflare's "Always Use HTTPS" is on
+(set the same day; GitHub Pages used to redirect http to https), so every
+http address on the zone redirects with a 301. Left: step 6 after a few
+stable days.
 
 The new website's quote form posts to the app, so the app goes live first.
 

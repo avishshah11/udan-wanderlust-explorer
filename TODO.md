@@ -36,9 +36,9 @@ The owner's message, now on the website: nearly 30 years in travel (since
 
 - [x] New website live at udantravelsbdq.com (26 Nov 2026, README,
       "Website cutover"): every route, the old SPA URLs, sitemap, robots,
-      404, www redirect and the email DNS records checked. Left: "Always Use
-      HTTPS" in Cloudflare, then GitHub Pages off and the legacy site deleted
-      after a few stable days.
+      404, www redirect and the email DNS records checked; "Always Use HTTPS"
+      on, so http redirects to https. Left: GitHub Pages off and the legacy
+      site deleted after a few stable days.
 - [ ] Google Business Profile: claim and verify the "Udan Tours And Travels"
       listing, add the website, hours and photos, and ask happy past clients
       for reviews (the main lever for "travel agent in Vadodara").
