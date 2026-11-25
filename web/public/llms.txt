@@ -1,6 +1,8 @@
 # Udan Tours and Travels
 
-> Family-run travel agency in Vadodara, Gujarat, India, established 1997. Holiday packages in India and abroad, hotels, flights, visas and travel insurance, priced at the agent rates Udan has with hotels, airlines and suppliers. Free written quotes; customers pay only after accepting one. Promise: prices lower than you imagined, with the quality you deserve.
+> Family-run travel agency in Vadodara, Gujarat, India, established 1997, for travellers in India and worldwide. Holiday packages in India and abroad, hotels, flights, visas and travel insurance. Udan deals directly with hotels, airlines and suppliers, with no middlemen, so the same trip costs less than on other travel websites: send Udan a price from any travel website and it prices the same trip, and says honestly if it cannot beat it. Free written quotes; customers pay only after accepting one. Promise: prices lower than you imagined, with the quality you deserve.
+
+Travellers outside India see prices in USD, GBP, EUR or AED next to INR (approximate) and pay by a card payment link.
 
 Office: 714, Yashkamal Building, above Havmor Restaurant, Opposite M.S. University, Sarod, Sayajiganj, Vadodara, Gujarat 390005, India. Open Monday to Saturday 09:30 to 19:30 and Sunday 11:00 to 16:00 (IST).
 Phone: +91 93762 14442 (also WhatsApp), office landline 0265 400 8999. Email: udantravels.bdq@gmail.com.
@@ -9,7 +11,8 @@ Instagram: https://www.instagram.com/udantoursandtravels/
 ## Main pages
 
 - [Get a quote](https://udantravelsbdq.com/quote): holiday package, flights only or hotel only; free, nothing to pay until accepted
-- [Beat my price](https://udantravelsbdq.com/beat-my-price): send a price from a booking site and Udan prices the same trip at agent rates
+- [Cheap holiday packages](https://udantravelsbdq.com/cheap-holiday-packages): why the same trip costs less with Udan (direct, no middlemen), best months per destination, and how to get the lowest price
+- [Beat my price](https://udantravelsbdq.com/beat-my-price): send a price from any travel website; Udan gives the same thing for less, or says honestly if it cannot
 - [Questions and answers](https://udantravelsbdq.com/faq): agent rates, beating booking-site prices, flights, visas, payments, office and hours
 - [Booking site or travel agent?](https://udantravelsbdq.com/booking-site-vs-travel-agent): how to compare a booking-site price with an agent's quote
 - [Destinations](https://udantravelsbdq.com/packages): Bali, Goa, Kerala, Ladakh, the Maldives and Rajasthan, with best months and sample itineraries

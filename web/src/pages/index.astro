@@ -24,6 +24,12 @@ const steps = [
   ["Your quote arrives in your inbox", "It sits in your Udan account with everything included and how long the price holds. Accept it there, and we take it from there."],
 ];
 
+const cheaper = [
+  ["Direct, with no middlemen", "We book straight with hotels, airlines and ground handlers. No reseller or booking site sits in between taking a share, so more of your money goes into the trip itself."],
+  [`Rates built over ${experienceText()}`, "Since 1997 we have worked with the same hotels and suppliers, at agent rates the big travel websites do not show."],
+  ["Every line checked by our family", "A member of our family prices each hotel, transfer and tour for your dates, so you pay for what you asked for and nothing else."],
+];
+
 const trust = [
   [`${experienceText().replace(/^n/, "N")} in Vadodara`, "Established 1997, with an office in Sayajiganj you can walk into and a landline you can call."],
   ["Nothing to pay up front", "You get a written quote first. We send payment details only after you accept it."],
@@ -42,7 +48,7 @@ const services = [
 
 <Base
   title="Holiday packages, hotels and flights since 1997"
-  description={`Travel agency in Vadodara since 1997. Holiday packages, hotels, flights and visas: ${PROMISE.short.toLowerCase()} Free quotes.`}
+  description="Travel agency in Vadodara since 1997. We deal directly with hotels and airlines, no middlemen, so the same trip costs less than on travel websites. Free quotes."
 >
   <section class="pb-16 pt-12 md:pb-24 md:pt-20">
     <div class="container mx-auto grid items-center gap-12 px-4 md:px-6 lg:grid-cols-2">
@@ -52,8 +58,7 @@ const services = [
           {PROMISE.headline} <span class="text-udan-orange">{PROMISE.accent}</span>
         </h1>
         <p class="max-w-lg text-lg text-udan-gray md:text-xl">
-          For {experienceText()}, our family has built agent rates with hotels, airlines and suppliers in India and abroad. Tell us your trip and we price
-          it at those rates. Seen a lower price online? Send it and we will try to beat it.
+          {PROMISE.direct} {PROMISE.compare}
         </p>
         <div class="flex flex-col gap-3 sm:flex-row">
           <a href="/quote" class="btn-primary px-8 py-3 text-lg">Get my free quote</a>
@@ -76,7 +81,7 @@ const services = [
       <li><p class="text-2xl font-bold text-udan-charcoal">Since 1997</p><p class="text-sm text-udan-gray">{experienceText().replace(/^n/, "N")} in travel</p></li>
       <li><p class="text-2xl font-bold text-udan-charcoal">{SITE.travellers}</p><p class="text-sm text-udan-gray">Travellers</p></li>
       <li><p class="text-2xl font-bold text-udan-charcoal">Sayajiganj</p><p class="text-sm text-udan-gray">Our office, opposite M.S. University</p></li>
-      <li><p class="text-2xl font-bold text-udan-charcoal">India and abroad</p><p class="text-sm text-udan-gray">Domestic and international trips</p></li>
+      <li><p class="text-2xl font-bold text-udan-charcoal">No middlemen</p><p class="text-sm text-udan-gray">Direct with hotels, airlines and suppliers</p></li>
     </ul>
   </section>
 
@@ -95,6 +100,24 @@ const services = [
         }
       </ol>
       <p class="mt-8 text-center"><a href="/quote" class="btn-primary">Get a quote</a></p>
+    </div>
+  </section>
+
+  <section class="pb-16 md:pb-24" aria-labelledby="cheaper-heading">
+    <div class="container mx-auto px-4 md:px-6">
+      <h2 id="cheaper-heading" class="text-center text-2xl font-bold text-udan-charcoal md:text-3xl">Why the same trip costs less with us</h2>
+      <ul class="mt-8 grid gap-6 md:grid-cols-3">
+        {
+          cheaper.map(([title, text]) => (
+            <li class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+              <h3 class="text-lg font-semibold text-udan-charcoal">{title}</h3>
+              <p class="mt-2 text-udan-gray">{text}</p>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="mx-auto mt-8 max-w-2xl text-center text-lg text-udan-charcoal">{PROMISE.compare}</p>
+      <p class="mt-5 text-center"><a href="/beat-my-price" class="btn-primary px-8 py-3 text-lg">Send me the price you found</a></p>
     </div>
   </section>
 

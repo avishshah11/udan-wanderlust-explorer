@@ -60,6 +60,13 @@ The owner's message, now on the website: nearly 30 years in travel (since
       named instead: Explera, Travel Talk, Flamingo Transworld, Mansuri
       Travels; cited: their sites, gujaratipedia.com, bestvisaagencies.com,
       schengen-visa.in and YouTube. Re-check in a few weeks.
+- [x] The owner's price message everywhere (26 Nov 2026): "we deal directly
+      with hotels, airlines and suppliers, with no middlemen, so the same trip
+      costs you less than on other travel websites", always next to "if we
+      ever cannot, we tell you honestly" (ASCI: a price claim must hold every
+      time). New /cheap-holiday-packages for low-price searches in India and
+      worldwide; FAQ, llms.txt, Beat my price and the TravelAgency data
+      (slogan, areaServed Worldwide) updated.
 - [ ] Listings that AI answers read: Google Business Profile, Justdial,
       TripAdvisor, gujaratipedia.com, bestvisaagencies.com; the same name,
       address and phone everywhere. A YouTube channel with the Instagram

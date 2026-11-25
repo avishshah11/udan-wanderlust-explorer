@@ -30,9 +30,19 @@ const faqs: { q: string; a: string; link?: [string, string] }[] = [
     link: ["/quote#hotels", "Ask for a hotel price"],
   },
   {
-    q: "Can Udan beat a price I found on MakeMyTrip or another booking site?",
-    a: "Send it to us with a screenshot or the details. We price the same trip (same dates, the same or an equal hotel) at our rates and show our price next to theirs. For many trips we can offer the same thing for less, and if we cannot, we tell you.",
+    q: "Can Udan beat a price I found on MakeMyTrip or another travel website?",
+    a: `Yes. ${PROMISE.compare} Send a screenshot or the details; we price the same trip (same dates, the same or an equal hotel) and show our price next to theirs.`,
     link: ["/beat-my-price", "Beat my price"],
+  },
+  {
+    q: "Why is Udan cheaper than the big travel websites?",
+    a: `${PROMISE.direct} Since 1997 we have worked with the same hotels and suppliers, and a member of our family prices every line of your trip.`,
+    link: ["/cheap-holiday-packages", "Cheap holiday packages"],
+  },
+  {
+    q: "Can I book with Udan if I live outside India?",
+    a: "Yes. Travellers anywhere in the world can ask for a free quote online, by WhatsApp or through Claude. Your account shows prices in US dollars, pounds, euros or dirhams next to rupees (approximate), and travellers outside India pay by a card payment link.",
+    link: ["/quote", "Get a free quote"],
   },
   {
     q: "Can Udan book cheap flights from Vadodara?",
