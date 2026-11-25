@@ -13,6 +13,7 @@ import { formatDateTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { rebuildNow, removeImport } from "./actions";
 import { ImportForm } from "./import-form";
+import { Tip } from "@/components/tip";
 
 export const metadata = { title: "Rate card" };
 
@@ -50,6 +51,12 @@ export default async function RateCard({ searchParams }: { searchParams: Promise
       {notice && <p role="status" className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">{notice}</p>}
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-900">{error}</p>}
 
+      <Tip id="desk-rate-card" title="What the rate card is for">
+        <p>
+          It turns your past quotes into typical price ranges that customers see before they ask for a quote. Download the template, fill in past
+          quotes and import it. Supplier net rates are never shown, and a range appears only once enough quotes back it.
+        </p>
+      </Tip>
       <section className="space-y-3 rounded-xl bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="max-w-3xl">

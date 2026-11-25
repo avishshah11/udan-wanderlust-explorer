@@ -28,7 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-screen bg-udan-lightGray font-sans">
         <SiteHeader signedIn={Boolean(user)} staff={staff} />
         <main className="container py-8">{children}</main>
-        <footer className="container pb-10 pt-4 text-xs text-udan-gray">
+        <footer className="container pb-10 pt-4 text-sm text-udan-gray">
           Udan Tours and Travels, established 1997 · 714 Yashkamal Building, Sayajiganj, Vadodara ·{" "}
           <a href="tel:+919376214442" className="underline">
             +91 93762 14442

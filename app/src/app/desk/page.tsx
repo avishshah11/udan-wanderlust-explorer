@@ -4,6 +4,7 @@ import { ageText, localTimeIn } from "@/lib/format";
 import { loadRates } from "@/lib/fx";
 import { createClient } from "@/lib/supabase/server";
 import { DeskStatus } from "./desk-status";
+import { Tip } from "@/components/tip";
 
 const TYPE_BADGE: Record<RequestType, string> = { package: "Package", flights: "Flights", hotels: "Hotel" };
 
@@ -49,84 +50,93 @@ export default async function DeskQueue({ searchParams }: { searchParams: Promis
   });
 
   return (
-    <section className="rounded-xl bg-white p-4 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold">
-        {view.title} <span className="text-udan-gray">({rows.length})</span>
-      </h2>
-      {rows.length === 0 ? (
-        <p className="py-8 text-center text-udan-gray">Nothing here.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[960px] text-left text-sm">
-            <thead className="border-b text-xs uppercase text-udan-gray">
-              <tr>
-                <th className="py-2 pr-3">Reference</th>
-                <th className="py-2 pr-3">Customer</th>
-                <th className="py-2 pr-3">Trip</th>
-                <th className="py-2 pr-3">Travel</th>
-                <th className="py-2 pr-3">Budget</th>
-                <th className="py-2 pr-3">Channel</th>
-                <th className="py-2 pr-3">Age</th>
-                <th className="py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => {
-                const local = localTimeIn(r.customers?.time_zone);
-                const binr = budgetInr(r);
-                return (
-                  <tr key={r.id} className="border-b last:border-0 hover:bg-udan-lightGray/60">
-                    <td className="py-2.5 pr-3 font-mono text-xs">
-                      <Link className="text-udan-blue hover:underline" href={`/desk/requests/${r.id}`}>
-                        {r.reference}
-                      </Link>
-                    </td>
-                    <td className="py-2.5 pr-3">
-                      <div className="font-medium">{r.customers?.name ?? r.customers?.email}</div>
-                      <div className="text-xs text-udan-gray">
-                        {local ? `${local} · ${r.customers?.time_zone}` : "time zone unknown"}
-                      </div>
-                    </td>
-                    <td className="py-2.5 pr-3">
-                      <div>
-                        <span className="mr-1.5 rounded bg-udan-lightGray px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-udan-gray">
-                          {TYPE_BADGE[r.request_type]}
-                        </span>
-                        {r.request_type === "flights" ? `${r.origin_city ?? "?"} → ${r.destination}` : r.destination}
-                      </div>
-                      <div className="text-xs text-udan-gray">
-                        {[
-                          r.request_type === "flights" ? (r.end_date ? "Return" : "One way") : r.nights ? `${r.nights}N` : null,
-                          r.request_type === "hotels" && r.rooms ? `${r.rooms} room${r.rooms === 1 ? "" : "s"}` : null,
-                          partyText(r.adults, r.children),
-                          r.cabin_class ? CABIN_CLASS_LABELS[r.cabin_class] : null,
-                          r.hotel_tier ? HOTEL_TIER_LABELS[r.hotel_tier] : null,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </div>
-                    </td>
-                    <td className="py-2.5 pr-3 whitespace-nowrap">{travelWhen(r)}</td>
-                    <td className="py-2.5 pr-3 whitespace-nowrap">
-                      {binr != null ? formatInr(binr) : <span className="text-udan-gray">not given</span>}
-                      {r.budget_currency !== "INR" && r.budget_max != null && (
+    <div className="space-y-5">
+      <Tip id="desk-queue" title="How the desk works">
+        <p>
+          New requests from customers wait under <strong>To price</strong>. Press a reference to open it and start pricing.{" "}
+          <strong>All requests</strong> lists every customer&apos;s request at any stage; the other tabs show quotes waiting for the customer and accepted
+          trips that need payments or documents.
+        </p>
+      </Tip>
+      <section className="rounded-xl bg-white p-4 shadow-sm">
+        <h2 className="mb-4 text-lg font-semibold">
+          {view.title} <span className="text-udan-gray">({rows.length})</span>
+        </h2>
+        {rows.length === 0 ? (
+          <p className="py-8 text-center text-base text-udan-gray">Nothing here right now.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[960px] text-left text-sm">
+              <thead className="border-b text-xs uppercase text-udan-gray">
+                <tr>
+                  <th className="py-2 pr-3">Reference</th>
+                  <th className="py-2 pr-3">Customer</th>
+                  <th className="py-2 pr-3">Trip</th>
+                  <th className="py-2 pr-3">Travel</th>
+                  <th className="py-2 pr-3">Budget</th>
+                  <th className="py-2 pr-3">Channel</th>
+                  <th className="py-2 pr-3">Age</th>
+                  <th className="py-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const local = localTimeIn(r.customers?.time_zone);
+                  const binr = budgetInr(r);
+                  return (
+                    <tr key={r.id} className="border-b last:border-0 hover:bg-udan-lightGray/60">
+                      <td className="py-2.5 pr-3 font-mono text-xs">
+                        <Link className="text-udan-blue hover:underline" href={`/desk/requests/${r.id}`}>
+                          {r.reference}
+                        </Link>
+                      </td>
+                      <td className="py-2.5 pr-3">
+                        <div className="font-medium">{r.customers?.name ?? r.customers?.email}</div>
                         <div className="text-xs text-udan-gray">
-                          {r.budget_currency} {Number(r.budget_min ?? 0).toLocaleString("en-GB")}–{Number(r.budget_max).toLocaleString("en-GB")}
+                          {local ? `${local} · ${r.customers?.time_zone}` : "time zone unknown"}
                         </div>
-                      )}
-                    </td>
-                    <td className="py-2.5 pr-3 capitalize">{r.channel}</td>
-                    <td className="py-2.5 pr-3">{ageText(r.created_at)}</td>
-                    <td className="py-2.5">
-                      <DeskStatus status={r.status} acceptRequestedAt={r.accept_requested_at} acceptedAt={r.accepted_at} />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
+                      </td>
+                      <td className="py-2.5 pr-3">
+                        <div>
+                          <span className="mr-1.5 rounded bg-udan-lightGray px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-udan-gray">
+                            {TYPE_BADGE[r.request_type]}
+                          </span>
+                          {r.request_type === "flights" ? `${r.origin_city ?? "?"} → ${r.destination}` : r.destination}
+                        </div>
+                        <div className="text-xs text-udan-gray">
+                          {[
+                            r.request_type === "flights" ? (r.end_date ? "Return" : "One way") : r.nights ? `${r.nights}N` : null,
+                            r.request_type === "hotels" && r.rooms ? `${r.rooms} room${r.rooms === 1 ? "" : "s"}` : null,
+                            partyText(r.adults, r.children),
+                            r.cabin_class ? CABIN_CLASS_LABELS[r.cabin_class] : null,
+                            r.hotel_tier ? HOTEL_TIER_LABELS[r.hotel_tier] : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </div>
+                      </td>
+                      <td className="py-2.5 pr-3 whitespace-nowrap">{travelWhen(r)}</td>
+                      <td className="py-2.5 pr-3 whitespace-nowrap">
+                        {binr != null ? formatInr(binr) : <span className="text-udan-gray">not given</span>}
+                        {r.budget_currency !== "INR" && r.budget_max != null && (
+                          <div className="text-xs text-udan-gray">
+                            {r.budget_currency} {Number(r.budget_min ?? 0).toLocaleString("en-GB")}–{Number(r.budget_max).toLocaleString("en-GB")}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-2.5 pr-3 capitalize">{r.channel}</td>
+                      <td className="py-2.5 pr-3">{ageText(r.created_at)}</td>
+                      <td className="py-2.5">
+                        <DeskStatus status={r.status} acceptRequestedAt={r.accept_requested_at} acceptedAt={r.accepted_at} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
   );
 }
