@@ -1,0 +1,98 @@
+---
+// A fair guide to comparing a booking-site price with a travel agent's
+// quote: the question travellers ask AI assistants ("how to compare a
+// booking site price with a travel agency quote"). Facts about Udan come from
+// src/lib/site.ts and the Beat my price flow. No timing promises (rule 1).
+import Base from "../layouts/Base.astro";
+import { SITE, experienceText } from "../lib/site";
+
+const checklist: [string, string][] = [
+  ["The same dates and nights", "A price for 5 nights from a Friday is not the same as 5 nights from a Monday."],
+  ["The same hotel and room type", "Deluxe, sea-view or a villa: the room name matters more than the star rating."],
+  ["Meals included", "Room only, breakfast, half board or all inclusive changes the real cost of the stay."],
+  ["Taxes and fees", "Check whether GST, resort fees and the booking site's convenience fee are in the price you see."],
+  ["Transfers and sightseeing", "A package with airport transfers and tours is not comparable with a room-only booking."],
+  ["Cancellation and change terms", "A cheaper non-refundable rate can cost more if your plans move."],
+  ["When and how you pay", "All at once on a card, or an advance first and the balance later."],
+  ["Who you call if something goes wrong", "A call centre, or a person who knows your trip."],
+];
+
+const faqs: [string, string][] = [
+  [
+    "Is a booking site always cheaper than a travel agent?",
+    "No. Booking sites show public prices. Travel agents buy from hotels and suppliers at agent rates, so for many trips, especially packages with several hotels, transfers and sightseeing, an agent can price the same thing for less. Compare like with like before deciding.",
+  ],
+  [
+    "When is a booking site a good choice?",
+    "For a simple stay or a single flight when you know exactly what you want and are happy to manage changes yourself.",
+  ],
+  [
+    "How do I compare a booking-site price with Udan's quote?",
+    "Send us the price on the Beat my price page with a screenshot or the details. We price the same trip at our rates and show our price next to theirs, so you can compare line by line.",
+  ],
+];
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+  },
+];
+---
+
+<Base
+  title="Booking site or travel agent? How to compare a price"
+  description="How to compare a price from MakeMyTrip, Goibibo, Booking.com or Agoda with a travel agent's quote: the eight things to check, and how Udan in Vadodara prices the same trip at agent rates."
+  jsonLd={jsonLd}
+>
+  <section class="py-12 md:py-16">
+    <div class="container mx-auto max-w-3xl px-4 md:px-6">
+      <h1 class="text-3xl font-bold text-udan-charcoal md:text-4xl">Booking site or travel agent? How to compare a price</h1>
+      <p class="mt-4 text-lg text-udan-gray">
+        Booking sites such as MakeMyTrip, Goibibo, Booking.com and Agoda show public prices. Travel agents buy at agent rates that those sites do not show.
+        Neither is always cheaper: the only way to know is to compare the same trip, line by line.
+      </p>
+
+      <h2 class="mt-10 text-2xl font-bold text-udan-charcoal">Eight things to check before you compare</h2>
+      <ol class="mt-5 space-y-4">
+        {
+          checklist.map(([title, text], i) => (
+            <li class="flex gap-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-udan-orange font-bold text-white">{i + 1}</span>
+              <div>
+                <p class="text-lg font-semibold text-udan-charcoal">{title}</p>
+                <p class="mt-1 text-udan-gray">{text}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <h2 class="mt-12 text-2xl font-bold text-udan-charcoal">Questions travellers ask</h2>
+      <div class="mt-5 space-y-6">
+        {
+          faqs.map(([q, a]) => (
+            <div>
+              <h3 class="text-lg font-semibold text-udan-charcoal">{q}</h3>
+              <p class="mt-1 text-lg text-udan-gray">{a}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="mt-12 rounded-2xl bg-udan-orange/5 p-6 md:p-8">
+        <h2 class="text-2xl font-bold text-udan-charcoal">Seen a price? Let us price the same trip</h2>
+        <p class="mt-2 text-lg text-udan-gray">
+          Udan Tours and Travels has bought from hotels, airlines and suppliers at agent rates in Vadodara since 1997, for {experienceText()}. Send us what
+          you found, and we show our price next to it.
+        </p>
+        <div class="mt-5 flex flex-col gap-3 sm:flex-row">
+          <a href="/beat-my-price" class="btn-primary px-8 py-3 text-lg">Beat my price</a>
+          <a href="/quote" class="btn-outline px-8 py-3 text-lg">Get a free quote</a>
+        </div>
+        <p class="mt-4 text-sm text-udan-gray">Or call <a class="font-semibold text-udan-charcoal underline" href={`tel:${SITE.phones[0].tel}`}>{SITE.phones[0].display}</a>.</p>
+      </div>
+    </div>
+  </section>
+</Base>
