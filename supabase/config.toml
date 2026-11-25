@@ -453,8 +453,10 @@ enabled = true
 # ---------------------------------------------------------------------------
 # Hosted project (production). Everything above is for the local stack; these
 # values replace it when the CLI targets the hosted project. Preview with
-# `supabase config diff`, apply with `supabase config push` (README,
-# "Database"). Secrets (SMTP, Google) are set in the dashboard, never here.
+# `supabase config diff`, apply with `node scripts/deploy.mjs auth` (README,
+# "Database"), never a bare `config push`: the SMTP password is read from
+# .env.cloudflare at push time. No secret is written here; Google's client
+# secret is set in the dashboard.
 # ---------------------------------------------------------------------------
 [remotes.production]
 project_id = "xczzvcrjarigejiekqgb"
@@ -470,6 +472,24 @@ additional_redirect_urls = ["https://app.udantravelsbdq.com/**"]
 enable_confirmations = true
 max_frequency = "1m0s"
 otp_length = 8
+
+# Sign-in emails go out through Resend, from the verified udantravelsbdq.com
+# domain. The password is the Resend API key: push with
+# `node scripts/deploy.mjs auth`, which reads it from .env.cloudflare.
+[remotes.production.auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_API_KEY)"
+admin_email = "quotes@udantravelsbdq.com"
+sender_name = "Udan Tours and Travels"
+
+# Sign-in emails per hour for the whole project (Supabase's default with
+# custom SMTP; the built-in email allows 2). Each address still waits a minute
+# between emails (max_frequency above).
+[remotes.production.auth.rate_limit]
+email_sent = 30
 
 # Unchanged hosted defaults, restated so a push leaves them alone.
 [remotes.production.auth.mfa.totp]
