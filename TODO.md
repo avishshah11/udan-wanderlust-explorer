@@ -18,9 +18,10 @@ what is blocked on it.
       sign-in emails in Udan's design from quotes@udantravelsbdq.com, 30 an
       hour, pushed with `node scripts/deploy.mjs auth` (README, "Email").
 - [ ] Google sign-in, once a Google Cloud OAuth client exists (README, "App").
-- [x] First staff member: avishshah1108@gmail.com as owner, shown to
-      customers as Avish Shah (21 Nov 2026). Add udantravels.bdq@gmail.com
-      the same way once Resend sends sign-in emails (README, "Database").
+- [x] Staff: two owners. avishshah1108@gmail.com (shown to customers as
+      Avish Shah, alerts off) since 21 Nov 2026, and udantravels.bdq@gmail.com
+      (shown as Udan Tours and Travels) since 26 Nov 2026. Others sign in
+      once, then are added the same way (README, "Database").
 - [ ] Before real customers: move off the free plan, which pauses a project
       after about a week without use.
 
@@ -85,6 +86,11 @@ grouped with a fall-back from the month's band to the all-months band (README,
       empty).
 - [ ] The name on the bank account customers pay into (`PAYEE_NAME`), so
       `/trust` can say to pay only an account in that name.
+- [x] UPI details for the desk's payment email (`PAYMENT_DETAILS_UPI` in
+      `.env.cloudflare`, 26 Nov 2026): the form starts on UPI, pre-filled.
+      Bank details (`PAYMENT_DETAILS_BANK`) are still empty; once set, the
+      form starts on bank transfer instead. Payment details are sent from
+      the desk (request > Payments), never automatically on acceptance.
 - [ ] Optional, strong trust signals: real photos of the office and the
       family, and traveller testimonials used with their permission. None are
       invented on the site.

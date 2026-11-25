@@ -65,6 +65,16 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+/**
+ * The payment form starts on the method whose details are set in the
+ * environment (bank first), pre-filled with those details, so a UPI ID is
+ * never sent under "Bank transfer".
+ */
+function paymentDefaults(bank: string | undefined, upi: string | undefined) {
+  if (!bank && upi) return { method: "upi", instructions: upi };
+  return { method: "bank", instructions: bank ?? "" };
+}
+
 export default async function DeskRequest({
   params,
   searchParams,
@@ -106,6 +116,7 @@ export default async function DeskRequest({
   const applicableRules = (rules ?? []).filter((x) => x.destination_group === null || x.destination_group === group);
   const priced = (lines ?? []).map((l) => ({ netCost: Number(l.net_cost), sellPrice: Number(l.sell_price) }));
   const margin = quoteMargin(priced);
+  const payDefaults = paymentDefaults(serverEnv.paymentDetailsBank, serverEnv.paymentDetailsUpi);
   const frozen = r.accepted_at !== null;
   const ota = r.ota_comparison as { ota_name?: string; product_name?: string; room_type?: string; price?: number; currency?: string } | null;
   const otaRate = ota?.currency ? findRate(rates, ota.currency) : null;
@@ -454,7 +465,7 @@ export default async function DeskRequest({
             </div>
             <div className="space-y-1">
               <Label htmlFor="method">Method</Label>
-              <select id="method" name="method" className={select} defaultValue="bank">
+              <select id="method" name="method" className={select} defaultValue={payDefaults.method}>
                 <option value="bank">Bank transfer</option>
                 <option value="upi">UPI</option>
                 <option value="card_link">Card link (Razorpay dashboard)</option>
@@ -471,7 +482,7 @@ export default async function DeskRequest({
                 id="instructions"
                 name="instructions"
                 rows={4}
-                defaultValue={serverEnv.paymentDetailsBank || serverEnv.paymentDetailsUpi}
+                defaultValue={payDefaults.instructions}
                 placeholder={"Account name:\nBank and branch:\nAccount number:\nIFSC:"}
               />
             </div>
